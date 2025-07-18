@@ -578,40 +578,116 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          default_subsidiary_id: string | null
           email: string
           full_name: string
           id: string
           is_active: boolean | null
+          is_super_admin: boolean | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          subsidiary_access: Json | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          default_subsidiary_id?: string | null
           email: string
           full_name: string
           id?: string
           is_active?: boolean | null
+          is_super_admin?: boolean | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          subsidiary_access?: Json | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          default_subsidiary_id?: string | null
           email?: string
           full_name?: string
           id?: string
           is_active?: boolean | null
+          is_super_admin?: boolean | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          subsidiary_access?: Json | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_default_subsidiary_id_fkey"
+            columns: ["default_subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subsidiaries: {
+        Row: {
+          business_type: string
+          contact_person: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          gstin: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          phone: string | null
+          registered_address: string | null
+          subsidiary_code: string
+          subsidiary_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          business_type: string
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          registered_address?: string | null
+          subsidiary_code: string
+          subsidiary_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          business_type?: string
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          registered_address?: string | null
+          subsidiary_code?: string
+          subsidiary_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subsidiaries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vehicle_documents: {
         Row: {
