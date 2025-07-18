@@ -427,13 +427,14 @@ export const MaintenanceDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto glass-card border-2 shadow-glass animate-fade-in-scale">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-2xl pointer-events-none" />
+        <DialogHeader className="relative z-10 pb-6 border-b border-border/50">
+          <DialogTitle className="text-2xl font-bold gradient-text">
             {maintenanceRecord ? "Edit Maintenance Record" : "Add Maintenance Record"}
           </DialogTitle>
-          <DialogDescription>
-            Record vehicle maintenance details and parts used
+          <DialogDescription className="text-muted-foreground mt-2">
+            Record vehicle maintenance details and parts used with comprehensive GST tracking
           </DialogDescription>
         </DialogHeader>
 
