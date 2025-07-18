@@ -13,6 +13,8 @@ import Drivers from "./pages/Drivers";
 import FuelLog from "./pages/FuelLog";
 import TankStatus from "./pages/TankStatus";
 import Maintenance from "./pages/Maintenance";
+import CategoriesMaster from "./pages/CategoriesMaster";
+import PartsMaster from "./pages/PartsMaster";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/fuel-log" element={<FuelLog />} />
             <Route path="/tank-status" element={<TankStatus />} />
             <Route path="/maintenance" element={<Maintenance />} />
+            <Route path="/categories-master" element={<CategoriesMaster />} />
+            <Route path="/parts-master" element={<PartsMaster />} />
                 {/* Add all other protected routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />
