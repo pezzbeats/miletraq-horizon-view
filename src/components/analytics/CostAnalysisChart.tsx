@@ -45,7 +45,7 @@ export const CostAnalysisChart = ({ data, loading }: CostAnalysisChartProps) => 
   const monthlyCostData = () => {
     const monthlyData: Record<string, { fuel: number; maintenance: number; parts: number; labour: number }> = {};
 
-    // Process fuel costs
+    // Process fuel costs by fuel type
     data.fuelLogs.forEach(log => {
       const month = format(startOfMonth(parseISO(log.date)), 'MMM yyyy');
       if (!monthlyData[month]) {
@@ -79,20 +79,31 @@ export const CostAnalysisChart = ({ data, loading }: CostAnalysisChartProps) => 
       .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
   };
 
-  // Process cost breakdown pie chart data
+  // Process cost breakdown pie chart data (including fuel types)
   const costBreakdownData = () => {
-    const totalFuel = data.fuelLogs.reduce((sum, log) => sum + (log.total_cost || 0), 0);
+    const fuelCosts = data.fuelLogs.reduce((acc, log) => {
+      const fuelType = log.fuel_type || 'diesel';
+      acc[fuelType] = (acc[fuelType] || 0) + (log.total_cost || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
     const totalMaintenance = data.maintenanceLogs.reduce((sum, log) => sum + (log.labor_cost || 0), 0);
     const totalParts = data.maintenanceLogs.reduce((sum, log) => {
       return sum + (log.maintenance_parts_used?.reduce((partSum: number, part: any) => 
         partSum + (part.total_cost || 0), 0) || 0);
     }, 0);
 
-    return [
-      { name: 'Fuel', value: totalFuel, color: '#8884d8' },
-      { name: 'Maintenance', value: totalMaintenance, color: '#82ca9d' },
-      { name: 'Parts', value: totalParts, color: '#ffc658' },
+    const breakdown = [
+      ...Object.entries(fuelCosts).map(([fuelType, cost], index) => ({
+        name: `${fuelType.charAt(0).toUpperCase() + fuelType.slice(1)} Fuel`,
+        value: cost,
+        color: ['#8884d8', '#82ca9d', '#ffc658'][index % 3]
+      })),
+      { name: 'Maintenance', value: totalMaintenance, color: '#ff7300' },
+      { name: 'Parts', value: totalParts, color: '#8dd1e1' },
     ].filter(item => item.value > 0);
+
+    return breakdown;
   };
 
   // Process vehicle cost data
@@ -126,7 +137,7 @@ export const CostAnalysisChart = ({ data, loading }: CostAnalysisChartProps) => 
       <CardHeader>
         <CardTitle>Cost Analysis</CardTitle>
         <CardDescription>
-          Comprehensive cost breakdown and spending trends
+          Multi-fuel cost breakdown and spending trends across categories
         </CardDescription>
       </CardHeader>
       <CardContent>

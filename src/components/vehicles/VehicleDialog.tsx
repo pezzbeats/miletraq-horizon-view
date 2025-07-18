@@ -45,9 +45,12 @@ const vehicleSchema = z.object({
   make: z.string().min(1, 'Make is required'),
   model: z.string().min(1, 'Model is required'),
   year: z.number().min(1990).max(currentYear + 1).optional(),
-  fuel_type: z.enum(['diesel', 'petrol', 'cng', 'electric']),
+  fuel_types: z.array(z.enum(['diesel', 'petrol', 'cng', 'electric'])).min(1, 'At least one fuel type is required'),
+  default_fuel_type: z.enum(['diesel', 'petrol', 'cng', 'electric']),
   default_driver_id: z.string().optional(),
-  tank_capacity: z.number().min(0).optional(),
+  tank_capacity_diesel: z.number().min(0).optional(),
+  tank_capacity_petrol: z.number().min(0).optional(),
+  tank_capacity_cng: z.number().min(0).optional(),
   purchase_date: z.date().optional(),
   status: z.enum(['active', 'inactive', 'maintenance', 'sold']).default('active'),
   insurance_expiry: z.date().optional(),
@@ -82,6 +85,8 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
       status: 'active',
+      fuel_types: ['diesel'],
+      default_fuel_type: 'diesel',
     },
   });
 
@@ -95,9 +100,12 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
           make: vehicle.make,
           model: vehicle.model,
           year: vehicle.year || undefined,
-          fuel_type: vehicle.fuel_type as any,
+          fuel_types: (vehicle.fuel_types && Array.isArray(vehicle.fuel_types) ? vehicle.fuel_types : ['diesel']) as ('diesel' | 'petrol' | 'cng' | 'electric')[],
+          default_fuel_type: (vehicle.default_fuel_type || vehicle.fuel_type) as any,
           default_driver_id: vehicle.default_driver_id || undefined,
-          tank_capacity: vehicle.tank_capacity || undefined,
+          tank_capacity_diesel: vehicle.tank_capacity_diesel || undefined,
+          tank_capacity_petrol: vehicle.tank_capacity_petrol || undefined,
+          tank_capacity_cng: vehicle.tank_capacity_cng || undefined,
           purchase_date: vehicle.purchase_date ? new Date(vehicle.purchase_date) : undefined,
           status: (vehicle.status as any) || 'active',
           insurance_expiry: vehicle.insurance_expiry ? new Date(vehicle.insurance_expiry) : undefined,
@@ -108,6 +116,8 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
       } else {
         form.reset({
           status: 'active',
+          fuel_types: ['diesel'],
+          default_fuel_type: 'diesel',
         });
       }
     }
@@ -160,9 +170,14 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
         make: data.make,
         model: data.model,
         year: data.year || null,
-        fuel_type: data.fuel_type,
+        fuel_types: data.fuel_types,
+        default_fuel_type: data.default_fuel_type,
+        fuel_type: data.default_fuel_type, // Keep for backward compatibility
         default_driver_id: data.default_driver_id || null,
-        tank_capacity: data.tank_capacity || null,
+        tank_capacity_diesel: data.tank_capacity_diesel || null,
+        tank_capacity_petrol: data.tank_capacity_petrol || null,
+        tank_capacity_cng: data.tank_capacity_cng || null,
+        tank_capacity: data.tank_capacity_diesel || data.tank_capacity_petrol || data.tank_capacity_cng || null, // Primary tank capacity
         status: data.status,
         purchase_date: data.purchase_date?.toISOString().split('T')[0] || null,
         insurance_expiry: data.insurance_expiry?.toISOString().split('T')[0] || null,
@@ -294,25 +309,62 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                 )}
               />
 
-              {/* Fuel Type */}
+              {/* Fuel Types */}
               <FormField
                 control={form.control}
-                name="fuel_type"
+                name="fuel_types"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fuel Type *</FormLabel>
+                    <FormLabel>Supported Fuel Types *</FormLabel>
+                    <div className="space-y-2">
+                      {fuelTypes.map((type) => (
+                        <div key={type.value} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`fuel-${type.value}`}
+                            checked={field.value?.includes(type.value as any) || false}
+                            onChange={(e) => {
+                              const currentValues = field.value || [];
+                              if (e.target.checked) {
+                                field.onChange([...currentValues, type.value as any]);
+                              } else {
+                                field.onChange(currentValues.filter(v => v !== type.value));
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor={`fuel-${type.value}`} className="text-sm font-medium">
+                            {type.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Default Fuel Type */}
+              <FormField
+                control={form.control}
+                name="default_fuel_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Primary Fuel Type *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select fuel type" />
+                          <SelectValue placeholder="Select primary fuel type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {fuelTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
+                        {fuelTypes
+                          .filter(type => form.watch('fuel_types')?.includes(type.value as any))
+                          .map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -392,30 +444,89 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                 )}
               />
 
-              {/* Tank Capacity */}
-              <FormField
-                control={form.control}
-                name="tank_capacity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tank Capacity (Liters)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="90"
-                        min={0}
-                        {...field}
-                        onChange={(e) => {
-                          const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                          field.onChange(value);
-                        }}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Tank Capacities */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Tank Capacities (Liters)</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  {form.watch('fuel_types')?.includes('diesel') && (
+                    <FormField
+                      control={form.control}
+                      name="tank_capacity_diesel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Diesel Tank Capacity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="90"
+                              min={0}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                                field.onChange(value);
+                              }}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
+                  {form.watch('fuel_types')?.includes('petrol') && (
+                    <FormField
+                      control={form.control}
+                      name="tank_capacity_petrol"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Petrol Tank Capacity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="50"
+                              min={0}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                                field.onChange(value);
+                              }}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
+                  {form.watch('fuel_types')?.includes('cng') && (
+                    <FormField
+                      control={form.control}
+                      name="tank_capacity_cng"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CNG Tank Capacity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="30"
+                              min={0}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                                field.onChange(value);
+                              }}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+              </div>
 
               {/* Status */}
               <FormField

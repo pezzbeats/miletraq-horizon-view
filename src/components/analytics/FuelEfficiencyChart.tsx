@@ -27,28 +27,30 @@ export const FuelEfficiencyChart = ({ data, loading }: FuelEfficiencyChartProps)
     );
   }
 
-  // Process data for fuel efficiency trends
+  // Process data for fuel efficiency trends by fuel type
   const chartData = data.fuelLogs
     .filter(log => log.mileage && log.mileage > 0)
     .map(log => ({
       date: log.date,
       vehicle: log.vehicles?.vehicle_number || 'Unknown',
+      fuelType: log.fuel_type || 'Unknown',
       mileage: log.mileage,
       fuelVolume: log.fuel_volume,
       cost: log.total_cost,
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Group by date and calculate average mileage
+  // Group by date and calculate average mileage (considering fuel type)
   const aggregatedData = chartData.reduce((acc, log) => {
     const date = log.date;
+    const key = `${log.vehicle} (${log.fuelType})`;
     if (!acc[date]) {
       acc[date] = {};
     }
-    if (!acc[date][log.vehicle]) {
-      acc[date][log.vehicle] = [];
+    if (!acc[date][key]) {
+      acc[date][key] = [];
     }
-    acc[date][log.vehicle].push(log.mileage);
+    acc[date][key].push(log.mileage);
     return acc;
   }, {} as Record<string, Record<string, number[]>>);
 
@@ -63,8 +65,8 @@ export const FuelEfficiencyChart = ({ data, loading }: FuelEfficiencyChartProps)
     return entry;
   });
 
-  // Get unique vehicles for chart lines
-  const vehicles = Array.from(new Set(chartData.map(log => log.vehicle)));
+  // Get unique vehicle-fuel combinations for chart lines
+  const vehicleFuelCombos = Array.from(new Set(chartData.map(log => `${log.vehicle} (${log.fuelType})`)));
   const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1', '#d084d0'];
 
   return (
@@ -72,7 +74,7 @@ export const FuelEfficiencyChart = ({ data, loading }: FuelEfficiencyChartProps)
       <CardHeader>
         <CardTitle>Fuel Efficiency Trends</CardTitle>
         <CardDescription>
-          Vehicle mileage performance over time (km/L)
+          Vehicle mileage performance by fuel type over time (km/L)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -97,11 +99,11 @@ export const FuelEfficiencyChart = ({ data, loading }: FuelEfficiencyChartProps)
                 labelFormatter={(label) => `Date: ${label}`}
               />
               <Legend />
-              {vehicles.slice(0, 6).map((vehicle, index) => (
+              {vehicleFuelCombos.slice(0, 6).map((combo, index) => (
                 <Line
-                  key={vehicle}
+                  key={combo}
                   type="monotone"
-                  dataKey={vehicle}
+                  dataKey={combo}
                   stroke={colors[index % colors.length]}
                   strokeWidth={2}
                   dot={{ r: 4 }}

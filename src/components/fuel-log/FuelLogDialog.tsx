@@ -48,6 +48,9 @@ const formSchema = z.object({
     required_error: "Date is required",
   }),
   vehicle_id: z.string().min(1, "Vehicle is required"),
+  fuel_type: z.enum(["diesel", "petrol", "cng"], {
+    required_error: "Fuel type is required",
+  }),
   fuel_source: z.enum(["internal_tank", "external_pump"], {
     required_error: "Fuel source is required",
   }),
@@ -80,7 +83,8 @@ interface Vehicle {
   vehicle_number: string;
   make: string;
   model: string;
-  fuel_type: string;
+  fuel_types: any;
+  default_fuel_type: string;
   default_driver_id?: string;
 }
 
@@ -96,7 +100,9 @@ interface Vendor {
 }
 
 interface FuelTank {
-  current_level: number;
+  id: string;
+  fuel_type: string;
+  current_volume: number;
   capacity: number;
 }
 
@@ -105,7 +111,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [fuelTank, setFuelTank] = useState<FuelTank | null>(null);
+  const [fuelTanks, setFuelTanks] = useState<FuelTank[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const { currentSubsidiary } = useSubsidiary();
 
@@ -113,6 +119,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date(),
+      fuel_type: "diesel",
       fuel_source: "internal_tank",
       fuel_volume: 0,
       rate_per_liter: 0,
@@ -127,17 +134,17 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [vehiclesRes, driversRes, vendorsRes, tankRes] = await Promise.all([
+        const [vehiclesRes, driversRes, vendorsRes, tanksRes] = await Promise.all([
           supabase.from('vehicles').select('*').eq('status', 'active').order('vehicle_number'),
           supabase.from('drivers').select('*').eq('is_active', true).order('name'),
           supabase.from('vendors').select('*').eq('is_active', true).overlaps('vendor_type', ['fuel']),
-          supabase.from('fuel_tank').select('*').limit(1).single(),
+          supabase.from('fuel_tanks').select('*').eq('is_active', true).order('fuel_type'),
         ]);
 
         if (vehiclesRes.data) setVehicles(vehiclesRes.data);
         if (driversRes.data) setDrivers(driversRes.data);
         if (vendorsRes.data) setVendors(vendorsRes.data);
-        if (tankRes.data) setFuelTank(tankRes.data);
+        if (tanksRes.data) setFuelTanks(tanksRes.data);
       } catch (error) {
         console.error('Error fetching reference data:', error);
       }
@@ -156,6 +163,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         form.reset({
           date: new Date(fuelEntry.date),
           vehicle_id: fuelEntry.vehicle_id,
+          fuel_type: fuelEntry.fuel_type || "diesel",
           fuel_source: fuelEntry.fuel_source,
           vendor_id: fuelEntry.vendor_id || "",
           fuel_volume: fuelEntry.fuel_volume,
@@ -168,6 +176,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         // Adding new entry
         form.reset({
           date: new Date(),
+          fuel_type: "diesel",
           fuel_source: "internal_tank",
           fuel_volume: 0,
           rate_per_liter: 0,
@@ -185,9 +194,14 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
       const vehicle = vehicles.find(v => v.id === vehicleId);
       setSelectedVehicle(vehicle || null);
       
-      // Set default driver if vehicle has one
-      if (vehicle?.default_driver_id && !fuelEntry) {
-        form.setValue('driver_id', vehicle.default_driver_id);
+      // Set default driver and fuel type if vehicle has them
+      if (vehicle && !fuelEntry) {
+        if (vehicle.default_driver_id) {
+          form.setValue('driver_id', vehicle.default_driver_id);
+        }
+        if (vehicle.default_fuel_type) {
+          form.setValue('fuel_type', vehicle.default_fuel_type as any);
+        }
       }
     }
   }, [watchedValues.vehicle_id, vehicles, form, fuelEntry]);
@@ -206,11 +220,12 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
       setLoading(true);
 
       // Validate tank level for internal tank
-      if (values.fuel_source === "internal_tank" && fuelTank) {
-        if (values.fuel_volume > fuelTank.current_level) {
+      if (values.fuel_source === "internal_tank") {
+        const relevantTank = fuelTanks.find(tank => tank.fuel_type === values.fuel_type);
+        if (relevantTank && values.fuel_volume > relevantTank.current_volume) {
           toast({
             title: "Warning",
-            description: `Fuel volume (${values.fuel_volume}L) exceeds current tank level (${fuelTank.current_level}L)`,
+            description: `Fuel volume (${values.fuel_volume}L) exceeds current ${values.fuel_type} tank level (${relevantTank.current_volume}L)`,
             variant: "destructive",
           });
           return;
@@ -231,6 +246,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
       const fuelLogData = {
         date: format(values.date, 'yyyy-MM-dd'),
         vehicle_id: values.vehicle_id,
+        fuel_type: values.fuel_type,
         fuel_source: values.fuel_source,
         fuel_volume: values.fuel_volume,
         rate_per_liter: values.rate_per_liter || null,
@@ -370,14 +386,57 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
               <div className="p-3 bg-muted rounded-lg">
                 <div className="text-sm text-muted-foreground">Selected Vehicle:</div>
                 <div className="font-medium">{selectedVehicle.vehicle_number}</div>
-                <div className="text-sm">
+                <div className="text-sm flex items-center gap-2">
                   {selectedVehicle.make} {selectedVehicle.model} • 
-                  <Badge variant="secondary" className="ml-2">
-                    {selectedVehicle.fuel_type}
-                  </Badge>
+                   <div className="flex gap-1">
+                     {selectedVehicle.fuel_types && Array.isArray(selectedVehicle.fuel_types) ? (
+                       selectedVehicle.fuel_types.map((fuelType: string) => (
+                         <Badge key={fuelType} variant="secondary">
+                           {fuelType}
+                         </Badge>
+                       ))
+                     ) : (
+                       <Badge variant="secondary">
+                         {selectedVehicle.default_fuel_type || 'diesel'}
+                       </Badge>
+                     )}
+                   </div>
                 </div>
               </div>
             )}
+
+            <FormField
+              control={form.control}
+              name="fuel_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fuel Type *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select fuel type" />
+                      </SelectTrigger>
+                    </FormControl>
+                     <SelectContent>
+                       {selectedVehicle?.fuel_types && Array.isArray(selectedVehicle.fuel_types) ? (
+                         selectedVehicle.fuel_types.map((fuelType: string) => (
+                           <SelectItem key={fuelType} value={fuelType}>
+                             {fuelType.charAt(0).toUpperCase() + fuelType.slice(1)}
+                           </SelectItem>
+                         ))
+                       ) : (
+                         <>
+                           <SelectItem value="diesel">Diesel</SelectItem>
+                           <SelectItem value="petrol">Petrol</SelectItem>
+                           <SelectItem value="cng">CNG</SelectItem>
+                         </>
+                       )}
+                     </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -395,11 +454,14 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
                         <RadioGroupItem value="internal_tank" id="internal_tank" />
                         <label htmlFor="internal_tank" className="text-sm font-medium">
                           Internal Tank
-                          {fuelTank && (
-                            <span className="ml-2 text-muted-foreground">
-                              (Current: {fuelTank.current_level}L)
-                            </span>
-                          )}
+                          {(() => {
+                            const relevantTank = fuelTanks.find(tank => tank.fuel_type === watchedValues.fuel_type);
+                            return relevantTank && (
+                              <span className="ml-2 text-muted-foreground">
+                                (Current: {relevantTank.current_volume}L)
+                              </span>
+                            );
+                          })()}
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
