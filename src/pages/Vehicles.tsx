@@ -10,7 +10,7 @@ import { VehicleDialog } from '@/components/vehicles/VehicleDialog';
 import { DeleteVehicleDialog } from '@/components/vehicles/DeleteVehicleDialog';
 import { VehicleFilters } from '@/components/vehicles/VehicleFilters';
 import { Tables } from '@/integrations/supabase/types';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile'; // Fixed mobile hook import
 
 type Vehicle = Tables<'vehicles'> & {
   default_driver?: {
