@@ -39,45 +39,52 @@ const Drivers = () => {
     try {
       setLoading(true);
       
-      // Fetch drivers with vehicle count
-      const { data: driversData, error } = await supabase
+      // Fetch drivers
+      const { data: driversData, error: driversError } = await supabase
         .from('drivers')
-        .select(`
-          *,
-          vehicles!vehicles_default_driver_id_fkey(count)
-        `)
+        .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (driversError) throw driversError;
 
-      // Process drivers data to add computed fields
-      const processedDrivers = driversData?.map(driver => {
-        const vehicleCount = driver.vehicles?.[0]?.count || 0;
-        let daysToExpiry: number | undefined;
-        let licenseStatus: 'valid' | 'expiring' | 'expired' = 'valid';
+      // Fetch vehicle counts for each driver
+      const driversWithCounts = await Promise.all(
+        (driversData || []).map(async (driver) => {
+          const { count, error: countError } = await supabase
+            .from('vehicles')
+            .select('*', { count: 'exact', head: true })
+            .eq('default_driver_id', driver.id);
 
-        if (driver.license_expiry) {
-          const expiryDate = new Date(driver.license_expiry);
-          const today = new Date();
-          const diffTime = expiryDate.getTime() - today.getTime();
-          daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-          if (daysToExpiry < 0) {
-            licenseStatus = 'expired';
-          } else if (daysToExpiry <= 30) {
-            licenseStatus = 'expiring';
+          if (countError) {
+            console.error('Error counting vehicles for driver:', driver.id, countError);
           }
-        }
 
-        return {
-          ...driver,
-          vehicle_count: vehicleCount,
-          days_to_expiry: daysToExpiry,
-          license_status: licenseStatus
-        };
-      }) || [];
+          let daysToExpiry: number | undefined;
+          let licenseStatus: 'valid' | 'expiring' | 'expired' = 'valid';
 
-      setDrivers(processedDrivers);
+          if (driver.license_expiry) {
+            const expiryDate = new Date(driver.license_expiry);
+            const today = new Date();
+            const diffTime = expiryDate.getTime() - today.getTime();
+            daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (daysToExpiry < 0) {
+              licenseStatus = 'expired';
+            } else if (daysToExpiry <= 30) {
+              licenseStatus = 'expiring';
+            }
+          }
+
+          return {
+            ...driver,
+            vehicle_count: count || 0,
+            days_to_expiry: daysToExpiry,
+            license_status: licenseStatus
+          };
+        })
+      );
+
+      setDrivers(driversWithCounts);
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast({
