@@ -1,264 +1,262 @@
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
-  Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts';
+import { useEffect, useState } from "react";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
+import { format, subDays } from "date-fns";
 
-// Common chart colors
-export const CHART_COLORS = {
-  primary: '#3b82f6',
-  secondary: '#64748b',
-  success: '#22c55e',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  info: '#06b6d4',
-  gradient: ['#3b82f6', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
-};
-
-interface FuelConsumptionChartProps {
-  data: Array<{
-    date: string;
-    fuel: number;
-    cost: number;
-  }>;
+interface ChartData {
+  fuelConsumption: Array<{date: string, diesel: number, petrol: number, cng: number}>;
+  costAnalysis: Array<{month: string, fuel: number, maintenance: number, parts: number}>;
+  fleetEfficiency: Array<{vehicle: string, current: number, target: number}>;
+  budgetPerformance: Array<{category: string, budgeted: number, actual: number}>;
 }
 
-export const FuelConsumptionChart = ({ data }: FuelConsumptionChartProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <AreaChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="date" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Area 
-        type="monotone" 
-        dataKey="fuel" 
-        stroke={CHART_COLORS.primary} 
-        fill={CHART_COLORS.primary}
-        fillOpacity={0.3}
-        name="Fuel (L)"
-      />
-    </AreaChart>
-  </ResponsiveContainer>
-);
+export const Charts = () => {
+  const [chartData, setChartData] = useState<ChartData>({
+    fuelConsumption: [],
+    costAnalysis: [],
+    fleetEfficiency: [],
+    budgetPerformance: []
+  });
+  const [loading, setLoading] = useState(true);
+  const { currentSubsidiary } = useSubsidiary();
 
-interface CostAnalysisChartProps {
-  data: Array<{
-    month: string;
-    fuel: number;
-    maintenance: number;
-    parts: number;
-  }>;
-}
+  useEffect(() => {
+    if (currentSubsidiary?.id) {
+      fetchChartData();
+    }
+  }, [currentSubsidiary]);
 
-export const CostAnalysisChart = ({ data }: CostAnalysisChartProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="fuel" fill={CHART_COLORS.primary} name="Fuel Cost" />
-      <Bar dataKey="maintenance" fill={CHART_COLORS.warning} name="Maintenance" />
-      <Bar dataKey="parts" fill={CHART_COLORS.info} name="Parts" />
-    </BarChart>
-  </ResponsiveContainer>
-);
+  const fetchChartData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchFuelConsumptionData(),
+        fetchCostAnalysisData(),
+        fetchFleetEfficiencyData(),
+        fetchBudgetData()
+      ]);
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-interface VehicleEfficiencyChartProps {
-  data: Array<{
-    vehicle: string;
-    efficiency: number;
-    target: number;
-  }>;
-}
+  const fetchFuelConsumptionData = async () => {
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    
+    const { data, error } = await supabase
+      .from('fuel_log')
+      .select('date, fuel_type, fuel_volume')
+      .eq('subsidiary_id', currentSubsidiary?.id)
+      .gte('date', format(thirtyDaysAgo, 'yyyy-MM-dd'))
+      .order('date');
 
-export const VehicleEfficiencyChart = ({ data }: VehicleEfficiencyChartProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data} layout="horizontal">
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis type="number" />
-      <YAxis type="category" dataKey="vehicle" width={80} />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="efficiency" fill={CHART_COLORS.success} name="Current (km/L)" />
-      <Bar dataKey="target" fill={CHART_COLORS.secondary} name="Target (km/L)" />
-    </BarChart>
-  </ResponsiveContainer>
-);
+    if (error) throw error;
 
-interface UtilizationHeatmapProps {
-  data: Array<{
-    vehicle: string;
-    utilization: number;
-  }>;
-}
+    // Group by date and fuel type
+    const grouped = (data || []).reduce((acc, log) => {
+      const date = log.date;
+      if (!acc[date]) {
+        acc[date] = { date, diesel: 0, petrol: 0, cng: 0 };
+      }
+      acc[date][log.fuel_type as keyof typeof acc[string]] += log.fuel_volume;
+      return acc;
+    }, {} as Record<string, {date: string, diesel: number, petrol: number, cng: number}>);
 
-export const UtilizationChart = ({ data }: UtilizationHeatmapProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="vehicle" />
-      <YAxis />
-      <Tooltip />
-      <Bar 
-        dataKey="utilization" 
-        fill={CHART_COLORS.info}
-        name="Utilization %"
-      />
-    </BarChart>
-  </ResponsiveContainer>
-);
+    setChartData(prev => ({
+      ...prev,
+      fuelConsumption: Object.values(grouped).slice(-7) // Last 7 days
+    }));
+  };
 
-interface BudgetPerformanceChartProps {
-  data: Array<{
-    category: string;
-    budgeted: number;
-    actual: number;
-    variance: number;
-  }>;
-}
+  const fetchCostAnalysisData = async () => {
+    const sixMonthsAgo = subDays(new Date(), 180);
+    
+    // Fetch fuel costs
+    const { data: fuelData, error: fuelError } = await supabase
+      .from('fuel_log')
+      .select('date, total_cost')
+      .eq('subsidiary_id', currentSubsidiary?.id)
+      .gte('date', format(sixMonthsAgo, 'yyyy-MM-dd'));
 
-export const BudgetPerformanceChart = ({ data }: BudgetPerformanceChartProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="category" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="budgeted" fill={CHART_COLORS.secondary} name="Budgeted" />
-      <Bar dataKey="actual" fill={CHART_COLORS.primary} name="Actual" />
-    </BarChart>
-  </ResponsiveContainer>
-);
+    if (fuelError) throw fuelError;
 
-interface FuelEfficiencyTrendProps {
-  data: Array<{
-    date: string;
-    efficiency: number;
-  }>;
-}
+    // Fetch maintenance costs
+    const { data: maintenanceData, error: maintenanceError } = await supabase
+      .from('maintenance_log')
+      .select('maintenance_date, total_cost')
+      .eq('subsidiary_id', currentSubsidiary?.id)
+      .gte('maintenance_date', format(sixMonthsAgo, 'yyyy-MM-dd'));
 
-export const FuelEfficiencyTrendChart = ({ data }: FuelEfficiencyTrendProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="date" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Line 
-        type="monotone" 
-        dataKey="efficiency" 
-        stroke={CHART_COLORS.success} 
-        strokeWidth={2}
-        name="Efficiency (km/L)"
-      />
-    </LineChart>
-  </ResponsiveContainer>
-);
+    if (maintenanceError) throw maintenanceError;
 
-interface CostBreakdownPieChartProps {
-  data: Array<{
-    name: string;
-    value: number;
-    color: string;
-  }>;
-}
+    // Group by month
+    const monthlyData = {} as Record<string, {month: string, fuel: number, maintenance: number, parts: number}>;
+    
+    // Process fuel data
+    (fuelData || []).forEach(log => {
+      const month = format(new Date(log.date), 'MMM');
+      if (!monthlyData[month]) {
+        monthlyData[month] = { month, fuel: 0, maintenance: 0, parts: 0 };
+      }
+      monthlyData[month].fuel += log.total_cost || 0;
+    });
 
-export const CostBreakdownPieChart = ({ data }: CostBreakdownPieChartProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <PieChart>
-      <Pie
-        data={data}
-        cx="50%"
-        cy="50%"
-        outerRadius={80}
-        dataKey="value"
-        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-      >
-        {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={entry.color} />
+    // Process maintenance data
+    (maintenanceData || []).forEach(log => {
+      const month = format(new Date(log.maintenance_date), 'MMM');
+      if (!monthlyData[month]) {
+        monthlyData[month] = { month, fuel: 0, maintenance: 0, parts: 0 };
+      }
+      monthlyData[month].maintenance += log.total_cost || 0;
+    });
+
+    setChartData(prev => ({
+      ...prev,
+      costAnalysis: Object.values(monthlyData).slice(-4) // Last 4 months
+    }));
+  };
+
+  const fetchFleetEfficiencyData = async () => {
+    const { data: vehicles, error: vehiclesError } = await supabase
+      .from('vehicles')
+      .select('id, vehicle_number')
+      .eq('subsidiary_id', currentSubsidiary?.id)
+      .eq('status', 'active')
+      .limit(5);
+
+    if (vehiclesError) throw vehiclesError;
+
+    // Calculate efficiency for each vehicle
+    const efficiencyData = await Promise.all(
+      (vehicles || []).map(async (vehicle) => {
+        const { data: fuelData } = await supabase
+          .from('fuel_log')
+          .select('mileage')
+          .eq('vehicle_id', vehicle.id)
+          .not('mileage', 'is', null)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        const avgMileage = fuelData && fuelData.length > 0 
+          ? fuelData.reduce((sum, log) => sum + (log.mileage || 0), 0) / fuelData.length 
+          : 0;
+
+        return {
+          vehicle: vehicle.vehicle_number,
+          current: avgMileage,
+          target: 15 // Default target km/L
+        };
+      })
+    );
+
+    setChartData(prev => ({
+      ...prev,
+      fleetEfficiency: efficiencyData
+    }));
+  };
+
+  const fetchBudgetData = async () => {
+    const { data: budgets, error } = await supabase
+      .from('budget')
+      .select('category, budgeted_amount, actual_amount')
+      .eq('subsidiary_id', currentSubsidiary?.id)
+      .eq('status', 'active');
+
+    if (error) throw error;
+
+    const budgetData = (budgets || []).map(budget => ({
+      category: budget.category.charAt(0).toUpperCase() + budget.category.slice(1),
+      budgeted: budget.budgeted_amount,
+      actual: budget.actual_amount || 0
+    }));
+
+    setChartData(prev => ({
+      ...prev,
+      budgetPerformance: budgetData
+    }));
+  };
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-[300px] bg-muted rounded-lg animate-pulse"></div>
         ))}
-      </Pie>
-      <Tooltip />
-    </PieChart>
-  </ResponsiveContainer>
-);
-
-interface TankLevelGaugeProps {
-  currentLevel: number;
-  capacity: number;
-  lowThreshold?: number;
-}
-
-export const TankLevelGauge = ({ 
-  currentLevel, 
-  capacity, 
-  lowThreshold = 500 
-}: TankLevelGaugeProps) => {
-  const percentage = (currentLevel / capacity) * 100;
-  const isLow = currentLevel <= lowThreshold;
-  
-  return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className="relative w-32 h-32">
-        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            stroke="currentColor"
-            strokeWidth="10"
-            fill="none"
-            className="text-muted-foreground opacity-20"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            stroke={isLow ? CHART_COLORS.danger : CHART_COLORS.primary}
-            strokeWidth="10"
-            fill="none"
-            strokeDasharray={`${percentage * 3.14159} ${314.159 - percentage * 3.14159}`}
-            strokeLinecap="round"
-            className="transition-all duration-500"
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold">{percentage.toFixed(1)}%</span>
-          <span className="text-xs text-muted-foreground">
-            {currentLevel.toLocaleString()}L
-          </span>
-        </div>
       </div>
-      <div className="text-center">
-        <p className="text-sm font-medium">
-          Tank Level
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {currentLevel.toLocaleString()}L / {capacity.toLocaleString()}L
-        </p>
-        {isLow && (
-          <p className="text-xs text-red-600 font-medium mt-1">
-            Low Level Alert
-          </p>
-        )}
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Cross-Subsidiary Fuel Consumption */}
+      <div className="bg-white dark:bg-card p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Fuel Consumption Trends</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={chartData.fuelConsumption}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="diesel" stroke="#0088FE" strokeWidth={2} name="Diesel (L)" />
+            <Line type="monotone" dataKey="petrol" stroke="#00C49F" strokeWidth={2} name="Petrol (L)" />
+            <Line type="monotone" dataKey="cng" stroke="#FFBB28" strokeWidth={2} name="CNG (kg)" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Consolidated Cost Analysis */}
+      <div className="bg-white dark:bg-card p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Cost Analysis</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData.costAnalysis}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`₹${Number(value).toLocaleString()}`, '']} />
+            <Legend />
+            <Bar dataKey="fuel" fill="#0088FE" name="Fuel Cost" />
+            <Bar dataKey="maintenance" fill="#00C49F" name="Maintenance" />
+            <Bar dataKey="parts" fill="#FFBB28" name="Parts" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Fleet Efficiency Comparison */}
+      <div className="bg-white dark:bg-card p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Fleet Efficiency</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData.fleetEfficiency}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="vehicle" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`${Number(value).toFixed(1)} km/L`, '']} />
+            <Legend />
+            <Bar dataKey="current" fill="#00C49F" name="Current (km/L)" />
+            <Bar dataKey="target" fill="#8884D8" name="Target (km/L)" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Budget Performance Overview */}
+      <div className="bg-white dark:bg-card p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Budget Performance</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData.budgetPerformance}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`₹${Number(value).toLocaleString()}`, '']} />
+            <Legend />
+            <Bar dataKey="budgeted" fill="#8884D8" name="Budgeted" />
+            <Bar dataKey="actual" fill="#0088FE" name="Actual" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
