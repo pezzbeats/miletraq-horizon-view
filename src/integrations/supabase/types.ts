@@ -546,6 +546,7 @@ export type Database = {
       }
       vehicle_documents: {
         Row: {
+          alert_days_before: number | null
           created_at: string | null
           created_by: string
           document_name: string
@@ -556,10 +557,13 @@ export type Database = {
           id: string
           issue_date: string | null
           issuing_authority: string | null
+          remarks: string | null
+          status: string | null
           updated_at: string | null
           vehicle_id: string
         }
         Insert: {
+          alert_days_before?: number | null
           created_at?: string | null
           created_by: string
           document_name: string
@@ -570,10 +574,13 @@ export type Database = {
           id?: string
           issue_date?: string | null
           issuing_authority?: string | null
+          remarks?: string | null
+          status?: string | null
           updated_at?: string | null
           vehicle_id: string
         }
         Update: {
+          alert_days_before?: number | null
           created_at?: string | null
           created_by?: string
           document_name?: string
@@ -584,6 +591,8 @@ export type Database = {
           id?: string
           issue_date?: string | null
           issuing_authority?: string | null
+          remarks?: string | null
+          status?: string | null
           updated_at?: string | null
           vehicle_id?: string
         }
@@ -721,7 +730,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_document_status: {
+        Args: { expiry_date: string }
+        Returns: string
+      }
     }
     Enums: {
       document_type: "rc" | "insurance" | "permit" | "puc" | "license" | "other"

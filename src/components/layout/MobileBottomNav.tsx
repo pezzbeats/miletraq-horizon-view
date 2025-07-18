@@ -4,7 +4,7 @@ import {
   Car, 
   Users,
   Fuel, 
-  Gauge, 
+  FileText,
   BarChart3 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,9 +21,9 @@ const bottomNavItems = [
     icon: Car,
   },
   {
-    title: 'Drivers',
-    url: '/drivers',
-    icon: Users,
+    title: 'Documents',
+    url: '/documents',
+    icon: FileText,
   },
   {
     title: 'Fuel Log',
@@ -31,9 +31,9 @@ const bottomNavItems = [
     icon: Fuel,
   },
   {
-    title: 'Tank',
-    url: '/tank-status',
-    icon: Gauge,
+    title: 'Analytics',
+    url: '/analytics',
+    icon: BarChart3,
   },
 ];
 
