@@ -163,47 +163,58 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {profile?.full_name || 'User'}! Here's your fleet overview.
-          </p>
+      {/* Enhanced Header with Gradient */}
+      <div className="relative overflow-hidden rounded-2xl p-8 mb-8">
+        <div className="absolute inset-0 gradient-header opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div className="relative z-10 flex items-center justify-between text-white">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+            <p className="text-white/90 text-lg">
+              Welcome back, {profile?.full_name || 'User'}! Here's your fleet overview.
+            </p>
+          </div>
+          
+          {/* Period Selector */}
+          <Tabs value={period} onValueChange={(value) => setPeriod(value as any)}>
+            <TabsList className="bg-white/20 backdrop-blur border-white/30">
+              <TabsTrigger value="week" className="text-white data-[state=active]:bg-white/30">Week</TabsTrigger>
+              <TabsTrigger value="month" className="text-white data-[state=active]:bg-white/30">Month</TabsTrigger>
+              <TabsTrigger value="quarter" className="text-white data-[state=active]:bg-white/30">Quarter</TabsTrigger>
+              <TabsTrigger value="year" className="text-white data-[state=active]:bg-white/30">Year</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-        
-        {/* Period Selector */}
-        <Tabs value={period} onValueChange={(value) => setPeriod(value as any)}>
-          <TabsList>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="quarter">Quarter</TabsTrigger>
-            <TabsTrigger value="year">Year</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
-      {/* Alerts */}
+      {/* Enhanced Alerts with Gradient */}
       {alerts.length > 0 && (
-        <Card className="enhanced-card border-orange-200">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertTriangle className="mr-2 h-5 w-5 text-orange-500" />
+        <Card className="card-warning hover-lift">
+          <CardHeader className="gradient-warning text-white rounded-t-lg">
+            <CardTitle className="flex items-center text-white">
+              <AlertTriangle className="mr-2 h-5 w-5" />
               Alerts & Notifications
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="space-y-3">
               {alerts.map((alert) => (
-                <div key={alert.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div key={alert.id} className="flex items-center justify-between p-4 rounded-xl glass-card hover-lift">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${getAlertSeverityColor(alert.severity)}`} />
+                    <div className={`w-3 h-3 rounded-full ${
+                      alert.severity === 'high' ? 'gradient-error' :
+                      alert.severity === 'medium' ? 'gradient-warning' : 'gradient-info'
+                    }`} />
                     <div>
-                      <p className="font-medium">{alert.title}</p>
+                      <p className="font-semibold text-foreground">{alert.title}</p>
                       <p className="text-sm text-muted-foreground">{alert.message}</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="capitalize">
+                  <Badge variant="outline" className={`capitalize font-medium ${
+                    alert.severity === 'high' ? 'border-red-300 text-red-700 bg-red-50' :
+                    alert.severity === 'medium' ? 'border-orange-300 text-orange-700 bg-orange-50' :
+                    'border-blue-300 text-blue-700 bg-blue-50'
+                  }`}>
                     {alert.severity}
                   </Badge>
                 </div>
@@ -213,31 +224,35 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {/* Stats Cards */}
+      {/* Enhanced Stats Cards with Gradients */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           const TrendIcon = card.trendUp ? TrendingUp : TrendingDown;
+          const gradientClass = index === 0 ? 'card-info' : index === 1 ? 'card-success' : index === 2 ? 'card-purple' : 'card-warning';
           
           return (
-            <Card key={index} className="enhanced-card">
+            <Card key={index} className={`${gradientClass} hover-lift hover-glow`}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
                       {card.title}
                     </p>
-                    <p className="text-2xl font-bold">{card.value}</p>
+                    <p className="text-3xl font-bold gradient-text">{card.value}</p>
                     <div className="flex items-center space-x-1">
-                      <TrendIcon className={`h-3 w-3 ${card.trendUp ? 'text-green-500' : 'text-red-500'}`} />
-                      <span className={`text-xs ${card.trendUp ? 'text-green-500' : 'text-red-500'}`}>
+                      <TrendIcon className={`h-4 w-4 ${card.trendUp ? 'text-green-600' : 'text-red-600'}`} />
+                      <span className={`text-sm font-medium ${card.trendUp ? 'text-green-600' : 'text-red-600'}`}>
                         {card.trend}
                       </span>
-                      <span className="text-xs text-muted-foreground">vs last {period}</span>
+                      <span className="text-sm text-muted-foreground">vs last {period}</span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="h-6 w-6 text-primary" />
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center shadow-colored">
+                      <Icon className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute -inset-1 gradient-primary rounded-xl blur opacity-20"></div>
                   </div>
                 </div>
               </CardContent>
@@ -279,29 +294,68 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="enhanced-card">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
+      {/* Enhanced Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="card-info hover-lift">
+          <CardHeader className="gradient-info text-white rounded-t-lg">
+            <CardTitle className="text-white">Fuel Consumption Trend</CardTitle>
+            <CardDescription className="text-white/90">Daily fuel consumption over the selected period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-xl gradient-info flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-lg font-medium">Chart Analytics</p>
+                <p className="text-sm">Interactive charts coming soon</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-success hover-lift">
+          <CardHeader className="gradient-success text-white rounded-t-lg">
+            <CardTitle className="text-white">Cost Analysis</CardTitle>
+            <CardDescription className="text-white/90">Fuel cost trends and budget utilization</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-xl gradient-success flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-lg font-medium">Cost Insights</p>
+                <p className="text-sm">Advanced analytics coming soon</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enhanced Quick Actions */}
+      <Card className="card-purple hover-lift">
+        <CardHeader className="gradient-purple text-white rounded-t-lg">
+          <CardTitle className="text-white">Quick Actions</CardTitle>
+          <CardDescription className="text-white/90">Common tasks and shortcuts</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Fuel className="h-5 w-5" />
-              <span>Add Fuel Log</span>
+            <Button className="btn-gradient h-24 flex-col space-y-3 group">
+              <Fuel className="h-6 w-6 group-hover:scale-110 transition-transform" />
+              <span className="font-medium">Add Fuel Log</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Car className="h-5 w-5" />
-              <span>Add Vehicle</span>
+            <Button className="h-24 flex-col space-y-3 group gradient-success text-white hover:scale-105 transition-all">
+              <Car className="h-6 w-6 group-hover:scale-110 transition-transform" />
+              <span className="font-medium">Add Vehicle</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Route className="h-5 w-5" />
-              <span>Update Odometer</span>
+            <Button className="h-24 flex-col space-y-3 group gradient-warning text-white hover:scale-105 transition-all">
+              <Route className="h-6 w-6 group-hover:scale-110 transition-transform" />
+              <span className="font-medium">Update Odometer</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2">
-              <Calendar className="h-5 w-5" />
-              <span>Schedule Maintenance</span>
+            <Button className="h-24 flex-col space-y-3 group gradient-info text-white hover:scale-105 transition-all">
+              <Calendar className="h-6 w-6 group-hover:scale-110 transition-transform" />
+              <span className="font-medium">Schedule Maintenance</span>
             </Button>
           </div>
         </CardContent>
