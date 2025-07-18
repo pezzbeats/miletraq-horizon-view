@@ -71,6 +71,7 @@ export type Database = {
           period_start: string
           remaining_amount: number | null
           status: string | null
+          subsidiary_id: string | null
           time_period: string
           updated_at: string | null
           variance_percentage: number | null
@@ -87,6 +88,7 @@ export type Database = {
           period_start?: string
           remaining_amount?: number | null
           status?: string | null
+          subsidiary_id?: string | null
           time_period?: string
           updated_at?: string | null
           variance_percentage?: number | null
@@ -103,11 +105,20 @@ export type Database = {
           period_start?: string
           remaining_amount?: number | null
           status?: string | null
+          subsidiary_id?: string | null
           time_period?: string
           updated_at?: string | null
           variance_percentage?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "budget_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       drivers: {
         Row: {
@@ -120,6 +131,7 @@ export type Database = {
           license_number: string | null
           name: string
           phone: string | null
+          subsidiary_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -132,6 +144,7 @@ export type Database = {
           license_number?: string | null
           name: string
           phone?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -144,9 +157,18 @@ export type Database = {
           license_number?: string | null
           name?: string
           phone?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "drivers_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fuel_log: {
         Row: {
@@ -162,6 +184,7 @@ export type Database = {
           odometer_reading: number
           previous_reading: number | null
           rate_per_liter: number | null
+          subsidiary_id: string | null
           total_cost: number | null
           updated_at: string | null
           vehicle_id: string
@@ -180,6 +203,7 @@ export type Database = {
           odometer_reading: number
           previous_reading?: number | null
           rate_per_liter?: number | null
+          subsidiary_id?: string | null
           total_cost?: number | null
           updated_at?: string | null
           vehicle_id: string
@@ -198,6 +222,7 @@ export type Database = {
           odometer_reading?: number
           previous_reading?: number | null
           rate_per_liter?: number | null
+          subsidiary_id?: string | null
           total_cost?: number | null
           updated_at?: string | null
           vehicle_id?: string
@@ -209,6 +234,13 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_log_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
             referencedColumns: ["id"]
           },
           {
@@ -235,6 +267,7 @@ export type Database = {
           invoice_number: string | null
           purchase_date: string
           rate_per_liter: number
+          subsidiary_id: string | null
           total_cost: number
           updated_at: string | null
           vendor_id: string | null
@@ -247,6 +280,7 @@ export type Database = {
           invoice_number?: string | null
           purchase_date: string
           rate_per_liter: number
+          subsidiary_id?: string | null
           total_cost: number
           updated_at?: string | null
           vendor_id?: string | null
@@ -259,12 +293,20 @@ export type Database = {
           invoice_number?: string | null
           purchase_date?: string
           rate_per_liter?: number
+          subsidiary_id?: string | null
           total_cost?: number
           updated_at?: string | null
           vendor_id?: string | null
           volume?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fuel_purchases_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fuel_purchases_vendor_id_fkey"
             columns: ["vendor_id"]
@@ -281,6 +323,7 @@ export type Database = {
           id: string
           last_updated: string | null
           low_level_threshold: number | null
+          subsidiary_id: string | null
           updated_by: string
         }
         Insert: {
@@ -289,6 +332,7 @@ export type Database = {
           id?: string
           last_updated?: string | null
           low_level_threshold?: number | null
+          subsidiary_id?: string | null
           updated_by: string
         }
         Update: {
@@ -297,9 +341,18 @@ export type Database = {
           id?: string
           last_updated?: string | null
           low_level_threshold?: number | null
+          subsidiary_id?: string | null
           updated_by?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fuel_tank_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       maintenance_categories: {
         Row: {
@@ -309,6 +362,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          subsidiary_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -318,6 +372,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -327,9 +382,18 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_categories_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       maintenance_log: {
         Row: {
@@ -350,6 +414,7 @@ export type Database = {
           next_service_km: number | null
           odometer_reading: number | null
           photo_url: string | null
+          subsidiary_id: string | null
           total_cost: number
           updated_at: string | null
           vehicle_id: string
@@ -373,6 +438,7 @@ export type Database = {
           next_service_km?: number | null
           odometer_reading?: number | null
           photo_url?: string | null
+          subsidiary_id?: string | null
           total_cost: number
           updated_at?: string | null
           vehicle_id: string
@@ -396,6 +462,7 @@ export type Database = {
           next_service_km?: number | null
           odometer_reading?: number | null
           photo_url?: string | null
+          subsidiary_id?: string | null
           total_cost?: number
           updated_at?: string | null
           vehicle_id?: string
@@ -407,6 +474,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "maintenance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_log_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
             referencedColumns: ["id"]
           },
           {
@@ -488,6 +562,7 @@ export type Database = {
           notes: string | null
           odometer_reading: number
           reading_date: string
+          subsidiary_id: string | null
           updated_at: string | null
           vehicle_id: string
         }
@@ -499,6 +574,7 @@ export type Database = {
           notes?: string | null
           odometer_reading: number
           reading_date: string
+          subsidiary_id?: string | null
           updated_at?: string | null
           vehicle_id: string
         }
@@ -510,6 +586,7 @@ export type Database = {
           notes?: string | null
           odometer_reading?: number
           reading_date?: string
+          subsidiary_id?: string | null
           updated_at?: string | null
           vehicle_id?: string
         }
@@ -519,6 +596,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "odometer_readings_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
             referencedColumns: ["id"]
           },
           {
@@ -540,6 +624,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           part_number: string | null
+          subsidiary_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -551,6 +636,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           part_number?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -562,6 +648,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           part_number?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -570,6 +657,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "maintenance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_master_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
             referencedColumns: ["id"]
           },
         ]
@@ -704,6 +798,7 @@ export type Database = {
           issuing_authority: string | null
           remarks: string | null
           status: string | null
+          subsidiary_id: string | null
           updated_at: string | null
           vehicle_id: string
         }
@@ -721,6 +816,7 @@ export type Database = {
           issuing_authority?: string | null
           remarks?: string | null
           status?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
           vehicle_id: string
         }
@@ -738,10 +834,18 @@ export type Database = {
           issuing_authority?: string | null
           remarks?: string | null
           status?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
           vehicle_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vehicle_documents_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vehicle_documents_vehicle_id_fkey"
             columns: ["vehicle_id"]
@@ -766,6 +870,7 @@ export type Database = {
           purchase_date: string | null
           rc_expiry: string | null
           status: Database["public"]["Enums"]["vehicle_status"] | null
+          subsidiary_id: string | null
           tank_capacity: number | null
           updated_at: string | null
           vehicle_number: string
@@ -785,6 +890,7 @@ export type Database = {
           purchase_date?: string | null
           rc_expiry?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
+          subsidiary_id?: string | null
           tank_capacity?: number | null
           updated_at?: string | null
           vehicle_number: string
@@ -804,6 +910,7 @@ export type Database = {
           purchase_date?: string | null
           rc_expiry?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
+          subsidiary_id?: string | null
           tank_capacity?: number | null
           updated_at?: string | null
           vehicle_number?: string
@@ -815,6 +922,13 @@ export type Database = {
             columns: ["default_driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
             referencedColumns: ["id"]
           },
         ]
@@ -833,6 +947,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           phone: string | null
+          subsidiary_id: string | null
           updated_at: string | null
           vendor_type: string[] | null
         }
@@ -849,6 +964,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           phone?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
           vendor_type?: string[] | null
         }
@@ -865,10 +981,19 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           phone?: string | null
+          subsidiary_id?: string | null
           updated_at?: string | null
           vendor_type?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendors_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
