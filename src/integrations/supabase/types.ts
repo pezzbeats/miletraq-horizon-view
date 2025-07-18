@@ -278,8 +278,13 @@ export type Database = {
           created_at: string | null
           created_by: string
           description: string
+          gst_rate: number | null
+          gst_type: string | null
           id: string
+          is_gst_invoice: boolean | null
+          labor_base_amount: number | null
           labor_cost: number | null
+          labor_gst_amount: number | null
           maintenance_date: string
           maintenance_type: Database["public"]["Enums"]["maintenance_type"]
           next_service_date: string | null
@@ -296,8 +301,13 @@ export type Database = {
           created_at?: string | null
           created_by: string
           description: string
+          gst_rate?: number | null
+          gst_type?: string | null
           id?: string
+          is_gst_invoice?: boolean | null
+          labor_base_amount?: number | null
           labor_cost?: number | null
+          labor_gst_amount?: number | null
           maintenance_date: string
           maintenance_type: Database["public"]["Enums"]["maintenance_type"]
           next_service_date?: string | null
@@ -314,8 +324,13 @@ export type Database = {
           created_at?: string | null
           created_by?: string
           description?: string
+          gst_rate?: number | null
+          gst_type?: string | null
           id?: string
+          is_gst_invoice?: boolean | null
+          labor_base_amount?: number | null
           labor_cost?: number | null
+          labor_gst_amount?: number | null
           maintenance_date?: string
           maintenance_type?: Database["public"]["Enums"]["maintenance_type"]
           next_service_date?: string | null
@@ -353,7 +368,11 @@ export type Database = {
       }
       maintenance_parts_used: {
         Row: {
+          base_cost: number | null
+          gst_amount: number | null
+          gst_rate: number | null
           id: string
+          is_gst_applicable: boolean | null
           maintenance_id: string
           part_id: string
           quantity: number
@@ -361,7 +380,11 @@ export type Database = {
           unit_cost: number
         }
         Insert: {
+          base_cost?: number | null
+          gst_amount?: number | null
+          gst_rate?: number | null
           id?: string
+          is_gst_applicable?: boolean | null
           maintenance_id: string
           part_id: string
           quantity?: number
@@ -369,7 +392,11 @@ export type Database = {
           unit_cost: number
         }
         Update: {
+          base_cost?: number | null
+          gst_amount?: number | null
+          gst_rate?: number | null
           id?: string
+          is_gst_applicable?: boolean | null
           maintenance_id?: string
           part_id?: string
           quantity?: number
@@ -644,7 +671,10 @@ export type Database = {
           contact_person: string | null
           created_at: string | null
           created_by: string
+          default_gst_rate: number | null
           email: string | null
+          gst_number: string | null
+          gst_registered: boolean | null
           id: string
           is_active: boolean | null
           name: string
@@ -657,7 +687,10 @@ export type Database = {
           contact_person?: string | null
           created_at?: string | null
           created_by: string
+          default_gst_rate?: number | null
           email?: string | null
+          gst_number?: string | null
+          gst_registered?: boolean | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -670,7 +703,10 @@ export type Database = {
           contact_person?: string | null
           created_at?: string | null
           created_by?: string
+          default_gst_rate?: number | null
           email?: string | null
+          gst_number?: string | null
+          gst_registered?: boolean | null
           id?: string
           is_active?: boolean | null
           name?: string

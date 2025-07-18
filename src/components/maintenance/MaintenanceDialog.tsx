@@ -34,6 +34,9 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -41,6 +44,15 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { MaintenanceRecord } from "@/pages/Maintenance";
+import { 
+  calculateGSTInclusive, 
+  calculateGSTExclusive, 
+  getGSTBreakdown, 
+  validateGSTRate, 
+  GST_RATES, 
+  formatCurrency,
+  type GSTBreakdown 
+} from "@/lib/gst-utils";
 
 const maintenanceFormSchema = z.object({
   maintenance_date: z.date({
@@ -62,6 +74,10 @@ interface PartUsed {
   quantity: number;
   unit_cost: number;
   total_cost: number;
+  is_gst_applicable: boolean;
+  gst_rate: number;
+  gst_amount: number;
+  base_cost: number;
 }
 
 interface Vehicle {
@@ -75,6 +91,9 @@ interface Vendor {
   id: string;
   name: string;
   vendor_type: string[];
+  gst_registered?: boolean;
+  gst_number?: string;
+  default_gst_rate?: number;
 }
 
 interface Part {
@@ -104,6 +123,12 @@ export const MaintenanceDialog = ({
   const [partsUsed, setPartsUsed] = useState<PartUsed[]>([]);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  
+  // GST state for labor
+  const [isGSTInvoice, setIsGSTInvoice] = useState(false);
+  const [gstType, setGstType] = useState<'inclusive' | 'exclusive'>('inclusive');
+  const [laborGSTRate, setLaborGSTRate] = useState(18);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
 
   const form = useForm<z.infer<typeof maintenanceFormSchema>>({
     resolver: zodResolver(maintenanceFormSchema),
@@ -167,6 +192,10 @@ export const MaintenanceDialog = ({
             quantity: p.quantity,
             unit_cost: p.unit_cost,
             total_cost: p.total_cost,
+            is_gst_applicable: (p as any).is_gst_applicable || false,
+            gst_rate: (p as any).gst_rate || 0,
+            gst_amount: (p as any).gst_amount || 0,
+            base_cost: (p as any).base_cost || p.unit_cost,
           })));
         }
         
@@ -191,6 +220,10 @@ export const MaintenanceDialog = ({
       quantity: 1,
       unit_cost: 0,
       total_cost: 0,
+      is_gst_applicable: false,
+      gst_rate: 0,
+      gst_amount: 0,
+      base_cost: 0,
     }]);
   };
 
@@ -198,9 +231,27 @@ export const MaintenanceDialog = ({
     const updated = [...partsUsed];
     updated[index] = { ...updated[index], [field]: value };
     
-    // Auto-calculate total cost
-    if (field === 'quantity' || field === 'unit_cost') {
-      updated[index].total_cost = updated[index].quantity * updated[index].unit_cost;
+    // Auto-calculate GST and total cost
+    if (field === 'quantity' || field === 'unit_cost' || field === 'gst_rate' || field === 'is_gst_applicable') {
+      const part = updated[index];
+      
+      if (part.is_gst_applicable && part.gst_rate > 0 && part.unit_cost > 0) {
+        // Calculate GST breakdown (assuming inclusive pricing for parts)
+        const gstBreakdown = getGSTBreakdown({
+          amount: part.unit_cost,
+          gstRate: part.gst_rate,
+          type: 'inclusive'
+        });
+        
+        part.base_cost = gstBreakdown.baseAmount;
+        part.gst_amount = gstBreakdown.gstAmount;
+        part.total_cost = gstBreakdown.totalAmount * part.quantity;
+      } else {
+        // No GST calculation
+        part.base_cost = part.unit_cost;
+        part.gst_amount = 0;
+        part.total_cost = part.quantity * part.unit_cost;
+      }
     }
     
     setPartsUsed(updated);
@@ -267,6 +318,20 @@ export const MaintenanceDialog = ({
         return;
       }
 
+      // Calculate labor GST breakdown
+      let laborBaseAmount = values.labor_cost;
+      let laborGSTAmount = 0;
+      
+      if (isGSTInvoice && laborGSTRate > 0) {
+        const gstBreakdown = getGSTBreakdown({
+          amount: values.labor_cost,
+          gstRate: laborGSTRate,
+          type: gstType
+        });
+        laborBaseAmount = gstBreakdown.baseAmount;
+        laborGSTAmount = gstBreakdown.gstAmount;
+      }
+
       const maintenanceData = {
         maintenance_date: format(values.maintenance_date, 'yyyy-MM-dd'),
         vehicle_id: values.vehicle_id,
@@ -278,6 +343,12 @@ export const MaintenanceDialog = ({
         vendor_id: values.vendor_id === "no-vendor" ? null : values.vendor_id || null,
         photo_url: uploadedPhoto,
         created_by: user.id,
+        // GST fields
+        is_gst_invoice: isGSTInvoice,
+        gst_type: isGSTInvoice ? gstType : null,
+        gst_rate: isGSTInvoice ? laborGSTRate : null,
+        labor_gst_amount: laborGSTAmount,
+        labor_base_amount: laborBaseAmount,
       };
 
       let maintenanceId: string;
@@ -319,6 +390,10 @@ export const MaintenanceDialog = ({
             quantity: part.quantity,
             unit_cost: part.unit_cost,
             total_cost: part.total_cost,
+            is_gst_applicable: part.is_gst_applicable,
+            gst_rate: part.gst_rate,
+            gst_amount: part.gst_amount,
+            base_cost: part.base_cost,
           }));
 
         if (partsData.length > 0) {
@@ -497,54 +572,173 @@ export const MaintenanceDialog = ({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="labor_cost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Labor Cost (₹) *</FormLabel>
+            {/* Service Vendor */}
+            <FormField
+              control={form.control}
+              name="vendor_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Service Vendor</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      const vendor = vendors.find(v => v.id === value);
+                      setSelectedVendor(vendor || null);
+                      if (vendor?.gst_registered && vendor.default_gst_rate) {
+                        setIsGSTInvoice(true);
+                        setLaborGSTRate(vendor.default_gst_rate);
+                      }
+                    }} 
+                    value={field.value}
+                  >
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="Enter labor cost"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select vendor (optional)" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <SelectContent>
+                      <SelectItem value="no-vendor">No vendor</SelectItem>
+                      {vendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          {vendor.name} {vendor.gst_registered && <span className="text-xs text-muted-foreground">(GST)</span>}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="vendor_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Service Vendor</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select vendor (optional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="no-vendor">No vendor</SelectItem>
-                        {vendors.map((vendor) => (
-                          <SelectItem key={vendor.id} value={vendor.id}>
-                            {vendor.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+            {/* Labor Cost and GST Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Labor Cost & GST</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* GST Invoice Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <FormLabel>GST Invoice</FormLabel>
+                    <p className="text-sm text-muted-foreground">Is this a GST invoice?</p>
+                  </div>
+                  <Switch
+                    checked={isGSTInvoice}
+                    onCheckedChange={setIsGSTInvoice}
+                  />
+                </div>
+
+                {/* GST Type Selection */}
+                {isGSTInvoice && (
+                  <div className="space-y-3">
+                    <FormLabel>GST Type</FormLabel>
+                    <RadioGroup
+                      value={gstType}
+                      onValueChange={(value: 'inclusive' | 'exclusive') => setGstType(value)}
+                      className="flex gap-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="inclusive" id="inclusive" />
+                        <label htmlFor="inclusive" className="text-sm font-medium">
+                          GST Inclusive
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="exclusive" id="exclusive" />
+                        <label htmlFor="exclusive" className="text-sm font-medium">
+                          GST Exclusive
+                        </label>
+                      </div>
+                    </RadioGroup>
+                    
+                    {/* GST Rate Selection */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <FormLabel>GST Rate (%)</FormLabel>
+                        <Select 
+                          value={laborGSTRate.toString()} 
+                          onValueChange={(value) => setLaborGSTRate(parseFloat(value))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GST_RATES.map((rate) => (
+                              <SelectItem key={rate.value} value={rate.value.toString()}>
+                                {rate.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              />
-            </div>
+
+                {/* Labor Cost Input */}
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="labor_cost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {isGSTInvoice 
+                            ? `${gstType === 'inclusive' ? 'Total' : 'Base'} Labor Cost (₹) *`
+                            : 'Labor Cost (₹) *'
+                          }
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={isGSTInvoice 
+                              ? (gstType === 'inclusive' ? 'Enter total amount (incl. GST)' : 'Enter base amount (excl. GST)')
+                              : 'Enter labor cost'
+                            }
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* GST Breakdown Display */}
+                {isGSTInvoice && laborCost > 0 && (
+                  <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                    <h4 className="text-sm font-medium text-primary">GST Breakdown</h4>
+                    {(() => {
+                      const gstBreakdown = getGSTBreakdown({
+                        amount: laborCost,
+                        gstRate: laborGSTRate,
+                        type: gstType
+                      });
+                      return (
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span>Base Amount:</span>
+                            <span>{formatCurrency(gstBreakdown.baseAmount)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>GST ({laborGSTRate}%):</span>
+                            <span>{formatCurrency(gstBreakdown.gstAmount)}</span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between font-medium">
+                            <span>Total Amount:</span>
+                            <span>{formatCurrency(gstBreakdown.totalAmount)}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Photo Upload */}
             <div className="space-y-2">
@@ -599,52 +793,121 @@ export const MaintenanceDialog = ({
                 ) : (
                   <div className="space-y-4">
                     {partsUsed.map((part, index) => (
-                      <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 p-3 border rounded-lg">
-                        <Select
-                          value={part.part_id}
-                          onValueChange={(value) => updatePartUsed(index, 'part_id', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select part" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {parts.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
-                                {p.name} {p.part_number && `(${p.part_number})`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder="Qty"
-                          value={part.quantity}
-                          onChange={(e) => updatePartUsed(index, 'quantity', parseInt(e.target.value) || 1)}
-                        />
-                        
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="Unit Cost"
-                          value={part.unit_cost}
-                          onChange={(e) => updatePartUsed(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                        />
-                        
-                        <div className="flex items-center px-3 text-sm font-medium">
-                          ₹{part.total_cost.toFixed(2)}
+                      <div key={index} className="p-4 border rounded-lg space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                          <Select
+                            value={part.part_id}
+                            onValueChange={(value) => updatePartUsed(index, 'part_id', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select part" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {parts.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.name} {p.part_number && `(${p.part_number})`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="Qty"
+                            value={part.quantity}
+                            onChange={(e) => updatePartUsed(index, 'quantity', parseInt(e.target.value) || 1)}
+                          />
+                          
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={part.is_gst_applicable ? (part.gst_rate > 0 ? "Amount" : "Unit Cost") : "Unit Cost"}
+                            value={part.unit_cost}
+                            onChange={(e) => updatePartUsed(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                          />
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removePartUsed(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
-                        
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removePartUsed(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+
+                        {/* GST Section for Part */}
+                        <div className="space-y-3 pl-4 border-l-2 border-muted">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-xs">GST Applicable</FormLabel>
+                            </div>
+                            <Switch
+                              checked={part.is_gst_applicable}
+                              onCheckedChange={(checked) => updatePartUsed(index, 'is_gst_applicable', checked)}
+                            />
+                          </div>
+
+                          {part.is_gst_applicable && (
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <FormLabel className="text-xs">GST Rate (%)</FormLabel>
+                                <Select 
+                                  value={part.gst_rate.toString()} 
+                                  onValueChange={(value) => updatePartUsed(index, 'gst_rate', parseFloat(value))}
+                                >
+                                  <SelectTrigger className="h-8">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {GST_RATES.map((rate) => (
+                                      <SelectItem key={rate.value} value={rate.value.toString()}>
+                                        {rate.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Cost Summary for Part */}
+                        <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
+                          {part.is_gst_applicable && part.gst_rate > 0 && part.unit_cost > 0 ? (
+                            (() => {
+                              const gstBreakdown = getGSTBreakdown({
+                                amount: part.unit_cost,
+                                gstRate: part.gst_rate,
+                                type: 'inclusive' // Assuming inclusive for parts
+                              });
+                              const totalForQuantity = gstBreakdown.totalAmount * part.quantity;
+                              return (
+                                <div>
+                                  <div className="flex justify-between">
+                                    <span>Base (per unit):</span>
+                                    <span>{formatCurrency(gstBreakdown.baseAmount)}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>GST ({part.gst_rate}%):</span>
+                                    <span>{formatCurrency(gstBreakdown.gstAmount)}</span>
+                                  </div>
+                                  <div className="flex justify-between font-medium">
+                                    <span>Total ({part.quantity} units):</span>
+                                    <span>{formatCurrency(totalForQuantity)}</span>
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="flex justify-between font-medium">
+                              <span>Total Cost:</span>
+                              <span>₹{part.total_cost.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                     
