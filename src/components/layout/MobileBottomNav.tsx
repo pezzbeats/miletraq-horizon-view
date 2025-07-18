@@ -26,9 +26,9 @@ const bottomNavItems = [
     icon: Users,
   },
   {
-    title: 'Maintenance',
-    url: '/maintenance',
-    icon: Wrench,
+    title: 'Fuel Log',
+    url: '/fuel-log',
+    icon: Fuel,
   },
   {
     title: 'Analytics',
