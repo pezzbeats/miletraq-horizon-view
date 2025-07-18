@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
+import { useAlerts } from '@/hooks/useAlerts';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { ChartContainer } from '@/components/dashboard/ChartContainer';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
@@ -89,6 +90,8 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
   const { profile } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { alerts, loading: alertsLoading } = useAlerts(); // Super admin sees all alerts
+  const { currentSubsidiary } = useSubsidiary();
 
   useEffect(() => {
     fetchDashboardData();
@@ -327,7 +330,7 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
         {/* Right Sidebar */}
         <div className="space-y-6">
           <AlertsPanel 
-            alerts={data.alerts}
+            alerts={alerts}
             onViewDetails={(alert) => console.log('View alert:', alert)}
             onMarkAsRead={(alertId) => console.log('Mark as read:', alertId)}
           />

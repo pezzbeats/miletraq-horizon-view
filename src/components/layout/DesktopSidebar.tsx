@@ -84,6 +84,12 @@ const navigationItems: NavItem[] = [
     icon: BarChart3,
   },
   {
+    title: 'Subsidiaries',
+    url: '/subsidiaries',
+    icon: Landmark,
+    roles: ['admin'],
+  },
+  {
     title: 'Users',
     url: '/users',
     icon: UserCog,

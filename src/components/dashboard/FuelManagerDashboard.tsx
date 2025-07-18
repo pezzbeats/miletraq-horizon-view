@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
+import { useAlerts } from '@/hooks/useAlerts';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { ChartContainer } from '@/components/dashboard/ChartContainer';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
