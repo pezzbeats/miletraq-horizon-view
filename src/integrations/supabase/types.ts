@@ -471,6 +471,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_odometer_readings_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "odometer_readings_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
