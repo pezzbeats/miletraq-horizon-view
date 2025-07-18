@@ -71,7 +71,7 @@ export type Database = {
           period_start: string
           remaining_amount: number | null
           status: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           time_period: string
           updated_at: string | null
           variance_percentage: number | null
@@ -88,7 +88,7 @@ export type Database = {
           period_start?: string
           remaining_amount?: number | null
           status?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           time_period?: string
           updated_at?: string | null
           variance_percentage?: number | null
@@ -105,7 +105,7 @@ export type Database = {
           period_start?: string
           remaining_amount?: number | null
           status?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           time_period?: string
           updated_at?: string | null
           variance_percentage?: number | null
@@ -131,7 +131,7 @@ export type Database = {
           license_number: string | null
           name: string
           phone: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
         }
         Insert: {
@@ -144,7 +144,7 @@ export type Database = {
           license_number?: string | null
           name: string
           phone?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
         }
         Update: {
@@ -157,7 +157,7 @@ export type Database = {
           license_number?: string | null
           name?: string
           phone?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
         }
         Relationships: [
@@ -184,7 +184,7 @@ export type Database = {
           odometer_reading: number
           previous_reading: number | null
           rate_per_liter: number | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           total_cost: number | null
           updated_at: string | null
           vehicle_id: string
@@ -203,7 +203,7 @@ export type Database = {
           odometer_reading: number
           previous_reading?: number | null
           rate_per_liter?: number | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           total_cost?: number | null
           updated_at?: string | null
           vehicle_id: string
@@ -222,7 +222,7 @@ export type Database = {
           odometer_reading?: number
           previous_reading?: number | null
           rate_per_liter?: number | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           total_cost?: number | null
           updated_at?: string | null
           vehicle_id?: string
@@ -267,7 +267,7 @@ export type Database = {
           invoice_number: string | null
           purchase_date: string
           rate_per_liter: number
-          subsidiary_id: string | null
+          subsidiary_id: string
           total_cost: number
           updated_at: string | null
           vendor_id: string | null
@@ -280,7 +280,7 @@ export type Database = {
           invoice_number?: string | null
           purchase_date: string
           rate_per_liter: number
-          subsidiary_id?: string | null
+          subsidiary_id: string
           total_cost: number
           updated_at?: string | null
           vendor_id?: string | null
@@ -293,7 +293,7 @@ export type Database = {
           invoice_number?: string | null
           purchase_date?: string
           rate_per_liter?: number
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           total_cost?: number
           updated_at?: string | null
           vendor_id?: string | null
@@ -323,7 +323,7 @@ export type Database = {
           id: string
           last_updated: string | null
           low_level_threshold: number | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_by: string
         }
         Insert: {
@@ -332,7 +332,7 @@ export type Database = {
           id?: string
           last_updated?: string | null
           low_level_threshold?: number | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_by: string
         }
         Update: {
@@ -341,7 +341,7 @@ export type Database = {
           id?: string
           last_updated?: string | null
           low_level_threshold?: number | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_by?: string
         }
         Relationships: [
@@ -362,7 +362,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
         }
         Insert: {
@@ -372,7 +372,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
         }
         Update: {
@@ -382,7 +382,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
         }
         Relationships: [
@@ -414,7 +414,7 @@ export type Database = {
           next_service_km: number | null
           odometer_reading: number | null
           photo_url: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           total_cost: number
           updated_at: string | null
           vehicle_id: string
@@ -438,7 +438,7 @@ export type Database = {
           next_service_km?: number | null
           odometer_reading?: number | null
           photo_url?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           total_cost: number
           updated_at?: string | null
           vehicle_id: string
@@ -462,7 +462,7 @@ export type Database = {
           next_service_km?: number | null
           odometer_reading?: number | null
           photo_url?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           total_cost?: number
           updated_at?: string | null
           vehicle_id?: string
@@ -562,7 +562,7 @@ export type Database = {
           notes: string | null
           odometer_reading: number
           reading_date: string
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
           vehicle_id: string
         }
@@ -574,7 +574,7 @@ export type Database = {
           notes?: string | null
           odometer_reading: number
           reading_date: string
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
           vehicle_id: string
         }
@@ -586,7 +586,7 @@ export type Database = {
           notes?: string | null
           odometer_reading?: number
           reading_date?: string
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
           vehicle_id?: string
         }
@@ -624,7 +624,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           part_number: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
         }
         Insert: {
@@ -636,7 +636,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           part_number?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
         }
         Update: {
@@ -648,7 +648,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           part_number?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
         }
         Relationships: [
@@ -798,7 +798,7 @@ export type Database = {
           issuing_authority: string | null
           remarks: string | null
           status: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
           vehicle_id: string
         }
@@ -816,7 +816,7 @@ export type Database = {
           issuing_authority?: string | null
           remarks?: string | null
           status?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
           vehicle_id: string
         }
@@ -834,7 +834,7 @@ export type Database = {
           issuing_authority?: string | null
           remarks?: string | null
           status?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
           vehicle_id?: string
         }
@@ -870,7 +870,7 @@ export type Database = {
           purchase_date: string | null
           rc_expiry: string | null
           status: Database["public"]["Enums"]["vehicle_status"] | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           tank_capacity: number | null
           updated_at: string | null
           vehicle_number: string
@@ -890,7 +890,7 @@ export type Database = {
           purchase_date?: string | null
           rc_expiry?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           tank_capacity?: number | null
           updated_at?: string | null
           vehicle_number: string
@@ -910,7 +910,7 @@ export type Database = {
           purchase_date?: string | null
           rc_expiry?: string | null
           status?: Database["public"]["Enums"]["vehicle_status"] | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           tank_capacity?: number | null
           updated_at?: string | null
           vehicle_number?: string
@@ -947,7 +947,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           phone: string | null
-          subsidiary_id: string | null
+          subsidiary_id: string
           updated_at: string | null
           vendor_type: string[] | null
         }
@@ -964,7 +964,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           phone?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id: string
           updated_at?: string | null
           vendor_type?: string[] | null
         }
@@ -981,7 +981,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           phone?: string | null
-          subsidiary_id?: string | null
+          subsidiary_id?: string
           updated_at?: string | null
           vendor_type?: string[] | null
         }
