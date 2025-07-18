@@ -439,6 +439,7 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string
+          current_location: string | null
           id: string
           notes: string | null
           odometer_reading: number
@@ -449,6 +450,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by: string
+          current_location?: string | null
           id?: string
           notes?: string | null
           odometer_reading: number
@@ -459,6 +461,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           created_by?: string
+          current_location?: string | null
           id?: string
           notes?: string | null
           odometer_reading?: number
