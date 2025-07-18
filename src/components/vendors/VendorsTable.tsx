@@ -149,14 +149,17 @@ export const VendorsTable = ({
   };
 
   const getVendorTypeBadge = (types: string[]) => {
-    if (types.includes('both')) {
-      return <Badge className="bg-purple-100 text-purple-800">Both</Badge>;
+    if (types.includes('parts_labour')) {
+      return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Parts & Labour</Badge>;
     }
     if (types.includes('fuel')) {
-      return <Badge className="bg-blue-100 text-blue-800">Fuel</Badge>;
+      return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Fuel</Badge>;
     }
     if (types.includes('parts')) {
-      return <Badge className="bg-green-100 text-green-800">Parts</Badge>;
+      return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Parts</Badge>;
+    }
+    if (types.includes('labour')) {
+      return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Labour</Badge>;
     }
     return <Badge variant="outline">{types.join(", ")}</Badge>;
   };
@@ -227,7 +230,8 @@ export const VendorsTable = ({
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="fuel">Fuel</SelectItem>
               <SelectItem value="parts">Parts</SelectItem>
-              <SelectItem value="both">Both</SelectItem>
+              <SelectItem value="labour">Labour</SelectItem>
+              <SelectItem value="parts_labour">Parts & Labour</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>

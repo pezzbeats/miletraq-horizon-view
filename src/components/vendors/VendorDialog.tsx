@@ -57,7 +57,8 @@ interface VendorDialogProps {
 const VENDOR_TYPES = [
   { id: "fuel", label: "Fuel" },
   { id: "parts", label: "Parts" },
-  { id: "both", label: "Both" },
+  { id: "labour", label: "Labour" },
+  { id: "parts_labour", label: "Parts & Labour" },
 ];
 
 export const VendorDialog = ({
@@ -220,16 +221,16 @@ export const VendorDialog = ({
   const handleVendorTypeChange = (typeId: string, checked: boolean) => {
     const currentTypes = form.getValues('vendor_type');
     
-    if (typeId === 'both') {
-      // If selecting "Both", clear other selections and set only "both"
+    if (typeId === 'parts_labour') {
+      // If selecting "Parts & Labour", clear other selections and set only "parts_labour"
       if (checked) {
-        form.setValue('vendor_type', ['both']);
+        form.setValue('vendor_type', ['parts_labour']);
       } else {
         form.setValue('vendor_type', []);
       }
     } else {
-      // If selecting fuel or parts, remove "both" and manage individual selections
-      let newTypes = currentTypes.filter(t => t !== 'both');
+      // If selecting individual types, remove "parts_labour" and manage individual selections
+      let newTypes = currentTypes.filter(t => t !== 'parts_labour');
       
       if (checked) {
         newTypes = [...newTypes, typeId];
@@ -308,7 +309,7 @@ export const VendorDialog = ({
                           onCheckedChange={(checked) => 
                             handleVendorTypeChange(type.id, checked as boolean)
                           }
-                          disabled={type.id !== 'both' && watchedVendorType?.includes('both')}
+                          disabled={type.id !== 'parts_labour' && watchedVendorType?.includes('parts_labour')}
                         />
                         <label htmlFor={type.id} className="text-sm font-medium">
                           {type.label}

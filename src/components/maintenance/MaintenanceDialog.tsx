@@ -152,9 +152,9 @@ export const MaintenanceDialog = ({
 
         if (vehiclesRes.data) setVehicles(vehiclesRes.data);
         if (vendorsRes.data) {
-          // Filter vendors that handle parts or both
+          // Filter vendors that handle labour or parts_labour (for service work)
           const filteredVendors = vendorsRes.data.filter(v => 
-            v.vendor_type.includes('parts') || v.vendor_type.includes('both')
+            v.vendor_type.includes('labour') || v.vendor_type.includes('parts_labour')
           );
           setVendors(filteredVendors);
         }

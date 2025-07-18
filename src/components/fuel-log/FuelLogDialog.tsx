@@ -128,7 +128,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         const [vehiclesRes, driversRes, vendorsRes, tankRes] = await Promise.all([
           supabase.from('vehicles').select('*').eq('status', 'active').order('vehicle_number'),
           supabase.from('drivers').select('*').eq('is_active', true).order('name'),
-          supabase.from('vendors').select('*').eq('is_active', true).contains('vendor_type', ['fuel']),
+          supabase.from('vendors').select('*').eq('is_active', true).overlaps('vendor_type', ['fuel']),
           supabase.from('fuel_tank').select('*').limit(1).single(),
         ]);
 
