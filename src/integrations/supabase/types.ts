@@ -21,10 +21,15 @@ export type Database = {
           category: string
           created_at: string | null
           created_by: string
+          description: string | null
           id: string
-          month: number
+          period_end: string
+          period_start: string
+          remaining_amount: number | null
+          status: string | null
+          time_period: string
           updated_at: string | null
-          year: number
+          variance_percentage: number | null
         }
         Insert: {
           actual_amount?: number | null
@@ -32,10 +37,15 @@ export type Database = {
           category: string
           created_at?: string | null
           created_by: string
+          description?: string | null
           id?: string
-          month: number
+          period_end?: string
+          period_start?: string
+          remaining_amount?: number | null
+          status?: string | null
+          time_period?: string
           updated_at?: string | null
-          year: number
+          variance_percentage?: number | null
         }
         Update: {
           actual_amount?: number | null
@@ -43,10 +53,15 @@ export type Database = {
           category?: string
           created_at?: string | null
           created_by?: string
+          description?: string | null
           id?: string
-          month?: number
+          period_end?: string
+          period_start?: string
+          remaining_amount?: number | null
+          status?: string | null
+          time_period?: string
           updated_at?: string | null
-          year?: number
+          variance_percentage?: number | null
         }
         Relationships: []
       }
@@ -730,6 +745,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_actual_spending: {
+        Args: { p_category: string; p_start_date: string; p_end_date: string }
+        Returns: number
+      }
       calculate_document_status: {
         Args: { expiry_date: string }
         Returns: string

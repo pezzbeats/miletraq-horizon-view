@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Vehicles from "./pages/Vehicles";
 import Drivers from "./pages/Drivers";
 import Documents from "./pages/Documents";
+import Budget from "./pages/Budget";
 import FuelLog from "./pages/FuelLog";
 import TankStatus from "./pages/TankStatus";
 import Maintenance from "./pages/Maintenance";
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/vehicles" element={<Vehicles />} />
                 <Route path="/drivers" element={<Drivers />} />
                 <Route path="/documents" element={<Documents />} />
+                <Route path="/budget" element={<Budget />} />
             <Route path="/fuel-log" element={<FuelLog />} />
             <Route path="/tank-status" element={<TankStatus />} />
             <Route path="/maintenance" element={<Maintenance />} />
