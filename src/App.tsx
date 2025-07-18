@@ -19,6 +19,7 @@ import CategoriesMaster from "./pages/CategoriesMaster";
 import PartsMaster from "./pages/PartsMaster";
 import Vendors from "./pages/Vendors";
 import Odometer from "./pages/Odometer";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/parts-master" element={<PartsMaster />} />
                 <Route path="/vendors" element={<Vendors />} />
                 <Route path="/budget" element={<Budget />} />
+                <Route path="/analytics" element={<Analytics />} />
                 {/* Add all other protected routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />
