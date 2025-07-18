@@ -8,13 +8,7 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { SubsidiaryOverview } from '@/components/dashboard/SubsidiaryOverview';
-import { 
-  FuelConsumptionChart, 
-  CostAnalysisChart, 
-  VehicleEfficiencyChart,
-  BudgetPerformanceChart,
-  TankLevelGauge 
-} from '@/components/dashboard/Charts';
+import { Charts } from '@/components/dashboard/Charts';
 import { 
   Car, 
   Fuel, 
@@ -325,24 +319,9 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
         {/* Charts Section */}
         <div className="lg:col-span-3 space-y-6">
           {/* Top Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartContainer title="Cross-Subsidiary Fuel Consumption" description="Fuel usage trends across all subsidiaries">
-              <FuelConsumptionChart data={data.charts.fuelConsumption} />
-            </ChartContainer>
-            <ChartContainer title="Consolidated Cost Analysis" description="Cost breakdown by category and subsidiary">
-              <CostAnalysisChart data={data.charts.costAnalysis} />
-            </ChartContainer>
-          </div>
-
-          {/* Bottom Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartContainer title="Fleet Efficiency Comparison" description="Vehicle performance across subsidiaries">
-              <VehicleEfficiencyChart data={data.charts.vehicleEfficiency} />
-            </ChartContainer>
-            <ChartContainer title="Budget Performance Overview" description="Budget vs actual spending by category">
-              <BudgetPerformanceChart data={data.charts.budgetPerformance} />
-            </ChartContainer>
-          </div>
+          <ChartContainer title="Consolidated Analytics" description="Multi-fuel analytics across all subsidiaries">
+            <Charts />
+          </ChartContainer>
         </div>
 
         {/* Right Sidebar */}

@@ -6,7 +6,7 @@ import { ChartContainer } from '@/components/dashboard/ChartContainer';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
-import { TankLevelGauge, FuelConsumptionChart, CostAnalysisChart } from '@/components/dashboard/Charts';
+import { Charts } from '@/components/dashboard/Charts';
 import { 
   Fuel, 
   Gauge,
@@ -248,11 +248,12 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex justify-center">
-                  <TankLevelGauge
-                    currentLevel={data.tank.currentLevel}
-                    capacity={data.tank.capacity}
-                    lowThreshold={data.tank.lowThreshold}
-                  />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600">
+                      {((data.tank.currentLevel / data.tank.capacity) * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Tank Level</div>
+                  </div>
                 </div>
                 <div className="md:col-span-2 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -284,11 +285,8 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartContainer title="Fuel Consumption Patterns" description="Daily fuel usage and costs">
-              <FuelConsumptionChart data={data.charts.fuelConsumption} />
-            </ChartContainer>
-            <ChartContainer title="Monthly Fuel Costs" description="Fuel cost trends over time">
-              <CostAnalysisChart data={data.charts.costAnalysis} />
+            <ChartContainer title="Fuel Analytics" description="Fuel consumption and cost trends">
+              <Charts />
             </ChartContainer>
           </div>
         </div>

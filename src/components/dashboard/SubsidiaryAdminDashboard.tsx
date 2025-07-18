@@ -7,12 +7,7 @@ import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
-import { 
-  FuelConsumptionChart, 
-  CostAnalysisChart, 
-  FuelEfficiencyTrendChart,
-  BudgetPerformanceChart
-} from '@/components/dashboard/Charts';
+import { Charts } from '@/components/dashboard/Charts';
 import { 
   Car, 
   Fuel, 
@@ -287,25 +282,10 @@ export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: Subsidiar
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Charts Section */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Top Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartContainer title="Fuel Consumption Trend" description="Daily fuel usage for this subsidiary">
-              <FuelConsumptionChart data={data.charts.fuelConsumption} />
-            </ChartContainer>
-            <ChartContainer title="Cost Analysis" description="Monthly cost breakdown by category">
-              <CostAnalysisChart data={data.charts.costAnalysis} />
-            </ChartContainer>
-          </div>
-
-          {/* Bottom Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartContainer title="Fleet Efficiency Trend" description="Average fuel efficiency over time">
-              <FuelEfficiencyTrendChart data={data.charts.efficiencyTrend} />
-            </ChartContainer>
-            <ChartContainer title="Budget Performance" description="Budget vs actual spending">
-              <BudgetPerformanceChart data={data.charts.budgetPerformance} />
-            </ChartContainer>
-          </div>
+          {/* Analytics Dashboard */}
+          <ChartContainer title="Subsidiary Analytics" description="Multi-fuel analytics for this subsidiary">
+            <Charts />
+          </ChartContainer>
         </div>
 
         {/* Right Sidebar */}

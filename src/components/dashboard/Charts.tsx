@@ -61,7 +61,10 @@ export const Charts = () => {
       if (!acc[date]) {
         acc[date] = { date, diesel: 0, petrol: 0, cng: 0 };
       }
-      acc[date][log.fuel_type as keyof typeof acc[string]] += log.fuel_volume;
+      const fuelType = log.fuel_type as 'diesel' | 'petrol' | 'cng';
+      if (fuelType && ['diesel', 'petrol', 'cng'].includes(fuelType)) {
+        acc[date][fuelType] += log.fuel_volume;
+      }
       return acc;
     }, {} as Record<string, {date: string, diesel: number, petrol: number, cng: number}>);
 
