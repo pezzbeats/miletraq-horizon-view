@@ -275,7 +275,7 @@ export const MaintenanceDialog = ({
         odometer_reading: values.odometer_reading || null,
         labor_cost: values.labor_cost,
         total_cost: totalCost,
-        vendor_id: values.vendor_id || null,
+        vendor_id: values.vendor_id === "no-vendor" ? null : values.vendor_id || null,
         photo_url: uploadedPhoto,
         created_by: user.id,
       };
@@ -286,7 +286,7 @@ export const MaintenanceDialog = ({
         // Update existing record
         const { error } = await supabase
           .from('maintenance_log')
-          .update(maintenanceData)
+          .update(maintenanceData as any)
           .eq('id', maintenanceRecord.id);
         
         if (error) throw error;
@@ -301,7 +301,7 @@ export const MaintenanceDialog = ({
         // Create new record
         const { data, error } = await supabase
           .from('maintenance_log')
-          .insert([maintenanceData])
+          .insert([maintenanceData as any])
           .select()
           .single();
         

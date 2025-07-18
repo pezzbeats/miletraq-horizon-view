@@ -690,7 +690,7 @@ export type Database = {
     Enums: {
       document_type: "rc" | "insurance" | "permit" | "puc" | "license" | "other"
       fuel_type: "petrol" | "diesel" | "cng" | "electric"
-      maintenance_type: "breakdown" | "preventive"
+      maintenance_type: "breakdown" | "preventive" | "scheduled"
       user_role: "admin" | "manager" | "fuel_manager" | "viewer"
       vehicle_status: "active" | "inactive" | "maintenance" | "sold"
     }
@@ -822,7 +822,7 @@ export const Constants = {
     Enums: {
       document_type: ["rc", "insurance", "permit", "puc", "license", "other"],
       fuel_type: ["petrol", "diesel", "cng", "electric"],
-      maintenance_type: ["breakdown", "preventive"],
+      maintenance_type: ["breakdown", "preventive", "scheduled"],
       user_role: ["admin", "manager", "fuel_manager", "viewer"],
       vehicle_status: ["active", "inactive", "maintenance", "sold"],
     },
