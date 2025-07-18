@@ -177,6 +177,7 @@ export type Database = {
           date: string
           driver_id: string | null
           fuel_source: string
+          fuel_type: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume: number
           id: string
           km_driven: number | null
@@ -186,6 +187,7 @@ export type Database = {
           rate_per_liter: number | null
           subsidiary_id: string
           total_cost: number | null
+          unit: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at: string | null
           vehicle_id: string
           vendor_id: string | null
@@ -196,6 +198,7 @@ export type Database = {
           date: string
           driver_id?: string | null
           fuel_source: string
+          fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume: number
           id?: string
           km_driven?: number | null
@@ -205,6 +208,7 @@ export type Database = {
           rate_per_liter?: number | null
           subsidiary_id: string
           total_cost?: number | null
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
           vehicle_id: string
           vendor_id?: string | null
@@ -215,6 +219,7 @@ export type Database = {
           date?: string
           driver_id?: string | null
           fuel_source?: string
+          fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume?: number
           id?: string
           km_driven?: number | null
@@ -224,6 +229,7 @@ export type Database = {
           rate_per_liter?: number | null
           subsidiary_id?: string
           total_cost?: number | null
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
           vehicle_id?: string
           vendor_id?: string | null
@@ -263,12 +269,15 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string
+          fuel_type: Database["public"]["Enums"]["fuel_type_enum"] | null
           id: string
           invoice_number: string | null
           purchase_date: string
           rate_per_liter: number
           subsidiary_id: string
+          tank_id: string | null
           total_cost: number
+          unit: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at: string | null
           vendor_id: string | null
           volume: number
@@ -276,12 +285,15 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by: string
+          fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           id?: string
           invoice_number?: string | null
           purchase_date: string
           rate_per_liter: number
           subsidiary_id: string
+          tank_id?: string | null
           total_cost: number
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
           vendor_id?: string | null
           volume: number
@@ -289,12 +301,15 @@ export type Database = {
         Update: {
           created_at?: string | null
           created_by?: string
+          fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           id?: string
           invoice_number?: string | null
           purchase_date?: string
           rate_per_liter?: number
           subsidiary_id?: string
+          tank_id?: string | null
           total_cost?: number
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
           vendor_id?: string | null
           volume?: number
@@ -305,6 +320,13 @@ export type Database = {
             columns: ["subsidiary_id"]
             isOneToOne: false
             referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_purchases_tank_id_fkey"
+            columns: ["tank_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_tanks"
             referencedColumns: ["id"]
           },
           {
@@ -353,6 +375,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fuel_tanks: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          created_by: string
+          current_volume: number
+          fuel_type: Database["public"]["Enums"]["fuel_type_enum"]
+          id: string
+          is_active: boolean | null
+          low_threshold: number
+          subsidiary_id: string
+          tank_location: string | null
+          unit: Database["public"]["Enums"]["fuel_unit_enum"]
+          updated_at: string | null
+        }
+        Insert: {
+          capacity: number
+          created_at?: string | null
+          created_by: string
+          current_volume?: number
+          fuel_type: Database["public"]["Enums"]["fuel_type_enum"]
+          id?: string
+          is_active?: boolean | null
+          low_threshold?: number
+          subsidiary_id: string
+          tank_location?: string | null
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"]
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          created_by?: string
+          current_volume?: number
+          fuel_type?: Database["public"]["Enums"]["fuel_type_enum"]
+          id?: string
+          is_active?: boolean | null
+          low_threshold?: number
+          subsidiary_id?: string
+          tank_location?: string | null
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"]
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       maintenance_categories: {
         Row: {
@@ -860,7 +927,9 @@ export type Database = {
           created_at: string | null
           created_by: string
           default_driver_id: string | null
+          default_fuel_type: string | null
           fuel_type: Database["public"]["Enums"]["fuel_type"]
+          fuel_types: Json | null
           id: string
           insurance_expiry: string | null
           make: string
@@ -872,6 +941,9 @@ export type Database = {
           status: Database["public"]["Enums"]["vehicle_status"] | null
           subsidiary_id: string
           tank_capacity: number | null
+          tank_capacity_cng: number | null
+          tank_capacity_diesel: number | null
+          tank_capacity_petrol: number | null
           updated_at: string | null
           vehicle_number: string
           year: number | null
@@ -880,7 +952,9 @@ export type Database = {
           created_at?: string | null
           created_by: string
           default_driver_id?: string | null
+          default_fuel_type?: string | null
           fuel_type: Database["public"]["Enums"]["fuel_type"]
+          fuel_types?: Json | null
           id?: string
           insurance_expiry?: string | null
           make: string
@@ -892,6 +966,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["vehicle_status"] | null
           subsidiary_id: string
           tank_capacity?: number | null
+          tank_capacity_cng?: number | null
+          tank_capacity_diesel?: number | null
+          tank_capacity_petrol?: number | null
           updated_at?: string | null
           vehicle_number: string
           year?: number | null
@@ -900,7 +977,9 @@ export type Database = {
           created_at?: string | null
           created_by?: string
           default_driver_id?: string | null
+          default_fuel_type?: string | null
           fuel_type?: Database["public"]["Enums"]["fuel_type"]
+          fuel_types?: Json | null
           id?: string
           insurance_expiry?: string | null
           make?: string
@@ -912,6 +991,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["vehicle_status"] | null
           subsidiary_id?: string
           tank_capacity?: number | null
+          tank_capacity_cng?: number | null
+          tank_capacity_diesel?: number | null
+          tank_capacity_petrol?: number | null
           updated_at?: string | null
           vehicle_number?: string
           year?: number | null
@@ -1032,6 +1114,8 @@ export type Database = {
     Enums: {
       document_type: "rc" | "insurance" | "permit" | "puc" | "license" | "other"
       fuel_type: "petrol" | "diesel" | "cng" | "electric"
+      fuel_type_enum: "diesel" | "petrol" | "cng"
+      fuel_unit_enum: "liters" | "kg"
       maintenance_type: "breakdown" | "preventive" | "scheduled"
       user_role: "admin" | "manager" | "fuel_manager" | "viewer"
       vehicle_status: "active" | "inactive" | "maintenance" | "sold"
@@ -1164,6 +1248,8 @@ export const Constants = {
     Enums: {
       document_type: ["rc", "insurance", "permit", "puc", "license", "other"],
       fuel_type: ["petrol", "diesel", "cng", "electric"],
+      fuel_type_enum: ["diesel", "petrol", "cng"],
+      fuel_unit_enum: ["liters", "kg"],
       maintenance_type: ["breakdown", "preventive", "scheduled"],
       user_role: ["admin", "manager", "fuel_manager", "viewer"],
       vehicle_status: ["active", "inactive", "maintenance", "sold"],

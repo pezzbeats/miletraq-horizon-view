@@ -1,356 +1,348 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, Droplets, TrendingDown, TrendingUp, Clock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Fuel, Droplets, Zap, TrendingDown, TrendingUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { format, subDays, differenceInDays } from "date-fns";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 interface FuelTank {
   id: string;
-  current_level: number;
+  fuel_type: 'diesel' | 'petrol' | 'cng';
+  current_volume: number;
   capacity: number;
-  low_level_threshold: number;
-  last_updated: string;
+  low_threshold: number;
+  unit: 'liters' | 'kg';
+  tank_location: string;
+  updated_at: string;
 }
 
-interface FuelActivity {
-  id: string;
-  date: string;
-  type: "purchase" | "consumption";
-  volume: number;
-  source?: string;
-  vehicle?: {
-    vehicle_number: string;
-  };
-  vendor?: {
-    name: string;
-  };
+interface ConsumptionData {
+  fuel_type: string;
+  daily_rate: number;
+  weekly_total: number;
+  monthly_total: number;
+  unit: string;
 }
 
-interface ConsumptionStats {
-  dailyAverage: number;
-  weeklyTotal: number;
-  monthlyTotal: number;
-  daysRemaining: number;
-}
-
-const TankStatus = () => {
-  const [tank, setTank] = useState<FuelTank | null>(null);
-  const [recentActivity, setRecentActivity] = useState<FuelActivity[]>([]);
-  const [stats, setStats] = useState<ConsumptionStats>({
-    dailyAverage: 0,
-    weeklyTotal: 0,
-    monthlyTotal: 0,
-    daysRemaining: 0,
-  });
+export default function TankStatus() {
+  const [tanks, setTanks] = useState<FuelTank[]>([]);
+  const [consumption, setConsumption] = useState<ConsumptionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { currentSubsidiary } = useSubsidiary();
+
+  useEffect(() => {
+    if (currentSubsidiary?.id) {
+      fetchTankData();
+      fetchConsumptionData();
+    }
+  }, [currentSubsidiary]);
 
   const fetchTankData = async () => {
     try {
-      setLoading(true);
-      
-      // Fetch tank status
-      const { data: tankData, error: tankError } = await supabase
-        .from('fuel_tank')
+      const { data, error } = await supabase
+        .from('fuel_tanks')
         .select('*')
-        .limit(1)
-        .single();
+        .eq('subsidiary_id', currentSubsidiary?.id)
+        .eq('is_active', true)
+        .order('fuel_type');
 
-      if (tankError && tankError.code !== 'PGRST116') {
-        throw tankError;
-      }
-
-      setTank(tankData);
-
-      // Fetch recent purchases (last 10)
-      const { data: purchases, error: purchasesError } = await supabase
-        .from('fuel_purchases')
-        .select(`
-          id,
-          purchase_date,
-          volume,
-          vendors (name)
-        `)
-        .order('purchase_date', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (purchasesError) throw purchasesError;
-
-      // Fetch recent fuel consumption (last 10 internal tank entries)
-      const { data: consumption, error: consumptionError } = await supabase
-        .from('fuel_log')
-        .select(`
-          id,
-          date,
-          fuel_volume,
-          fuel_source,
-          vehicles (vehicle_number)
-        `)
-        .eq('fuel_source', 'internal_tank')
-        .order('date', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (consumptionError) throw consumptionError;
-
-      // Combine and format activity
-      const activity: FuelActivity[] = [
-        ...(purchases || []).map(p => ({
-          id: p.id,
-          date: p.purchase_date,
-          type: "purchase" as const,
-          volume: p.volume,
-          source: "Fuel Purchase",
-          vendor: p.vendors,
-        })),
-        ...(consumption || []).map(c => ({
-          id: c.id,
-          date: c.date,
-          type: "consumption" as const,
-          volume: c.fuel_volume,
-          source: "Internal Tank",
-          vehicle: c.vehicles,
-        })),
-      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-      setRecentActivity(activity.slice(0, 10));
-
-      // Calculate consumption statistics
-      if (consumption && consumption.length > 0) {
-        const weekAgo = format(subDays(new Date(), 7), 'yyyy-MM-dd');
-        const monthAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
-
-        const weeklyConsumption = consumption
-          .filter(c => c.date >= weekAgo)
-          .reduce((sum, c) => sum + c.fuel_volume, 0);
-
-        const monthlyConsumption = consumption
-          .filter(c => c.date >= monthAgo)
-          .reduce((sum, c) => sum + c.fuel_volume, 0);
-
-        const dailyAverage = monthlyConsumption / 30;
-        const daysRemaining = dailyAverage > 0 ? Math.floor((tankData?.current_level || 0) / dailyAverage) : 0;
-
-        setStats({
-          dailyAverage,
-          weeklyTotal: weeklyConsumption,
-          monthlyTotal: monthlyConsumption,
-          daysRemaining,
-        });
-      }
-
+      if (error) throw error;
+      setTanks(data || []);
     } catch (error) {
       console.error('Error fetching tank data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load tank status",
-        variant: "destructive",
+    }
+  };
+
+  const fetchConsumptionData = async () => {
+    try {
+      setLoading(false);
+      // Fetch fuel consumption data for analytics
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('fuel_log')
+        .select('fuel_type, fuel_volume, date, unit')
+        .eq('subsidiary_id', currentSubsidiary?.id)
+        .eq('fuel_source', 'internal_tank')
+        .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      // Process consumption data
+      const consumptionByType = (data || []).reduce((acc, log) => {
+        const type = log.fuel_type || 'diesel';
+        if (!acc[type]) {
+          acc[type] = { volumes: [], unit: log.unit || 'liters' };
+        }
+        acc[type].volumes.push({
+          volume: log.fuel_volume,
+          date: new Date(log.date)
+        });
+        return acc;
+      }, {} as Record<string, { volumes: Array<{volume: number, date: Date}>, unit: string }>);
+
+      const processedConsumption = Object.entries(consumptionByType).map(([fuel_type, data]) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 7);
+
+        const dailyVolumes = data.volumes.filter(v => v.date >= yesterday);
+        const weeklyVolumes = data.volumes.filter(v => v.date >= weekAgo);
+        const monthlyVolumes = data.volumes;
+
+        return {
+          fuel_type,
+          daily_rate: dailyVolumes.reduce((sum, v) => sum + v.volume, 0),
+          weekly_total: weeklyVolumes.reduce((sum, v) => sum + v.volume, 0),
+          monthly_total: monthlyVolumes.reduce((sum, v) => sum + v.volume, 0),
+          unit: data.unit
+        };
       });
+
+      setConsumption(processedConsumption);
+    } catch (error) {
+      console.error('Error fetching consumption data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTankData();
-  }, []);
+  const getFuelIcon = (fuelType: string) => {
+    switch (fuelType) {
+      case 'diesel': return <Fuel className="h-6 w-6 text-blue-600" />;
+      case 'petrol': return <Droplets className="h-6 w-6 text-green-600" />;
+      case 'cng': return <Zap className="h-6 w-6 text-orange-600" />;
+      default: return <Fuel className="h-6 w-6" />;
+    }
+  };
+
+  const getFuelColor = (fuelType: string) => {
+    switch (fuelType) {
+      case 'diesel': return 'blue';
+      case 'petrol': return 'green';
+      case 'cng': return 'orange';
+      default: return 'gray';
+    }
+  };
+
+  const getStatusColor = (percentage: number) => {
+    if (percentage > 50) return 'text-green-600';
+    if (percentage > 20) return 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage > 50) return 'bg-green-500';
+    if (percentage > 20) return 'bg-orange-500';
+    return 'bg-red-500';
+  };
+
+  const calculateDaysRemaining = (currentVolume: number, dailyConsumption: number) => {
+    if (dailyConsumption <= 0) return '∞';
+    return Math.floor(currentVolume / dailyConsumption).toString();
+  };
 
   if (loading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-96 bg-muted rounded"></div>
-            <div className="h-96 bg-muted rounded"></div>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Tank Status</h1>
+            <p className="text-muted-foreground">Monitor fuel tank levels and consumption</p>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (!tank) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="text-center py-12">
-          <Droplets className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">No Tank Data Found</h2>
-          <p className="text-muted-foreground">
-            Tank information will appear here once fuel purchases are recorded.
-          </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-8 bg-muted rounded"></div>
+                  <div className="h-2 bg-muted rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
   }
-
-  const fuelPercentage = (tank.current_level / tank.capacity) * 100;
-  const isLowLevel = tank.current_level <= tank.low_level_threshold;
-  const isCriticalLevel = fuelPercentage < 10;
-
-  const getTankColor = () => {
-    if (isCriticalLevel) return "destructive";
-    if (isLowLevel) return "warning";
-    return "default";
-  };
-
-  const getTankBgColor = () => {
-    if (isCriticalLevel) return "bg-destructive";
-    if (isLowLevel) return "bg-orange-500";
-    return "bg-primary";
-  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Tank Status</h1>
-          <p className="text-muted-foreground">Monitor fuel inventory and consumption</p>
+          <p className="text-muted-foreground">Monitor fuel tank levels and consumption patterns</p>
         </div>
-        <Badge variant="outline" className="text-sm">
-          <Clock className="h-3 w-3 mr-1" />
-          Updated {format(new Date(tank.last_updated), "MMM d, h:mm a")}
-        </Badge>
+        <Button onClick={() => window.location.href = '/tank-refills'}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Fuel Purchase
+        </Button>
       </div>
 
-      {/* Alerts */}
-      {(isLowLevel || isCriticalLevel) && (
-        <Alert variant={isCriticalLevel ? "destructive" : "default"} className="border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            {isCriticalLevel 
-              ? `Critical fuel level! Only ${tank.current_level.toFixed(1)}L remaining (${fuelPercentage.toFixed(1)}%)` 
-              : `Low fuel level warning. ${tank.current_level.toFixed(1)}L remaining (${fuelPercentage.toFixed(1)}%)`
-            }
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Tank Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {tanks.map((tank) => {
+          const percentage = (tank.current_volume / tank.capacity) * 100;
+          const consumptionData = consumption.find(c => c.fuel_type === tank.fuel_type);
+          const daysRemaining = consumptionData 
+            ? calculateDaysRemaining(tank.current_volume, consumptionData.daily_rate)
+            : '∞';
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tank Gauge */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Droplets className="h-5 w-5" />
-                Fuel Tank Level
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Tank Visual */}
-                <div className="relative mx-auto w-48 h-72 border-2 border-muted rounded-b-lg bg-muted/20">
-                  <div 
-                    className={`absolute bottom-0 left-0 right-0 ${getTankBgColor()} rounded-b-lg transition-all duration-1000 ease-out`}
-                    style={{ height: `${fuelPercentage}%` }}
+          return (
+            <Card key={tank.id} className="relative overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {getFuelIcon(tank.fuel_type)}
+                    <div>
+                      <CardTitle className="text-lg capitalize">{tank.fuel_type} Tank</CardTitle>
+                      <CardDescription>{tank.tank_location}</CardDescription>
+                    </div>
+                  </div>
+                  <Badge variant={percentage > 50 ? "default" : percentage > 20 ? "secondary" : "destructive"}>
+                    {percentage.toFixed(1)}%
+                  </Badge>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Current Level</span>
+                    <span className={getStatusColor(percentage)}>
+                      {tank.current_volume.toLocaleString()} / {tank.capacity.toLocaleString()} {tank.unit}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={percentage} 
+                    className="h-3"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center bg-background/90 rounded-lg p-3 backdrop-blur-sm">
-                      <div className="text-3xl font-bold">{fuelPercentage.toFixed(1)}%</div>
-                      <div className="text-sm text-muted-foreground">
-                        {tank.current_level.toFixed(1)}L / {tank.capacity}L
-                      </div>
-                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Days Remaining</p>
+                    <p className="font-semibold text-lg">{daysRemaining}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Low Threshold</p>
+                    <p className="font-medium">{tank.low_threshold} {tank.unit}</p>
                   </div>
                 </div>
 
-                {/* Tank Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {tank.current_level.toFixed(1)}L
-                    </div>
-                    <div className="text-sm text-muted-foreground">Current Level</div>
+                {percentage <= ((tank.low_threshold / tank.capacity) * 100) && (
+                  <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 p-3 rounded-lg">
+                    <p className="font-medium">⚠️ Low Fuel Alert</p>
+                    <p className="text-sm">Tank level is below threshold</p>
                   </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold">
-                      {stats.daysRemaining}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Days Remaining</div>
-                  </div>
-                </div>
-
-                {/* Consumption Stats */}
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-3 bg-background border rounded-lg">
-                    <div className="text-lg font-semibold">{stats.dailyAverage.toFixed(1)}L</div>
-                    <div className="text-xs text-muted-foreground">Daily Avg</div>
-                  </div>
-                  <div className="p-3 bg-background border rounded-lg">
-                    <div className="text-lg font-semibold">{stats.weeklyTotal.toFixed(1)}L</div>
-                    <div className="text-xs text-muted-foreground">This Week</div>
-                  </div>
-                  <div className="p-3 bg-background border rounded-lg">
-                    <div className="text-lg font-semibold">{stats.monthlyTotal.toFixed(1)}L</div>
-                    <div className="text-xs text-muted-foreground">This Month</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {recentActivity.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No recent activity</p>
-                  </div>
-                ) : (
-                  recentActivity.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1 rounded-full ${
-                          activity.type === "purchase" 
-                            ? "bg-green-100 text-green-600" 
-                            : "bg-red-100 text-red-600"
-                        }`}>
-                          {activity.type === "purchase" ? (
-                            <TrendingUp className="h-3 w-3" />
-                          ) : (
-                            <TrendingDown className="h-3 w-3" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">
-                            {activity.type === "purchase" ? "Purchase" : "Consumption"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {activity.vendor?.name || activity.vehicle?.vehicle_number || activity.source}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-sm font-medium ${
-                          activity.type === "purchase" ? "text-green-600" : "text-red-600"
-                        }`}>
-                          {activity.type === "purchase" ? "+" : "-"}{activity.volume.toFixed(1)}L
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {format(new Date(activity.date), "MMM d")}
-                        </div>
-                      </div>
-                    </div>
-                  ))
                 )}
+
+                <div className="text-xs text-muted-foreground">
+                  Last updated: {format(new Date(tank.updated_at || Date.now()), 'MMM dd, yyyy HH:mm')}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Consumption Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Consumption Analytics</CardTitle>
+            <CardDescription>Fuel usage patterns and trends</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {consumption.map((data) => (
+                <div key={data.fuel_type} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      {getFuelIcon(data.fuel_type)}
+                      <span className="font-medium capitalize">{data.fuel_type}</span>
+                    </div>
+                    <Badge variant="outline">{data.unit}</Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Daily</p>
+                      <p className="font-semibold">{data.daily_rate.toFixed(1)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Weekly</p>
+                      <p className="font-semibold">{data.weekly_total.toFixed(1)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Monthly</p>
+                      <p className="font-semibold">{data.monthly_total.toFixed(1)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tank Management</CardTitle>
+            <CardDescription>Quick actions and settings</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = '/tank-refills'}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Record Fuel Purchase
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = '/fuel-log'}
+            >
+              <TrendingDown className="h-4 w-4 mr-2" />
+              View Fuel Consumption
+            </Button>
+            
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-2">Quick Insights</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Total Tank Capacity</span>
+                  <span>{tanks.reduce((sum, tank) => sum + tank.capacity, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Current Total Volume</span>
+                  <span>{tanks.reduce((sum, tank) => sum + tank.current_volume, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Overall Utilization</span>
+                  <span>
+                    {tanks.length > 0 
+                      ? ((tanks.reduce((sum, tank) => sum + tank.current_volume, 0) / 
+                         tanks.reduce((sum, tank) => sum + tank.capacity, 0)) * 100).toFixed(1)
+                      : '0'}%
+                  </span>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-};
-
-export default TankStatus;
+}
