@@ -15,6 +15,7 @@ import TankStatus from "./pages/TankStatus";
 import Maintenance from "./pages/Maintenance";
 import CategoriesMaster from "./pages/CategoriesMaster";
 import PartsMaster from "./pages/PartsMaster";
+import Vendors from "./pages/Vendors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/categories-master" element={<CategoriesMaster />} />
             <Route path="/parts-master" element={<PartsMaster />} />
+            <Route path="/vendors" element={<Vendors />} />
                 {/* Add all other protected routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />
