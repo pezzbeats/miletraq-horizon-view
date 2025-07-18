@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 const odometerFormSchema = z.object({
   reading_date: z.date({
@@ -107,6 +108,7 @@ export const OdometerDialog = ({
   const [currentUser, setCurrentUser] = useState<string>("");
   const [previousReading, setPreviousReading] = useState<number | null>(null);
   const [validationWarning, setValidationWarning] = useState<string>("");
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<z.infer<typeof odometerFormSchema>>({
     resolver: zodResolver(odometerFormSchema),
@@ -248,6 +250,7 @@ export const OdometerDialog = ({
         current_location: values.current_location || null,
         notes: values.notes || null,
         created_by: values.created_by,
+        subsidiary_id: currentSubsidiary?.id || "",
       };
 
       let error;

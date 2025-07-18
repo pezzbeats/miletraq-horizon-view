@@ -24,6 +24,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Category } from "@/pages/CategoriesMaster";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Category name is required").max(100, "Category name must be less than 100 characters"),
@@ -44,6 +45,7 @@ export const CategoryDialog = ({
   onSuccess,
 }: CategoryDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<z.infer<typeof categoryFormSchema>>({
     resolver: zodResolver(categoryFormSchema),
@@ -112,6 +114,7 @@ export const CategoryDialog = ({
         name: values.name.trim(),
         description: values.description?.trim() || null,
         created_by: user.id,
+        subsidiary_id: currentSubsidiary?.id || "",
         is_active: true,
       };
 

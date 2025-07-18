@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,7 @@ export const DriverDialog: React.FC<DriverDialogProps> = ({
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentSubsidiary } = useSubsidiary();
 
   useEffect(() => {
     if (driver) {
@@ -196,6 +198,7 @@ export const DriverDialog: React.FC<DriverDialogProps> = ({
           address: formData.address.trim() || null,
           is_active: formData.is_active,
           created_by: user?.id!,
+          subsidiary_id: currentSubsidiary?.id || "",
         };
 
         const { error } = await supabase

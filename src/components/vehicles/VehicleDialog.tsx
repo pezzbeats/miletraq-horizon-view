@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 
 type Vehicle = Tables<'vehicles'>;
 type Driver = Tables<'drivers'>;
@@ -75,6 +76,7 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
   const [driverComboOpen, setDriverComboOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
@@ -168,6 +170,7 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
         puc_expiry: data.puc_expiry?.toISOString().split('T')[0] || null,
         permit_expiry: data.permit_expiry?.toISOString().split('T')[0] || null,
         created_by: user.id,
+        subsidiary_id: currentSubsidiary?.id || "",
       };
 
       let error;

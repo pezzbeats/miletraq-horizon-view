@@ -41,6 +41,7 @@ import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 const formSchema = z.object({
   date: z.date({
@@ -106,6 +107,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [fuelTank, setFuelTank] = useState<FuelTank | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -237,6 +239,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         driver_id: values.driver_id === "no-driver" ? null : values.driver_id || null,
         vendor_id: values.vendor_id || null,
         created_by: user.id,
+        subsidiary_id: currentSubsidiary?.id || "",
       };
 
       let error;

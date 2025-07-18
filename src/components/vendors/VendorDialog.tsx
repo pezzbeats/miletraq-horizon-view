@@ -33,6 +33,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Vendor } from "@/pages/Vendors";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 const vendorFormSchema = z.object({
   name: z.string().min(1, "Vendor name is required").max(100, "Vendor name must be less than 100 characters"),
@@ -68,6 +69,7 @@ export const VendorDialog = ({
   onSuccess,
 }: VendorDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<z.infer<typeof vendorFormSchema>>({
     resolver: zodResolver(vendorFormSchema),
@@ -180,6 +182,7 @@ export const VendorDialog = ({
         address: values.address.trim(),
         is_active: values.is_active,
         created_by: user.id,
+        subsidiary_id: currentSubsidiary?.id || "",
       };
 
       let error;

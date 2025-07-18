@@ -31,6 +31,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Part } from "@/pages/PartsMaster";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 const partFormSchema = z.object({
   name: z.string().min(1, "Part name is required").max(100, "Part name must be less than 100 characters"),
@@ -70,6 +71,7 @@ export const PartDialog = ({
 }: PartDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<z.infer<typeof partFormSchema>>({
     resolver: zodResolver(partFormSchema),
@@ -168,6 +170,7 @@ export const PartDialog = ({
         category_id: values.category_id || null,
         description: values.description?.trim() || null,
         created_by: user.id,
+        subsidiary_id: currentSubsidiary?.id || "",
         is_active: true,
       };
 

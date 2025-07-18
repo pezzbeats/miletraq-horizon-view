@@ -52,12 +52,12 @@ export function SubsidiaryProvider({ children }: { children: React.ReactNode }) 
 
       if (error) throw error;
 
-      setSubsidiaries(data || []);
+      setSubsidiaries(data || [] as any);
 
       // Set default subsidiary if not already set
       if (data && data.length > 0 && !currentSubsidiary) {
         const defaultSub = data.find(sub => sub.id === profile?.default_subsidiary_id) || data[0];
-        setCurrentSubsidiaryState(defaultSub);
+        setCurrentSubsidiaryState(defaultSub as any);
         
         // Store in localStorage for persistence
         localStorage.setItem('selectedSubsidiary', defaultSub.id);
