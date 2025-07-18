@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget: {
         Row: {
           actual_amount: number | null
@@ -762,6 +806,14 @@ export type Database = {
       calculate_document_status: {
         Args: { expiry_date: string }
         Returns: string
+      }
+      get_setting: {
+        Args: { setting_key: string }
+        Returns: Json
+      }
+      update_setting: {
+        Args: { setting_key: string; setting_value: Json; user_id?: string }
+        Returns: boolean
       }
     }
     Enums: {
