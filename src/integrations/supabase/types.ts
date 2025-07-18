@@ -1012,6 +1012,18 @@ export type Database = {
         Args: { setting_key: string }
         Returns: Json
       }
+      get_user_accessible_subsidiaries: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      get_user_default_subsidiary: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_user_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       update_setting: {
         Args: { setting_key: string; setting_value: Json; user_id?: string }
         Returns: boolean
