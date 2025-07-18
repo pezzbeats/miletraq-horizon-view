@@ -158,13 +158,13 @@ export const DocumentDialog = ({
       const filePath = `documents/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('maintenance-photos') // Using existing bucket for now
+        .from('vehicle-documents')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('maintenance-photos')
+        .from('vehicle-documents')
         .getPublicUrl(filePath);
 
       setUploadedFile(publicUrl);
