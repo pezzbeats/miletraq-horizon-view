@@ -186,7 +186,7 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
         // Create new vehicle
         const { error: insertError } = await supabase
           .from('vehicles')
-          .insert(vehicleData);
+          .insert([vehicleData]);
         error = insertError;
       }
 
