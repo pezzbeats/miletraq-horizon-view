@@ -221,6 +221,7 @@ export type Database = {
           current_level: number
           id: string
           last_updated: string | null
+          low_level_threshold: number | null
           updated_by: string
         }
         Insert: {
@@ -228,6 +229,7 @@ export type Database = {
           current_level?: number
           id?: string
           last_updated?: string | null
+          low_level_threshold?: number | null
           updated_by: string
         }
         Update: {
@@ -235,6 +237,7 @@ export type Database = {
           current_level?: number
           id?: string
           last_updated?: string | null
+          low_level_threshold?: number | null
           updated_by?: string
         }
         Relationships: []
