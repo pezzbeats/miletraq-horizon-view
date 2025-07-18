@@ -1,4 +1,4 @@
-import { Bell, Moon, Sun, Sunset, LogOut, User } from 'lucide-react';
+import { Bell, Moon, Sun, Sunset, LogOut, User, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -8,11 +8,15 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
 
 export function TopBar() {
   const { user, profile, signOut } = useAuth();
+  const { currentSubsidiary } = useSubsidiary();
   const { theme, setTheme } = useTheme();
 
   const themeIcons = {
@@ -26,16 +30,28 @@ export function TopBar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b glass-card">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
-        {/* Logo & Title */}
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center">
-            <span className="text-white font-bold text-sm">MT</span>
+        {/* Logo & Company */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center">
+              <Building className="h-4 w-4 text-white" />
+            </div>
+            <h1 className="text-xl font-bold gradient-text hidden sm:block">MileTraq</h1>
           </div>
-          <h1 className="text-xl font-bold gradient-text hidden sm:block">MileTraq</h1>
+          
+          {/* Subsidiary Selector - Desktop */}
+          <div className="hidden lg:block">
+            <SubsidiarySelector />
+          </div>
         </div>
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-2">
+          {/* Subsidiary Selector - Mobile */}
+          <div className="lg:hidden">
+            <SubsidiarySelector compact />
+          </div>
+          
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -77,16 +93,23 @@ export function TopBar() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuContent className="w-64" align="end">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{profile?.full_name || 'User'}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{profile?.full_name || 'User'}</p>
+                    <Badge variant="outline" className="text-xs">
+                      {profile?.role?.replace('_', ' ').toUpperCase() || 'VIEWER'}
+                    </Badge>
+                  </div>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
                     {user?.email}
                   </p>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {profile?.role || 'viewer'}
-                  </p>
+                  {profile?.is_super_admin && (
+                    <Badge variant="default" className="text-xs w-fit">
+                      SUPER ADMIN
+                    </Badge>
+                  )}
                 </div>
               </div>
               <DropdownMenuSeparator />
