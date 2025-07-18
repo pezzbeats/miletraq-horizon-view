@@ -1,0 +1,202 @@
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
+import { MaintenanceDialog } from "@/components/maintenance/MaintenanceDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+export interface MaintenanceRecord {
+  id: string;
+  vehicle_id: string;
+  maintenance_date: string;
+  maintenance_type: "breakdown" | "scheduled" | "preventive";
+  description: string;
+  odometer_reading?: number;
+  labor_cost: number;
+  total_cost: number;
+  vendor_id?: string;
+  photo_url?: string;
+  created_at: string;
+  vehicles?: {
+    vehicle_number: string;
+    make: string;
+    model: string;
+  };
+  vendors?: {
+    name: string;
+  };
+  maintenance_parts_used?: {
+    id: string;
+    part_id: string;
+    quantity: number;
+    unit_cost: number;
+    total_cost: number;
+    parts_master: {
+      name: string;
+      part_number?: string;
+    };
+  }[];
+}
+
+const Maintenance = () => {
+  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<MaintenanceRecord | null>(null);
+
+  const fetchMaintenanceRecords = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('maintenance_log')
+        .select(`
+          *,
+          vehicles (
+            vehicle_number,
+            make,
+            model
+          ),
+          vendors (
+            name
+          ),
+          maintenance_parts_used (
+            id,
+            part_id,
+            quantity,
+            unit_cost,
+            total_cost,
+            parts_master (
+              name,
+              part_number
+            )
+          )
+        `)
+        .order('maintenance_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMaintenanceRecords(data || []);
+    } catch (error) {
+      console.error('Error fetching maintenance records:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load maintenance records",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMaintenanceRecords();
+  }, []);
+
+  const handleAddRecord = () => {
+    setEditingRecord(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditRecord = (record: MaintenanceRecord) => {
+    setEditingRecord(record);
+    setDialogOpen(true);
+  };
+
+  const handleSuccess = () => {
+    fetchMaintenanceRecords();
+    setDialogOpen(false);
+    setEditingRecord(null);
+  };
+
+  // Calculate summary statistics
+  const totalRecords = maintenanceRecords.length;
+  const totalCost = maintenanceRecords.reduce((sum, record) => sum + record.total_cost, 0);
+  const breakdownCount = maintenanceRecords.filter(r => r.maintenance_type === 'breakdown').length;
+  const avgCost = totalRecords > 0 ? totalCost / totalRecords : 0;
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Maintenance Log</h1>
+          <p className="text-muted-foreground">Track vehicle maintenance and service history</p>
+        </div>
+        <Button onClick={handleAddRecord} className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Maintenance
+        </Button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Records
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalRecords}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Cost
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{totalCost.toLocaleString('en-IN')}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Breakdowns
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{breakdownCount}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Avg Cost
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{avgCost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <MaintenanceTable 
+        maintenanceRecords={maintenanceRecords}
+        loading={loading}
+        onEdit={handleEditRecord}
+        onRefresh={fetchMaintenanceRecords}
+      />
+
+      <MaintenanceDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        maintenanceRecord={editingRecord}
+        onSuccess={handleSuccess}
+      />
+
+      {/* Mobile FAB */}
+      <Button
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg md:hidden"
+        onClick={handleAddRecord}
+        size="icon"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+    </div>
+  );
+};
+
+export default Maintenance;

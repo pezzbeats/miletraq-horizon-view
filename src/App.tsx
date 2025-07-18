@@ -12,6 +12,7 @@ import Vehicles from "./pages/Vehicles";
 import Drivers from "./pages/Drivers";
 import FuelLog from "./pages/FuelLog";
 import TankStatus from "./pages/TankStatus";
+import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/drivers" element={<Drivers />} />
             <Route path="/fuel-log" element={<FuelLog />} />
             <Route path="/tank-status" element={<TankStatus />} />
+            <Route path="/maintenance" element={<Maintenance />} />
                 {/* Add all other protected routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />
