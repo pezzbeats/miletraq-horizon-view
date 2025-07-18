@@ -234,7 +234,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         rate_per_liter: values.rate_per_liter || null,
         total_cost: values.total_cost || null,
         odometer_reading: values.odometer_reading || null,
-        driver_id: values.driver_id || null,
+        driver_id: values.driver_id === "no-driver" ? null : values.driver_id || null,
         vendor_id: values.vendor_id || null,
         created_by: user.id,
       };
@@ -544,7 +544,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No driver assigned</SelectItem>
+                      <SelectItem value="no-driver">No driver assigned</SelectItem>
                       {drivers.map((driver) => (
                         <SelectItem key={driver.id} value={driver.id}>
                           {driver.name}
