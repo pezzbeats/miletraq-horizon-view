@@ -78,6 +78,7 @@ interface PartUsed {
   gst_rate: number;
   gst_amount: number;
   base_cost: number;
+  parts_vendor_id?: string; // New field for parts vendor
 }
 
 interface Vehicle {
@@ -119,6 +120,7 @@ export const MaintenanceDialog = ({
   const [loading, setLoading] = useState(false);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [partVendors, setPartVendors] = useState<Vendor[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
   const [partsUsed, setPartsUsed] = useState<PartUsed[]>([]);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
@@ -153,10 +155,16 @@ export const MaintenanceDialog = ({
         if (vehiclesRes.data) setVehicles(vehiclesRes.data);
         if (vendorsRes.data) {
           // Filter vendors that handle labour or parts_labour (for service work)
-          const filteredVendors = vendorsRes.data.filter(v => 
+          const serviceVendors = vendorsRes.data.filter(v => 
             v.vendor_type.includes('labour') || v.vendor_type.includes('parts_labour')
           );
-          setVendors(filteredVendors);
+          setVendors(serviceVendors);
+
+          // Filter vendors that handle parts or parts_labour (for parts sourcing)
+          const partsVendors = vendorsRes.data.filter(v => 
+            v.vendor_type.includes('parts') || v.vendor_type.includes('parts_labour')
+          );
+          setPartVendors(partsVendors);
         }
         if (partsRes.data) setParts(partsRes.data);
       } catch (error) {
@@ -224,6 +232,7 @@ export const MaintenanceDialog = ({
       gst_rate: 0,
       gst_amount: 0,
       base_cost: 0,
+      parts_vendor_id: "",
     }]);
   };
 
@@ -794,50 +803,67 @@ export const MaintenanceDialog = ({
                 ) : (
                   <div className="space-y-4">
                     {partsUsed.map((part, index) => (
-                      <div key={index} className="p-4 border rounded-lg space-y-3">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                          <Select
-                            value={part.part_id}
-                            onValueChange={(value) => updatePartUsed(index, 'part_id', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select part" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {parts.map((p) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.name} {p.part_number && `(${p.part_number})`}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          
-                          <Input
-                            type="number"
-                            min="1"
-                            placeholder="Qty"
-                            value={part.quantity}
-                            onChange={(e) => updatePartUsed(index, 'quantity', parseInt(e.target.value) || 1)}
-                          />
-                          
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder={part.is_gst_applicable ? (part.gst_rate > 0 ? "Amount" : "Unit Cost") : "Unit Cost"}
-                            value={part.unit_cost}
-                            onChange={(e) => updatePartUsed(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                          />
-                          
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removePartUsed(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
+                       <div key={index} className="p-4 border rounded-lg space-y-3">
+                         <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                           <Select
+                             value={part.part_id}
+                             onValueChange={(value) => updatePartUsed(index, 'part_id', value)}
+                           >
+                             <SelectTrigger>
+                               <SelectValue placeholder="Select part" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {parts.map((p) => (
+                                 <SelectItem key={p.id} value={p.id}>
+                                   {p.name} {p.part_number && `(${p.part_number})`}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+
+                           <Select
+                             value={part.parts_vendor_id || ""}
+                             onValueChange={(value) => updatePartUsed(index, 'parts_vendor_id', value)}
+                           >
+                             <SelectTrigger>
+                               <SelectValue placeholder="Parts vendor" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">No vendor</SelectItem>
+                               {partVendors.map((vendor) => (
+                                 <SelectItem key={vendor.id} value={vendor.id}>
+                                   {vendor.name}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                           
+                           <Input
+                             type="number"
+                             min="1"
+                             placeholder="Qty"
+                             value={part.quantity}
+                             onChange={(e) => updatePartUsed(index, 'quantity', parseInt(e.target.value) || 1)}
+                           />
+                           
+                           <Input
+                             type="number"
+                             step="0.01"
+                             min="0"
+                             placeholder={part.is_gst_applicable ? (part.gst_rate > 0 ? "Amount" : "Unit Cost") : "Unit Cost"}
+                             value={part.unit_cost}
+                             onChange={(e) => updatePartUsed(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                           />
+                           
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => removePartUsed(index)}
+                           >
+                             <X className="h-4 w-4" />
+                           </Button>
+                         </div>
 
                         {/* GST Section for Part */}
                         <div className="space-y-3 pl-4 border-l-2 border-muted">
