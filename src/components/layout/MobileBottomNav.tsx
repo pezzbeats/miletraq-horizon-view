@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Car, 
+  Users,
   Fuel, 
   Wrench, 
   BarChart3 
@@ -20,9 +21,9 @@ const bottomNavItems = [
     icon: Car,
   },
   {
-    title: 'Fuel',
-    url: '/fuel-log',
-    icon: Fuel,
+    title: 'Drivers',
+    url: '/drivers',
+    icon: Users,
   },
   {
     title: 'Maintenance',
