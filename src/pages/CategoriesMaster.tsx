@@ -6,6 +6,7 @@ import { CategoriesTable } from "@/components/categories/CategoriesTable";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 export interface Category {
   id: string;
@@ -17,6 +18,7 @@ export interface Category {
 }
 
 const CategoriesMaster = () => {
+  const { currentSubsidiary } = useSubsidiary();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -60,8 +62,10 @@ const CategoriesMaster = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (currentSubsidiary) {
+      fetchCategories();
+    }
+  }, [currentSubsidiary]);
 
   const handleAddCategory = () => {
     setEditingCategory(null);

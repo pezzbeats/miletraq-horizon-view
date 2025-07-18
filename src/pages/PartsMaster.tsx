@@ -6,6 +6,7 @@ import { PartsTable } from "@/components/parts/PartsTable";
 import { PartDialog } from "@/components/parts/PartDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 export interface Part {
   id: string;
@@ -22,6 +23,7 @@ export interface Part {
 }
 
 const PartsMaster = () => {
+  const { currentSubsidiary } = useSubsidiary();
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -74,8 +76,10 @@ const PartsMaster = () => {
   };
 
   useEffect(() => {
-    fetchParts();
-  }, []);
+    if (currentSubsidiary) {
+      fetchParts();
+    }
+  }, [currentSubsidiary]);
 
   const handleAddPart = () => {
     setEditingPart(null);

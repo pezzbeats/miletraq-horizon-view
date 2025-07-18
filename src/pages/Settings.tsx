@@ -12,6 +12,7 @@ import { FleetSettings } from '@/components/settings/FleetSettings';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
 import { SystemSettings } from '@/components/settings/SystemSettings';
+import { SubsidiarySettings } from '@/components/settings/SubsidiarySettings';
 
 interface Setting {
   setting_key: string;
@@ -90,6 +91,7 @@ export default function Settings() {
 
   const canAccessTab = (tab: string) => {
     switch (tab) {
+      case 'subsidiaries':
       case 'security':
       case 'system':
         return hasPermission('admin');
@@ -108,6 +110,7 @@ export default function Settings() {
     { id: 'theme', label: 'Theme', icon: Monitor, description: 'Display preferences and themes' },
     { id: 'fleet', label: 'Fleet', icon: Wrench, description: 'Fleet and vehicle configurations' },
     { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Alert preferences and recipients' },
+    { id: 'subsidiaries', label: 'Subsidiaries', icon: Database, description: 'Manage business subsidiaries and units' },
     { id: 'security', label: 'Security', icon: Shield, description: 'Password policies and session settings' },
     { id: 'system', label: 'System', icon: Database, description: 'Backup, logging, and maintenance' },
   ];
@@ -200,6 +203,10 @@ export default function Settings() {
                 updateSetting={updateSetting}
                 getSettingValue={getSettingValue}
               />
+            </TabsContent>
+
+            <TabsContent value="subsidiaries" className="mt-0">
+              <SubsidiarySettings />
             </TabsContent>
 
             <TabsContent value="security" className="mt-0">

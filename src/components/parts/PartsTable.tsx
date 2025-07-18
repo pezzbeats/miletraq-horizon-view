@@ -37,6 +37,7 @@ import {
 import { Part } from "@/pages/PartsMaster";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 interface PartsTableProps {
   parts: Part[];
@@ -51,6 +52,7 @@ export const PartsTable = ({
   onEdit,
   onRefresh,
 }: PartsTableProps) => {
+  const { currentSubsidiary } = useSubsidiary();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");

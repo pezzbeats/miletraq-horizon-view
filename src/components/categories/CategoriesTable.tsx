@@ -29,6 +29,7 @@ import {
 import { Category } from "@/pages/CategoriesMaster";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 
 interface CategoriesTableProps {
   categories: Category[];
@@ -43,6 +44,7 @@ export const CategoriesTable = ({
   onEdit,
   onRefresh,
 }: CategoriesTableProps) => {
+  const { currentSubsidiary } = useSubsidiary();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
