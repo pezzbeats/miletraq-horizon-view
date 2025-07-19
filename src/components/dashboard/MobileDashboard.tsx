@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { MobileKPICard } from '@/components/ui/mobile-card';
 import { MobileFAB } from '@/components/ui/mobile-fab';
+import { MobileChartCarousel } from '@/components/ui/mobile-chart';
 import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -172,6 +173,60 @@ export function MobileDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Mobile Charts */}
+      <MobileChartCarousel
+        charts={[
+          {
+            id: 'fuel-consumption',
+            title: 'Fuel Consumption',
+            type: 'line',
+            data: [
+              { date: '1', diesel: 120, petrol: 80, cng: 40 },
+              { date: '2', diesel: 150, petrol: 90, cng: 50 },
+              { date: '3', diesel: 130, petrol: 85, cng: 45 },
+              { date: '4', diesel: 170, petrol: 95, cng: 55 },
+              { date: '5', diesel: 140, petrol: 88, cng: 48 }
+            ],
+            dataKeys: {
+              x: 'date',
+              y: ['diesel', 'petrol', 'cng'],
+              colors: ['#0088FE', '#00C49F', '#FFBB28']
+            }
+          },
+          {
+            id: 'cost-analysis',
+            title: 'Monthly Costs',
+            type: 'bar',
+            data: [
+              { month: 'Jan', fuel: 45000, maintenance: 12000 },
+              { month: 'Feb', fuel: 52000, maintenance: 8000 },
+              { month: 'Mar', fuel: 48000, maintenance: 15000 },
+              { month: 'Apr', fuel: 55000, maintenance: 10000 }
+            ],
+            dataKeys: {
+              x: 'month',
+              y: ['fuel', 'maintenance'],
+              colors: ['#0088FE', '#00C49F']
+            }
+          },
+          {
+            id: 'vehicle-status',
+            title: 'Vehicle Status',
+            type: 'pie',
+            data: [
+              { name: 'Active', value: 24 },
+              { name: 'Maintenance', value: 2 },
+              { name: 'Inactive', value: 1 }
+            ],
+            dataKeys: {
+              x: 'name',
+              y: 'value',
+              colors: ['#00C49F', '#FFBB28', '#FF8042']
+            }
+          }
+        ]}
+      />
 
       {/* Recent Activity */}
       <Card>

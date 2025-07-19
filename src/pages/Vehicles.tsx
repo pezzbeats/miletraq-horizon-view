@@ -9,8 +9,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { VehicleDialog } from '@/components/vehicles/VehicleDialog';
 import { DeleteVehicleDialog } from '@/components/vehicles/DeleteVehicleDialog';
 import { VehicleFilters } from '@/components/vehicles/VehicleFilters';
+import { MobileVehicleCard } from '@/components/vehicles/MobileVehicleCard';
 import { Tables } from '@/integrations/supabase/types';
-import { useIsMobile } from '@/hooks/use-mobile'; // Fixed mobile hook import
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Vehicle = Tables<'vehicles'> & {
   default_driver?: {
@@ -245,7 +246,7 @@ const Vehicles = () => {
         </div>
       )}
 
-      {/* Data Table */}
+      {/* Data Display - Mobile Cards or Desktop Table */}
       {loading ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -255,7 +256,20 @@ const Vehicles = () => {
         </Card>
       ) : filteredVehicles.length === 0 ? (
         <EmptyState />
+      ) : isMobile ? (
+        /* Mobile Card Layout */
+        <div className="grid grid-cols-1 gap-4">
+          {filteredVehicles.map((vehicle) => (
+            <MobileVehicleCard
+              key={vehicle.id}
+              vehicle={vehicle}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
       ) : (
+        /* Desktop Table Layout */
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -284,7 +298,7 @@ const Vehicles = () => {
                       className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
                       onClick={() => handleSort('model')}
                     >
-                      Model {sortBy === 'model' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Model {sortBy === 'model' && (sortOrder === 'asc' ? '↓' : '↓')}
                     </th>
                     <th className="text-left p-4 font-medium hidden sm:table-cell">Year</th>
                     <th className="text-left p-4 font-medium">Fuel Type</th>

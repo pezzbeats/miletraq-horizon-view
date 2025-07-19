@@ -13,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { DriversTable } from '@/components/drivers/DriversTable';
 import { DriverDialog } from '@/components/drivers/DriverDialog';
 import { DeleteDriverDialog } from '@/components/drivers/DeleteDriverDialog';
+import { MobileDriverCard } from '@/components/drivers/MobileDriverCard';
 
 type Driver = Tables<'drivers'> & {
   vehicle_count?: number;
@@ -279,7 +280,7 @@ const Drivers = () => {
         </CardContent>
       </Card>
 
-      {/* Drivers Table */}
+      {/* Drivers Display - Mobile Cards or Desktop Table */}
       {filteredDrivers.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -301,7 +302,20 @@ const Drivers = () => {
             )}
           </CardContent>
         </Card>
+      ) : isMobile ? (
+        /* Mobile Card Layout */
+        <div className="grid grid-cols-1 gap-4">
+          {filteredDrivers.map((driver) => (
+            <MobileDriverCard
+              key={driver.id}
+              driver={driver}
+              onEdit={handleEditDriver}
+              onDelete={handleDeleteDriver}
+            />
+          ))}
+        </div>
       ) : (
+        /* Desktop Table Layout */
         <DriversTable
           drivers={filteredDrivers}
           onEdit={handleEditDriver}
