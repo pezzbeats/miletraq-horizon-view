@@ -81,33 +81,60 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   }, [open, ticket]);
 
   const fetchData = async () => {
-    if (!currentSubsidiary?.id) return;
+    if (!currentSubsidiary?.id) {
+      console.log('No subsidiary ID found');
+      return;
+    }
 
     try {
+      console.log('Fetching data for subsidiary:', currentSubsidiary.id);
+      
       // Fetch vehicles
-      const { data: vehiclesData } = await supabase
+      const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
-        .select('id, vehicle_number, make, model')
+        .select('id, vehicle_number, make, model, status')
         .eq('subsidiary_id', currentSubsidiary.id)
         .eq('status', 'active');
 
-      // Fetch vendors
-      const { data: vendorsData } = await supabase
+      if (vehiclesError) {
+        console.error('Vehicles error:', vehiclesError);
+        throw vehiclesError;
+      }
+
+      console.log('Fetched vehicles:', vehiclesData);
+
+      // Fetch vendors with maintenance capability
+      const { data: vendorsData, error: vendorsError } = await supabase
         .from('vendors')
-        .select('id, name')
+        .select('id, name, vendor_type')
         .eq('subsidiary_id', currentSubsidiary.id)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .contains('vendor_type', ['maintenance']);
+
+      if (vendorsError) {
+        console.error('Vendors error:', vendorsError);
+        throw vendorsError;
+      }
 
       // Fetch parts
-      const { data: partsData } = await supabase
+      const { data: partsData, error: partsError } = await supabase
         .from('parts_master')
         .select('id, name, part_number')
         .eq('subsidiary_id', currentSubsidiary.id)
         .eq('is_active', true);
 
+      if (partsError) {
+        console.error('Parts error:', partsError);
+        throw partsError;
+      }
+
       setVehicles(vehiclesData || []);
       setVendors(vendorsData || []);
       setParts(partsData || []);
+      
+      console.log('Set vehicles:', vehiclesData?.length || 0);
+      console.log('Set vendors:', vendorsData?.length || 0);
+      console.log('Set parts:', partsData?.length || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({

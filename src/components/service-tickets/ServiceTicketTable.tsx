@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit, Trash2, Wrench } from "lucide-react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ interface ServiceTicketTableProps {
   onEdit: (ticket: ServiceTicket) => void;
   onView: (ticketId: string) => void;
   onRefresh: () => void;
+  onCreateMaintenance?: (ticket: ServiceTicket) => void;
   getStatusBadge: (status: string) => React.ReactNode;
   getPriorityBadge: (priority: string) => React.ReactNode;
 }
@@ -53,6 +54,7 @@ export function ServiceTicketTable({
   onEdit, 
   onView, 
   onRefresh,
+  onCreateMaintenance,
   getStatusBadge,
   getPriorityBadge 
 }: ServiceTicketTableProps) {
@@ -149,6 +151,12 @@ export function ServiceTicketTable({
                     Edit
                   </Button>
                 )}
+                {ticket.status === 'approved' && onCreateMaintenance && (
+                  <Button variant="outline" size="sm" onClick={() => onCreateMaintenance(ticket)}>
+                    <Wrench className="h-4 w-4 mr-1" />
+                    Create Maintenance
+                  </Button>
+                )}
                 {ticket.status === 'draft' && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -238,6 +246,11 @@ export function ServiceTicketTable({
                     {(ticket.status === 'draft' || ticket.status === 'rejected') && (
                       <Button variant="ghost" size="sm" onClick={() => onEdit(ticket)}>
                         <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {ticket.status === 'approved' && onCreateMaintenance && (
+                      <Button variant="ghost" size="sm" onClick={() => onCreateMaintenance(ticket)}>
+                        <Wrench className="h-4 w-4" />
                       </Button>
                     )}
                     {ticket.status === 'draft' && (

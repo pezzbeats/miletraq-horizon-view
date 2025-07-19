@@ -108,6 +108,7 @@ interface MaintenanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   maintenanceRecord?: MaintenanceRecord | null;
+  serviceTicket?: any; // Service ticket information for pre-population
   onSuccess: () => void;
 }
 
@@ -115,6 +116,7 @@ export const MaintenanceDialog = ({
   open,
   onOpenChange,
   maintenanceRecord,
+  serviceTicket,
   onSuccess,
 }: MaintenanceDialogProps) => {
   const [loading, setLoading] = useState(false);
@@ -208,6 +210,23 @@ export const MaintenanceDialog = ({
         }
         
         setUploadedPhoto(maintenanceRecord.photo_url || null);
+      } else if (serviceTicket) {
+        // Creating maintenance from service ticket
+        form.reset({
+          maintenance_date: new Date(),
+          vehicle_id: serviceTicket.vehicle_id || "",
+          maintenance_type: serviceTicket.ticket_type === 'breakdown' ? 'breakdown' : 
+                          serviceTicket.ticket_type === 'preventive' ? 'preventive' : 'scheduled',
+          description: `Service Ticket #${serviceTicket.ticket_number}: ${serviceTicket.title}\n\n${serviceTicket.description}`,
+          odometer_reading: 0,
+          labor_cost: serviceTicket.estimated_labor_cost || 0,
+          vendor_id: serviceTicket.assigned_vendor_id || "",
+        });
+        
+        // Pre-populate parts from service ticket if available
+        // This would need to be implemented based on service ticket parts structure
+        setPartsUsed([]);
+        setUploadedPhoto(null);
       } else {
         // Adding new record
         form.reset({
@@ -220,7 +239,7 @@ export const MaintenanceDialog = ({
         setUploadedPhoto(null);
       }
     }
-  }, [open, maintenanceRecord, form]);
+  }, [open, maintenanceRecord, serviceTicket, form]);
 
   const addPartUsed = () => {
     setPartsUsed([...partsUsed, {
@@ -358,6 +377,10 @@ export const MaintenanceDialog = ({
         gst_rate: isGSTInvoice ? laborGSTRate : null,
         labor_gst_amount: laborGSTAmount,
         labor_base_amount: laborBaseAmount,
+        // Link to service ticket if created from one
+        ...(serviceTicket && { 
+          description: `${values.description}\n\n[Linked to Service Ticket: ${serviceTicket.ticket_number}]`
+        })
       };
 
       let maintenanceId: string;
@@ -414,11 +437,25 @@ export const MaintenanceDialog = ({
         }
       }
 
+      // Update service ticket status if created from service ticket
+      if (serviceTicket && !maintenanceRecord) {
+        await supabase
+          .from('service_tickets')
+          .update({ 
+            status: 'in_progress',
+            work_started_at: new Date().toISOString(),
+            maintenance_log_id: maintenanceId
+          })
+          .eq('id', serviceTicket.id);
+      }
+
       toast({
         title: "Success",
-        description: maintenanceRecord 
-          ? "Maintenance record updated successfully" 
-          : "Maintenance record added successfully",
+        description: serviceTicket 
+          ? "Maintenance record created and service ticket updated to in-progress"
+          : maintenanceRecord 
+            ? "Maintenance record updated successfully" 
+            : "Maintenance record added successfully",
       });
 
       onSuccess();
@@ -440,10 +477,14 @@ export const MaintenanceDialog = ({
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-2xl pointer-events-none" />
         <DialogHeader className="relative z-10 pb-6 border-b border-border/50">
           <DialogTitle className="text-2xl font-bold gradient-text">
-            {maintenanceRecord ? "Edit Maintenance Record" : "Add Maintenance Record"}
+            {serviceTicket 
+              ? `Create Maintenance for Service Ticket #${serviceTicket.ticket_number}`
+              : maintenanceRecord ? "Edit Maintenance Record" : "Add Maintenance Record"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground mt-2">
-            Record vehicle maintenance details and parts used with comprehensive GST tracking
+            {serviceTicket 
+              ? "Complete the maintenance work as requested in the service ticket"
+              : "Record vehicle maintenance details and parts used with comprehensive GST tracking"}
           </DialogDescription>
         </DialogHeader>
 

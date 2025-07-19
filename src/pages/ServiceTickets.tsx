@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Filter, Search, Clock, AlertTriangle, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Plus, Filter, Search, Clock, AlertTriangle, CheckCircle, XCircle, Eye, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ServiceTicketDialog } from "@/components/service-tickets/ServiceTicketDialog";
 import { ServiceTicketTable } from "@/components/service-tickets/ServiceTicketTable";
 import { ApprovalQueue } from "@/components/service-tickets/ApprovalQueue";
+import { MaintenanceDialog } from "@/components/maintenance/MaintenanceDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ServiceTicket {
@@ -51,7 +52,9 @@ export default function ServiceTickets() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [showDialog, setShowDialog] = useState(false);
+  const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [editingTicket, setEditingTicket] = useState<ServiceTicket | null>(null);
+  const [selectedTicketForMaintenance, setSelectedTicketForMaintenance] = useState<ServiceTicket | null>(null);
   const [activeTab, setActiveTab] = useState("my-tickets");
 
   const { currentSubsidiary } = useSubsidiary();
@@ -117,9 +120,24 @@ export default function ServiceTickets() {
     navigate(`/service-tickets/${ticketId}`);
   };
 
+  const handleCreateMaintenance = (ticket: ServiceTicket) => {
+    setSelectedTicketForMaintenance(ticket);
+    setShowMaintenanceDialog(true);
+  };
+
   const handleSuccess = () => {
     fetchServiceTickets();
     setShowDialog(false);
+  };
+
+  const handleMaintenanceSuccess = () => {
+    fetchServiceTickets();
+    setShowMaintenanceDialog(false);
+    setSelectedTicketForMaintenance(null);
+    toast({
+      title: "Success",
+      description: "Maintenance record created and linked to service ticket"
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -329,6 +347,7 @@ export default function ServiceTickets() {
             onEdit={handleEditTicket}
             onView={handleViewTicket}
             onRefresh={fetchServiceTickets}
+            onCreateMaintenance={handleCreateMaintenance}
             getStatusBadge={getStatusBadge}
             getPriorityBadge={getPriorityBadge}
           />
@@ -348,6 +367,14 @@ export default function ServiceTickets() {
         onOpenChange={setShowDialog}
         ticket={editingTicket}
         onSuccess={handleSuccess}
+      />
+
+      {/* Maintenance Dialog */}
+      <MaintenanceDialog
+        open={showMaintenanceDialog}
+        onOpenChange={setShowMaintenanceDialog}
+        onSuccess={handleMaintenanceSuccess}
+        serviceTicket={selectedTicketForMaintenance}
       />
     </div>
   );
