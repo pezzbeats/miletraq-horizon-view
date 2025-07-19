@@ -51,7 +51,7 @@ const formSchema = z.object({
   fuel_type: z.enum(["diesel", "petrol", "cng"], {
     required_error: "Fuel type is required",
   }),
-  fuel_source: z.enum(["internal_tank", "external_pump"], {
+  fuel_source: z.enum(["internal_tank", "external_vendor"], {
     required_error: "Fuel source is required",
   }),
   vendor_id: z.string().optional(),
@@ -61,13 +61,13 @@ const formSchema = z.object({
   odometer_reading: z.number().min(0).optional(),
   driver_id: z.string().optional(),
 }).refine((data) => {
-  // Require vendor if external pump is selected
-  if (data.fuel_source === "external_pump" && !data.vendor_id) {
+  // Require vendor if external vendor is selected
+  if (data.fuel_source === "external_vendor" && !data.vendor_id) {
     return false;
   }
   return true;
 }, {
-  message: "Vendor is required for external pump",
+  message: "Vendor is required for external vendor",
   path: ["vendor_id"],
 });
 
@@ -243,17 +243,22 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
         return;
       }
 
+      // Find the relevant tank for internal tank fueling
+      const relevantTank = fuelTanks.find(tank => tank.fuel_type === values.fuel_type);
+      
       const fuelLogData = {
         date: format(values.date, 'yyyy-MM-dd'),
         vehicle_id: values.vehicle_id,
         fuel_type: values.fuel_type,
         fuel_source: values.fuel_source,
+        fuel_source_type: values.fuel_source,
         fuel_volume: values.fuel_volume,
         rate_per_liter: values.rate_per_liter || null,
         total_cost: values.total_cost || null,
         odometer_reading: values.odometer_reading || null,
         driver_id: values.driver_id === "no-driver" ? null : values.driver_id || null,
         vendor_id: values.vendor_id || null,
+        internal_tank_id: values.fuel_source === "internal_tank" ? relevantTank?.id || null : null,
         created_by: user.id,
         subsidiary_id: currentSubsidiary?.id || "",
       };
@@ -465,9 +470,9 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="external_pump" id="external_pump" />
-                        <label htmlFor="external_pump" className="text-sm font-medium">
-                          External Pump
+                        <RadioGroupItem value="external_vendor" id="external_vendor" />
+                        <label htmlFor="external_vendor" className="text-sm font-medium">
+                          External Vendor
                         </label>
                       </div>
                     </RadioGroup>
@@ -477,7 +482,7 @@ export const FuelLogDialog = ({ open, onOpenChange, fuelEntry, onSuccess }: Fuel
               )}
             />
 
-            {watchedValues.fuel_source === "external_pump" && (
+            {watchedValues.fuel_source === "external_vendor" && (
               <FormField
                 control={form.control}
                 name="vendor_id"

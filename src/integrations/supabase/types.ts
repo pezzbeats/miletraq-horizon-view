@@ -177,15 +177,19 @@ export type Database = {
           date: string
           driver_id: string | null
           fuel_source: string
+          fuel_source_type: string | null
           fuel_type: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume: number
           id: string
+          internal_tank_id: string | null
           km_driven: number | null
           mileage: number | null
           odometer_reading: number
           previous_reading: number | null
           rate_per_liter: number | null
           subsidiary_id: string
+          tank_level_after: number | null
+          tank_level_before: number | null
           total_cost: number | null
           unit: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at: string | null
@@ -198,15 +202,19 @@ export type Database = {
           date: string
           driver_id?: string | null
           fuel_source: string
+          fuel_source_type?: string | null
           fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume: number
           id?: string
+          internal_tank_id?: string | null
           km_driven?: number | null
           mileage?: number | null
           odometer_reading: number
           previous_reading?: number | null
           rate_per_liter?: number | null
           subsidiary_id: string
+          tank_level_after?: number | null
+          tank_level_before?: number | null
           total_cost?: number | null
           unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
@@ -219,15 +227,19 @@ export type Database = {
           date?: string
           driver_id?: string | null
           fuel_source?: string
+          fuel_source_type?: string | null
           fuel_type?: Database["public"]["Enums"]["fuel_type_enum"] | null
           fuel_volume?: number
           id?: string
+          internal_tank_id?: string | null
           km_driven?: number | null
           mileage?: number | null
           odometer_reading?: number
           previous_reading?: number | null
           rate_per_liter?: number | null
           subsidiary_id?: string
+          tank_level_after?: number | null
+          tank_level_before?: number | null
           total_cost?: number | null
           unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
           updated_at?: string | null
@@ -240,6 +252,13 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_log_internal_tank_id_fkey"
+            columns: ["internal_tank_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_tanks"
             referencedColumns: ["id"]
           },
           {
@@ -420,6 +439,112 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      internal_tank_transactions: {
+        Row: {
+          cost_per_unit: number | null
+          created_at: string | null
+          created_by: string
+          fuel_log_id: string | null
+          id: string
+          level_after: number | null
+          level_before: number | null
+          quantity: number
+          remarks: string | null
+          subsidiary_id: string
+          tank_id: string
+          total_cost: number | null
+          transaction_date: string | null
+          transaction_type: string
+          unit: Database["public"]["Enums"]["fuel_unit_enum"] | null
+          updated_at: string | null
+          vehicle_id: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string | null
+          created_by: string
+          fuel_log_id?: string | null
+          id?: string
+          level_after?: number | null
+          level_before?: number | null
+          quantity: number
+          remarks?: string | null
+          subsidiary_id: string
+          tank_id: string
+          total_cost?: number | null
+          transaction_date?: string | null
+          transaction_type: string
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string | null
+          created_by?: string
+          fuel_log_id?: string | null
+          id?: string
+          level_after?: number | null
+          level_before?: number | null
+          quantity?: number
+          remarks?: string | null
+          subsidiary_id?: string
+          tank_id?: string
+          total_cost?: number | null
+          transaction_date?: string | null
+          transaction_type?: string
+          unit?: Database["public"]["Enums"]["fuel_unit_enum"] | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_tank_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_tank_transactions_fuel_log_id_fkey"
+            columns: ["fuel_log_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_tank_transactions_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_tank_transactions_tank_id_fkey"
+            columns: ["tank_id"]
+            isOneToOne: false
+            referencedRelation: "fuel_tanks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_tank_transactions_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_tank_transactions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       maintenance_categories: {
         Row: {

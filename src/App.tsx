@@ -25,6 +25,8 @@ import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import Subsidiaries from "./pages/Subsidiaries";
 import TankRefills from "./pages/TankRefills";
+import DirectFuelPurchases from "./pages/DirectFuelPurchases";
+import TankTransactionHistory from "./pages/TankTransactionHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +50,9 @@ const App = () => (
                   <Route path="/documents" element={<Documents />} />
                   <Route path="/odometer" element={<Odometer />} />
                   <Route path="/fuel-log" element={<FuelLog />} />
-                  <Route path="/fuel-purchases" element={<TankRefills />} />
+        <Route path="/fuel-purchases" element={<TankRefills />} />
+        <Route path="/direct-fuel-purchases" element={<DirectFuelPurchases />} />
+        <Route path="/tank-transactions" element={<TankTransactionHistory />} />
                   <Route path="/tank-status" element={<TankStatus />} />
                   <Route path="/maintenance" element={<Maintenance />} />
                   <Route path="/categories-master" element={<CategoriesMaster />} />
