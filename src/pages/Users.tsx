@@ -56,6 +56,12 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  useEffect(() => {
+    if (hasPermission('admin')) {
+      fetchUsers();
+    }
+  }, [hasPermission]);
+
   // Check if user has admin permissions
   if (!hasPermission('admin')) {
     return (
@@ -74,10 +80,6 @@ export default function Users() {
       </div>
     );
   }
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const fetchUsers = async () => {
     try {
