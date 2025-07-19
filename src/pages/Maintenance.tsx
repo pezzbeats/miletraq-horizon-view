@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
 import { MaintenanceDialog } from "@/components/maintenance/MaintenanceDialog";
+import { MobileMaintenanceCard } from "@/components/maintenance/MobileMaintenanceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface MaintenanceRecord {
   id: string;
@@ -45,6 +47,7 @@ const Maintenance = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<MaintenanceRecord | null>(null);
+  const isMobile = useIsMobile();
 
   const fetchMaintenanceRecords = async () => {
     try {
@@ -123,10 +126,12 @@ const Maintenance = () => {
           <h1 className="text-3xl font-bold">Maintenance Log</h1>
           <p className="text-muted-foreground">Track vehicle maintenance and service history</p>
         </div>
-        <Button onClick={handleAddRecord} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Maintenance
-        </Button>
+        {!isMobile && (
+          <Button onClick={handleAddRecord} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Maintenance
+          </Button>
+        )}
       </div>
 
       {/* Summary Cards */}
@@ -173,12 +178,45 @@ const Maintenance = () => {
         </Card>
       </div>
 
-      <MaintenanceTable 
-        maintenanceRecords={maintenanceRecords}
-        loading={loading}
-        onEdit={handleEditRecord}
-        onRefresh={fetchMaintenanceRecords}
-      />
+      {/* Maintenance Display - Mobile Cards or Desktop Table */}
+      {isMobile ? (
+        loading ? (
+          <div className="grid grid-cols-1 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-56 bg-muted rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : maintenanceRecords.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Plus className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No maintenance records</h3>
+              <p className="text-muted-foreground mb-4">Start tracking vehicle maintenance</p>
+              <Button onClick={handleAddRecord}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Record
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {maintenanceRecords.map((record) => (
+              <MobileMaintenanceCard
+                key={record.id}
+                record={record}
+                onEdit={handleEditRecord}
+              />
+            ))}
+          </div>
+        )
+      ) : (
+        <MaintenanceTable 
+          maintenanceRecords={maintenanceRecords}
+          loading={loading}
+          onEdit={handleEditRecord}
+          onRefresh={fetchMaintenanceRecords}
+        />
+      )}
 
       <MaintenanceDialog
         open={dialogOpen}
@@ -188,13 +226,15 @@ const Maintenance = () => {
       />
 
       {/* Mobile FAB */}
-      <Button
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg md:hidden"
-        onClick={handleAddRecord}
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {isMobile && (
+        <Button
+          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-50"
+          onClick={handleAddRecord}
+          size="icon"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   );
 };

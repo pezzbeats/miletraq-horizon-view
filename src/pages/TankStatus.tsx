@@ -6,7 +6,9 @@ import { Fuel, Droplets, Zap, TrendingDown, TrendingUp, Plus } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { Button } from "@/components/ui/button";
+import { MobileTankCard } from "@/components/tank-status/MobileTankCard";
 import { format } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FuelTank {
   id: string;
@@ -32,6 +34,7 @@ export default function TankStatus() {
   const [consumption, setConsumption] = useState<ConsumptionData[]>([]);
   const [loading, setLoading] = useState(true);
   const { currentSubsidiary } = useSubsidiary();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (currentSubsidiary?.id) {
@@ -188,72 +191,88 @@ export default function TankStatus() {
         </Button>
       </div>
 
-      {/* Tank Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {tanks.map((tank) => {
-          const percentage = (tank.current_volume / tank.capacity) * 100;
-          const consumptionData = consumption.find(c => c.fuel_type === tank.fuel_type);
-          const daysRemaining = consumptionData 
-            ? calculateDaysRemaining(tank.current_volume, consumptionData.daily_rate)
-            : '∞';
+      {/* Tank Status Display - Mobile Cards or Desktop Cards */}
+      {isMobile ? (
+        <div className="grid grid-cols-1 gap-4">
+          {tanks.map((tank) => {
+            const consumptionData = consumption.find(c => c.fuel_type === tank.fuel_type);
+            return (
+              <MobileTankCard
+                key={tank.id}
+                tank={tank}
+                consumption={consumptionData}
+                onRefillClick={() => window.location.href = '/tank-refills'}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {tanks.map((tank) => {
+            const percentage = (tank.current_volume / tank.capacity) * 100;
+            const consumptionData = consumption.find(c => c.fuel_type === tank.fuel_type);
+            const daysRemaining = consumptionData 
+              ? calculateDaysRemaining(tank.current_volume, consumptionData.daily_rate)
+              : '∞';
 
-          return (
-            <Card key={tank.id} className="relative overflow-hidden">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    {getFuelIcon(tank.fuel_type)}
+            return (
+              <Card key={tank.id} className="relative overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {getFuelIcon(tank.fuel_type)}
+                      <div>
+                        <CardTitle className="text-lg capitalize">{tank.fuel_type} Tank</CardTitle>
+                        <CardDescription>{tank.tank_location}</CardDescription>
+                      </div>
+                    </div>
+                    <Badge variant={percentage > 50 ? "default" : percentage > 20 ? "secondary" : "destructive"}>
+                      {percentage.toFixed(1)}%
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Current Level</span>
+                      <span className={getStatusColor(percentage)}>
+                        {tank.current_volume.toLocaleString()} / {tank.capacity.toLocaleString()} {tank.unit}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={percentage} 
+                      className="h-3"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <CardTitle className="text-lg capitalize">{tank.fuel_type} Tank</CardTitle>
-                      <CardDescription>{tank.tank_location}</CardDescription>
+                      <p className="text-muted-foreground">Days Remaining</p>
+                      <p className="font-semibold text-lg">{daysRemaining}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Low Threshold</p>
+                      <p className="font-medium">{tank.low_threshold} {tank.unit}</p>
                     </div>
                   </div>
-                  <Badge variant={percentage > 50 ? "default" : percentage > 20 ? "secondary" : "destructive"}>
-                    {percentage.toFixed(1)}%
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Current Level</span>
-                    <span className={getStatusColor(percentage)}>
-                      {tank.current_volume.toLocaleString()} / {tank.capacity.toLocaleString()} {tank.unit}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={percentage} 
-                    className="h-3"
-                  />
-                </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Days Remaining</p>
-                    <p className="font-semibold text-lg">{daysRemaining}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Low Threshold</p>
-                    <p className="font-medium">{tank.low_threshold} {tank.unit}</p>
-                  </div>
-                </div>
+                  {percentage <= ((tank.low_threshold / tank.capacity) * 100) && (
+                    <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 p-3 rounded-lg">
+                      <p className="font-medium">⚠️ Low Fuel Alert</p>
+                      <p className="text-sm">Tank level is below threshold</p>
+                    </div>
+                  )}
 
-                {percentage <= ((tank.low_threshold / tank.capacity) * 100) && (
-                  <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 p-3 rounded-lg">
-                    <p className="font-medium">⚠️ Low Fuel Alert</p>
-                    <p className="text-sm">Tank level is below threshold</p>
+                  <div className="text-xs text-muted-foreground">
+                    Last updated: {format(new Date(tank.updated_at || Date.now()), 'MMM dd, yyyy HH:mm')}
                   </div>
-                )}
-
-                <div className="text-xs text-muted-foreground">
-                  Last updated: {format(new Date(tank.updated_at || Date.now()), 'MMM dd, yyyy HH:mm')}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Consumption Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

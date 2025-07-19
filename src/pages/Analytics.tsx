@@ -17,6 +17,8 @@ import { DriverPerformanceChart } from "@/components/analytics/DriverPerformance
 import { MaintenanceAnalysisChart } from "@/components/analytics/MaintenanceAnalysisChart";
 import { BudgetPerformanceChart } from "@/components/analytics/BudgetPerformanceChart";
 import { QuickInsightsPanel } from "@/components/analytics/QuickInsightsPanel";
+import { MobileAnalytics } from "@/components/analytics/MobileAnalytics";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AnalyticsData {
   fuelLogs: any[];
@@ -40,6 +42,7 @@ interface FilterState {
 export default function Analytics() {
   const { profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
+  const isMobile = useIsMobile();
   const [data, setData] = useState<AnalyticsData>({
     fuelLogs: [],
     maintenanceLogs: [],
@@ -343,47 +346,54 @@ export default function Analytics() {
         </Card>
       )}
 
-      {/* KPI Cards */}
-      <AnalyticsKPIs data={filteredData} loading={loading} />
+      {/* Analytics Content - Mobile or Desktop */}
+      {isMobile ? (
+        <MobileAnalytics data={filteredData} loading={loading} />
+      ) : (
+        <>
+          {/* KPI Cards */}
+          <AnalyticsKPIs data={filteredData} loading={loading} />
 
-      {/* Quick Insights */}
-      <QuickInsightsPanel data={filteredData} loading={loading} />
+          {/* Quick Insights */}
+          <QuickInsightsPanel data={filteredData} loading={loading} />
 
-      {/* Charts Section */}
-      <Tabs defaultValue="fuel-efficiency" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
-          <TabsTrigger value="fuel-efficiency">Fuel Efficiency</TabsTrigger>
-          <TabsTrigger value="cost-analysis">Cost Analysis</TabsTrigger>
-          <TabsTrigger value="utilization">Utilization</TabsTrigger>
-          <TabsTrigger value="driver-performance">Driver Performance</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-          <TabsTrigger value="budget">Budget</TabsTrigger>
-        </TabsList>
+          {/* Charts Section */}
+          <Tabs defaultValue="fuel-efficiency" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+              <TabsTrigger value="fuel-efficiency">Fuel Efficiency</TabsTrigger>
+              <TabsTrigger value="cost-analysis">Cost Analysis</TabsTrigger>
+              <TabsTrigger value="utilization">Utilization</TabsTrigger>
+              <TabsTrigger value="driver-performance">Driver Performance</TabsTrigger>
+              <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+              <TabsTrigger value="budget">Budget</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="fuel-efficiency">
-          <FuelEfficiencyChart data={filteredData} loading={loading} />
-        </TabsContent>
+            <TabsContent value="fuel-efficiency">
+              <FuelEfficiencyChart data={filteredData} loading={loading} />
+            </TabsContent>
 
-        <TabsContent value="cost-analysis">
-          <CostAnalysisChart data={filteredData} loading={loading} />
-        </TabsContent>
+            <TabsContent value="cost-analysis">
+              <CostAnalysisChart data={filteredData} loading={loading} />
+            </TabsContent>
 
-        <TabsContent value="utilization">
-          <VehicleUtilizationChart data={filteredData} loading={loading} />
-        </TabsContent>
+            <TabsContent value="utilization">
+              <VehicleUtilizationChart data={filteredData} loading={loading} />
+            </TabsContent>
 
-        <TabsContent value="driver-performance">
-          <DriverPerformanceChart data={filteredData} loading={loading} />
-        </TabsContent>
+            <TabsContent value="driver-performance">
+              <DriverPerformanceChart data={filteredData} loading={loading} />
+            </TabsContent>
 
-        <TabsContent value="maintenance">
-          <MaintenanceAnalysisChart data={filteredData} loading={loading} />
-        </TabsContent>
+            <TabsContent value="maintenance">
+              <MaintenanceAnalysisChart data={filteredData} loading={loading} />
+            </TabsContent>
 
-        <TabsContent value="budget">
-          <BudgetPerformanceChart data={filteredData} loading={loading} />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="budget">
+              <BudgetPerformanceChart data={filteredData} loading={loading} />
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
 
       {/* Empty State */}
       {!loading && 

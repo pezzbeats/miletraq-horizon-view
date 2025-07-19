@@ -12,6 +12,8 @@ import { toast } from '@/hooks/use-toast';
 import { UserDialog } from '@/components/users/UserDialog';
 import { ChangePasswordDialog } from '@/components/users/ChangePasswordDialog';
 import { DeleteUserDialog } from '@/components/users/DeleteUserDialog';
+import { MobileUserCard } from '@/components/users/MobileUserCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Table,
   TableBody,
@@ -55,6 +57,7 @@ export default function Users() {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (hasPermission('admin')) {
@@ -230,7 +233,7 @@ export default function Users() {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
+      {/* Users Display - Mobile Cards or Desktop Table */}
       <Card>
         <CardContent className="p-0">
           {filteredUsers.length === 0 ? (
@@ -250,7 +253,25 @@ export default function Users() {
                 </Button>
               )}
             </div>
+          ) : isMobile ? (
+            /* Mobile Card Layout */
+            <div className="p-4">
+              <div className="grid grid-cols-1 gap-4">
+                {filteredUsers.map((user) => (
+                  <MobileUserCard
+                    key={user.id}
+                    user={user}
+                    onEdit={(user) => handleUserAction('edit', user)}
+                    onDelete={(user) => handleUserAction('delete', user)}
+                    onChangePassword={(user) => handleUserAction('change-password', user)}
+                    onToggleStatus={(user) => handleUserAction('toggle-status', user)}
+                    currentUserId={profile?.id}
+                  />
+                ))}
+              </div>
+            </div>
           ) : (
+            /* Desktop Table Layout */
             <Table>
               <TableHeader>
                 <TableRow>

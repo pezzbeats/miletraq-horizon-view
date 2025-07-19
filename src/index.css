@@ -146,6 +146,146 @@
     --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.3);
     --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
+
+  /* Mobile-specific styles */
+  .mobile-card {
+    @apply transition-all duration-200 hover:shadow-md;
+  }
+
+  .mobile-kpi-card {
+    @apply p-3 rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-chart {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-vehicle-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-driver-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-fuel-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-maintenance-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-tank-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-user-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-pwa-features {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  .mobile-touch-gestures {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* Touch target optimization */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Safe area handling for notched devices */
+  @supports (padding: max(0px)) {
+    .safe-area-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    
+    .safe-area-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+    
+    .safe-area-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Mobile gesture animations */
+  .active\\:scale-98:active {
+    transform: scale(0.98);
+  }
+
+  /* Pull to refresh animation */
+  .pull-to-refresh {
+    @apply transition-transform duration-200 ease-out;
+  }
+
+  .pull-to-refresh.pulling {
+    transform: translateY(50px);
+  }
+
+  /* Loading states for mobile */
+  .mobile-skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* Mobile chart styles */
+  .mobile-chart .recharts-wrapper {
+    @apply touch-pan-x touch-pan-y;
+  }
+
+  /* Mobile navigation */
+  .mobile-nav-item {
+    @apply touch-target flex flex-col items-center justify-center space-y-1 text-xs font-medium transition-colors;
+  }
+
+  .mobile-nav-item.active {
+    @apply text-primary;
+  }
+
+  /* Mobile FAB animation */
+  .mobile-fab {
+    @apply transition-all duration-300 hover:scale-105 active:scale-95;
+  }
+
+  /* Improved mobile form styles */
+  @media (max-width: 768px) {
+    .mobile-form-section {
+      @apply space-y-4 p-4 border rounded-lg;
+    }
+    
+    .mobile-form-field {
+      @apply space-y-2;
+    }
+    
+    .mobile-form-label {
+      @apply text-sm font-medium;
+    }
+    
+    .mobile-form-input {
+      @apply h-12 text-base; /* Larger inputs for easier mobile interaction */
+    }
+  }
+
+  /* Responsive text utilities */
+  .text-responsive {
+    @apply text-sm md:text-base;
+  }
+
+  .text-responsive-lg {
+    @apply text-base md:text-lg;
+  }
+
+  .text-responsive-xl {
+    @apply text-lg md:text-xl;
+  }
+}
 }
 
 @layer base {
