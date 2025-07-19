@@ -155,7 +155,6 @@ export const SubsidiaryDialog = ({
         contact_person: values.contact_person?.trim() || null,
         phone: values.phone?.trim() || null,
         email: values.email?.trim() || null,
-        created_by: user.id,
         is_active: true,
       };
 
