@@ -21,8 +21,6 @@ export default {
 		extend: {
 			fontFamily: {
 				'inter': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-				'mono': ['JetBrains Mono', 'Courier New', 'monospace'],
-				'display': ['Roboto', 'sans-serif'],
 			},
 			screens: {
 				'xs': '320px',
@@ -80,22 +78,6 @@ export default {
 				glass: {
 					DEFAULT: 'var(--glass-background)',
 					border: 'var(--glass-border)'
-				},
-				automotive: {
-					navy: 'var(--primary-navy)',
-					blue: 'var(--primary-blue)',
-					dark: 'var(--primary-dark)',
-					orange: 'var(--accent-orange)',
-					green: 'var(--accent-green)',
-					red: 'var(--accent-red)',
-					gray: 'var(--neutral-gray)',
-					light: 'var(--neutral-light)',
-					white: 'var(--neutral-white)',
-					black: 'var(--neutral-dark)',
-					success: 'var(--status-success)',
-					warning: 'var(--status-warning)',
-					danger: 'var(--status-danger)',
-					info: 'var(--status-info)'
 				}
 			},
 			borderRadius: {
@@ -161,31 +143,6 @@ export default {
 					'50%': {
 						boxShadow: '0 0 0 8px hsl(var(--primary) / 0)'
 					}
-				},
-				'gear-rotate': {
-					from: { transform: 'rotate(0deg)' },
-					to: { transform: 'rotate(360deg)' }
-				},
-				'fuel-pump': {
-					'0%, 100%': { transform: 'scale(1)' },
-					'50%': { transform: 'scale(1.1)' }
-				},
-				'speedometer-sweep': {
-					from: { transform: 'rotate(-90deg)' },
-					to: { transform: 'rotate(90deg)' }
-				},
-				'engine-start': {
-					'0%': { opacity: '0', transform: 'scale(0.8)' },
-					'50%': { opacity: '0.8', transform: 'scale(1.1)' },
-					'100%': { opacity: '1', transform: 'scale(1)' }
-				},
-				'led-pulse': {
-					'0%, 100%': { opacity: '1' },
-					'50%': { opacity: '0.6' }
-				},
-				'dashboard-glow': {
-					'0%, 100%': { boxShadow: '0 0 5px rgb(59 130 246)' },
-					'50%': { boxShadow: '0 0 20px rgb(59 130 246)' }
 				}
 			},
 			animation: {
@@ -194,13 +151,7 @@ export default {
 				'fade-in-scale': 'fade-in-scale 0.3s ease-out',
 				'slide-up': 'slide-up 0.3s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-				'gear-rotate': 'gear-rotate 2s linear infinite',
-				'fuel-pump': 'fuel-pump 1s ease-in-out infinite',
-				'speedometer-sweep': 'speedometer-sweep 1s ease-out',
-				'engine-start': 'engine-start 0.8s ease-out',
-				'led-pulse': 'led-pulse 2s ease-in-out infinite',
-				'dashboard-glow': 'dashboard-glow 3s ease-in-out infinite'
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},

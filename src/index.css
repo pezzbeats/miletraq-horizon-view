@@ -1,171 +1,150 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* MileTraq Automotive Theme System */
+/* MileTraq Glassmorphism Design System */
 
 @layer base {
   :root {
-    /* Automotive Color Palette */
-    --primary-navy: #1e3a8a;
-    --primary-blue: #3b82f6;
-    --primary-dark: #1e40af;
+    /* Base Colors */
+    --background: 240 20% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Glass morphism specific */
+    --glass-background: 255 255 255 / 0.1;
+    --glass-border: 255 255 255 / 0.2;
+    --glass-backdrop: blur(20px);
     
-    --accent-orange: #ea580c;
-    --accent-green: #16a34a;
-    --accent-red: #dc2626;
+    /* Primary Brand Colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 217 91% 70%;
     
-    --neutral-gray: #374151;
-    --neutral-light: #f8fafc;
-    --neutral-white: #ffffff;
-    --neutral-dark: #111827;
-    
-    --status-success: #10b981;
-    --status-warning: #f59e0b;
-    --status-danger: #ef4444;
-    --status-info: #06b6d4;
-    
-    /* Automotive Gradients */
-    --gradient-primary: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
-    --gradient-dashboard: linear-gradient(180deg, var(--neutral-dark) 0%, var(--primary-navy) 100%);
-    --gradient-card: linear-gradient(145deg, var(--neutral-white) 0%, #f1f5f9 100%);
-    --gradient-metallic: linear-gradient(145deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
-    --gradient-instrument: linear-gradient(180deg, #1f2937 0%, #374151 100%);
-    
-    /* Typography System */
-    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-    --font-display: 'Roboto', sans-serif;
-    
-    /* Shadcn Variables (converted to automotive theme) */
-    --background: 248 250 252;
-    --foreground: 15 23 42;
-    
-    --primary: 30 58 138;
-    --primary-foreground: 248 250 252;
-    --primary-glow: 59 130 246;
-    
-    --secondary: 241 245 249;
-    --secondary-foreground: 15 23 42;
-    
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
-    --card-border: 226 232 240;
-    
-    --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
-    
-    --muted: 248 250 252;
-    --muted-foreground: 100 116 139;
-    
-    --accent: 59 130 246;
-    --accent-foreground: 248 250 252;
-    
-    --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
-    
-    --border: 226 232 240;
-    --input: 255 255 255;
-    --ring: 59 130 246;
-    
+    /* Secondary Colors */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Surface Colors */
+    --card: 0 0% 100% / 0.8;
+    --card-foreground: 222.2 84% 4.9%;
+    --card-border: 0 0% 100% / 0.2;
+
+    --popover: 0 0% 100% / 0.95;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Interactive Colors */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Form Colors */
+    --border: 214.3 31.8% 91.4%;
+    --input: 0 0% 100% / 0.8;
+    --ring: 217 91% 60%;
+
+    /* Radius */
     --radius: 1rem;
+
+    /* Sidebar Colors */
+    --sidebar-background: 0 0% 98% / 0.9;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9% / 0.8;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91% / 0.3;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Enhanced Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(240 20% 98%) 0%, hsl(220 20% 95%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 55%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(45 93% 47%) 100%);
+    --gradient-error: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 72% 51%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(201 96% 32%) 100%);
+    --gradient-purple: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 90% 74%) 100%);
+    --gradient-pink: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(346 87% 43%) 100%);
+    --gradient-orange: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(20 90% 48%) 100%);
+    --gradient-teal: linear-gradient(135deg, hsl(173 80% 40%) 0%, hsl(172 76% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
+    --gradient-header: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(262 83% 58%) 100%);
     
-    /* Sidebar Variables */
-    --sidebar-background: 248 250 252;
-    --sidebar-foreground: 55 65 81;
-    --sidebar-primary: 30 58 138;
-    --sidebar-primary-foreground: 248 250 252;
-    --sidebar-accent: 241 245 249;
-    --sidebar-accent-foreground: 15 23 42;
-    --sidebar-border: 226 232 240;
-    --sidebar-ring: 59 130 246;
-    
-    /* Automotive Shadows */
-    --shadow-instrument: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-dashboard: 0 4px 16px rgba(0, 0, 0, 0.15);
-    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.12);
-    --shadow-glow: 0 0 20px var(--primary-blue);
-    --shadow-led: 0 0 10px var(--status-success);
+    /* Enhanced Shadows */
+    --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.15);
+    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.1);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-colored: 0 10px 30px rgba(59, 130, 246, 0.15);
+    --shadow-success: 0 8px 25px rgba(34, 197, 94, 0.15);
+    --shadow-warning: 0 8px 25px rgba(251, 191, 36, 0.15);
+    --shadow-glow: 0 0 50px rgba(59, 130, 246, 0.2);
   }
 
   .dark {
-    /* Dark Automotive Theme */
-    --primary-navy: #1e40af;
-    --primary-blue: #60a5fa;
-    --primary-dark: #1e3a8a;
+    /* Base Colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    /* Glass morphism specific - darker */
+    --glass-background: 255 255 255 / 0.05;
+    --glass-border: 255 255 255 / 0.1;
     
-    --accent-orange: #fb923c;
-    --accent-green: #34d399;
-    --accent-red: #f87171;
-    
-    --neutral-gray: #9ca3af;
-    --neutral-light: #111827;
-    --neutral-white: #1f2937;
-    --neutral-dark: #000000;
-    
-    --status-success: #34d399;
-    --status-warning: #fbbf24;
-    --status-danger: #f87171;
-    --status-info: #38bdf8;
-    
+    /* Primary stays consistent */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-glow: 217 91% 70%;
+
+    /* Surface Colors */
+    --card: 0 0% 0% / 0.4;
+    --card-foreground: 210 40% 98%;
+    --card-border: 255 255 255 / 0.1;
+
+    --popover: 222.2 84% 4.9% / 0.95;
+    --popover-foreground: 210 40% 98%;
+
+    /* Interactive Colors */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Form Colors */
+    --border: 217.2 32.6% 17.5%;
+    --input: 0 0% 0% / 0.4;
+    --ring: 217 91% 60%;
+
+    /* Sidebar Colors */
+    --sidebar-background: 240 5.9% 10% / 0.9;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9% / 0.8;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9% / 0.3;
+    --sidebar-ring: 217 91% 60%;
+
     /* Dark Gradients */
-    --gradient-primary: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
-    --gradient-dashboard: linear-gradient(180deg, var(--neutral-dark) 0%, var(--primary-navy) 100%);
-    --gradient-card: linear-gradient(145deg, var(--neutral-white) 0%, #374151 100%);
-    --gradient-metallic: linear-gradient(145deg, #4b5563 0%, #374151 50%, #4b5563 100%);
-    --gradient-instrument: linear-gradient(180deg, #000000 0%, #1f2937 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(222.2 84% 4.9%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
     
-    /* Shadcn Dark Variables */
-    --background: 15 23 42;
-    --foreground: 248 250 252;
-    
-    --primary: 59 130 246;
-    --primary-foreground: 15 23 42;
-    --primary-glow: 96 165 250;
-    
-    --secondary: 31 41 55;
-    --secondary-foreground: 248 250 252;
-    
-    --card: 31 41 55;
-    --card-foreground: 248 250 252;
-    --card-border: 75 85 99;
-    
-    --popover: 31 41 55;
-    --popover-foreground: 248 250 252;
-    
-    --muted: 15 23 42;
-    --muted-foreground: 156 163 175;
-    
-    --accent: 59 130 246;
-    --accent-foreground: 15 23 42;
-    
-    --destructive: 248 113 113;
-    --destructive-foreground: 248 250 252;
-    
-    --border: 75 85 99;
-    --input: 31 41 55;
-    --ring: 59 130 246;
-    
-    /* Dark Sidebar Variables */
-    --sidebar-background: 15 23 42;
-    --sidebar-foreground: 156 163 175;
-    --sidebar-primary: 59 130 246;
-    --sidebar-primary-foreground: 248 250 252;
-    --sidebar-accent: 31 41 55;
-    --sidebar-accent-foreground: 248 250 252;
-    --sidebar-border: 75 85 99;
-    --sidebar-ring: 59 130 246;
-    
-    /* Dark Automotive Shadows */
-    --shadow-instrument: 0 8px 32px rgba(0, 0, 0, 0.6);
-    --shadow-dashboard: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px var(--primary-blue);
-    --shadow-led: 0 0 10px var(--status-success);
+    /* Dark Shadows */
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
   /* Mobile-specific styles */
@@ -314,337 +293,77 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-primary);
-    background: hsl(var(--background));
+    @apply bg-background text-foreground font-inter;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--gradient-backdrop);
     min-height: 100vh;
   }
 }
 
 @layer components {
-  /* ========== AUTOMOTIVE DASHBOARD COMPONENTS ========== */
-  
-  /* Dashboard Header (HUD Style) */
-  .dashboard-header {
-    @apply relative border-b;
-    background: var(--gradient-dashboard);
-    border-color: hsl(var(--border));
-    box-shadow: var(--shadow-dashboard);
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply relative backdrop-blur-md border rounded-2xl;
+    background: var(--glass-background);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-glass);
   }
-  
-  /* Navigation Sidebar (Gear Panel Style) */
-  .automotive-sidebar {
-    background: var(--gradient-metallic);
-    border-right: 2px solid hsl(var(--border));
-    box-shadow: var(--shadow-instrument);
+
+  .glass-card::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl pointer-events-none;
+    background: var(--gradient-glass);
+    z-index: -1;
   }
-  
-  /* Odometer KPI Card */
-  .odometer-card {
-    @apply relative rounded-2xl p-6 transition-all duration-300 hover:scale-105;
-    background: var(--gradient-card);
-    border: 2px solid hsl(var(--border));
-    box-shadow: var(--shadow-dashboard);
+
+  /* Enhanced Card */
+  .enhanced-card {
+    @apply glass-card p-6 transition-all duration-300 hover:scale-[1.02];
+    box-shadow: var(--shadow-card);
   }
-  
-  .odometer-card:hover {
+
+  .enhanced-card:hover {
     box-shadow: var(--shadow-float);
   }
-  
-  .odometer-display {
-    font-family: var(--font-mono);
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: var(--primary-navy);
-    text-align: center;
-    letter-spacing: 0.1em;
-  }
-  
-  /* Vehicle Card (Car Dashboard Style) */
-  .vehicle-card {
-    @apply relative rounded-xl p-4 transition-all duration-300;
-    background: var(--neutral-white);
-    border: 1px solid hsl(var(--border));
-    box-shadow: var(--shadow-dashboard);
-  }
-  
-  .vehicle-card:hover {
-    transform: translateY(-4px);
+
+  /* Mobile FAB */
+  .fab {
+    @apply fixed bottom-6 right-6 z-50 rounded-full p-4 shadow-lg transition-all duration-300;
+    background: var(--gradient-primary);
     box-shadow: var(--shadow-float);
   }
-  
-  /* Status Light (LED Indicator) */
-  .status-light {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--status-success);
-    box-shadow: var(--shadow-led);
-    animation: pulse 2s infinite;
+
+  .fab:hover {
+    @apply scale-110;
   }
-  
-  .status-light.warning {
-    background: var(--status-warning);
-    box-shadow: 0 0 10px var(--status-warning);
+
+  /* Glass Input */
+  .glass-input {
+    @apply backdrop-blur-md border rounded-lg px-4 py-2 transition-all;
+    background: var(--glass-background);
+    border-color: var(--glass-border);
   }
-  
-  .status-light.danger {
-    background: var(--status-danger);
-    box-shadow: 0 0 10px var(--status-danger);
+
+  .glass-input:focus {
+    @apply outline-none ring-2;
+    ring-color: var(--ring);
+    background: var(--input);
   }
-  
-  /* Fuel Gauge Visualization */
-  .fuel-gauge {
-    @apply relative rounded-full;
-    width: 120px;
-    height: 120px;
-    background: conic-gradient(from 180deg, var(--status-danger) 0deg, var(--status-warning) 120deg, var(--status-success) 240deg);
-    border: 4px solid hsl(var(--border));
+
+  /* Mobile Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md border-t;
+    background: var(--glass-background);
+    border-color: var(--glass-border);
   }
-  
-  /* Mini Gauge for Vehicle Cards */
-  .mini-gauge {
-    @apply relative rounded-full;
-    width: 40px;
-    height: 40px;
-    background: conic-gradient(from 180deg, #e5e7eb 0deg, var(--primary-blue) var(--gauge-angle, 180deg), #e5e7eb var(--gauge-angle, 180deg));
-    border: 2px solid hsl(var(--border));
+
+  /* Desktop Sidebar */
+  .desktop-sidebar {
+    @apply backdrop-blur-md border-r;
+    background: var(--sidebar-background);
+    border-color: var(--sidebar-border);
   }
-  
-  /* Dashboard Button (Hardware Switch Style) */
-  .dashboard-button {
-    @apply relative rounded-lg px-4 py-2 font-medium transition-all duration-200;
-    background: var(--gradient-metallic);
-    border: 2px solid hsl(var(--border));
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .dashboard-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .dashboard-button:active {
-    transform: scale(0.95);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Speedometer Style Gauge */
-  .speedometer-gauge {
-    @apply relative rounded-full;
-    width: 200px;
-    height: 200px;
-    background: var(--gradient-instrument);
-    border: 8px solid hsl(var(--border));
-    box-shadow: var(--shadow-instrument);
-  }
-  
-  .speedometer-needle {
-    @apply absolute top-1/2 left-1/2 origin-bottom;
-    width: 4px;
-    height: 80px;
-    background: var(--accent-red);
-    transform: translate(-50%, -100%) rotate(var(--needle-angle, -90deg));
-    transition: transform 0.5s ease-out;
-    border-radius: 2px;
-  }
-  
-  /* Fuel Tank Display */
-  .fuel-tank-container {
-    @apply relative rounded-lg p-4;
-    background: var(--gradient-instrument);
-    border: 2px solid hsl(var(--border));
-    box-shadow: var(--shadow-dashboard);
-  }
-  
-  .fuel-tank-body {
-    @apply relative rounded-lg overflow-hidden;
-    width: 80px;
-    height: 120px;
-    background: hsl(var(--muted));
-    border: 2px solid hsl(var(--border));
-  }
-  
-  .fuel-level {
-    @apply absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out;
-    background: var(--primary-blue);
-    height: var(--fuel-height, 50%);
-    box-shadow: 0 0 20px var(--primary-blue);
-  }
-  
-  /* Engine Status Panel */
-  .engine-status-panel {
-    @apply grid grid-cols-2 gap-4 p-4 rounded-lg;
-    background: var(--gradient-instrument);
-    border: 2px solid hsl(var(--border));
-    box-shadow: var(--shadow-instrument);
-  }
-  
-  .component-status {
-    @apply flex items-center space-x-2 p-2 rounded;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Mobile Bottom Navigation (Car Control Panel Style) */
-  .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 grid grid-cols-5 gap-1 p-2;
-    background: var(--neutral-white);
-    border-top: 1px solid hsl(var(--border));
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
-  }
-  
-  .nav-button {
-    @apply flex flex-col items-center p-2 rounded-lg transition-all duration-200 touch-target;
-    min-height: 44px;
-    background: transparent;
-  }
-  
-  .nav-button.active {
-    background: var(--primary-blue);
-    color: var(--neutral-white);
-    box-shadow: var(--shadow-glow);
-  }
-  
-  .nav-button:hover {
-    background: hsl(var(--muted));
-  }
-  
-  /* ========== AUTOMOTIVE ANIMATIONS ========== */
-  
-  /* Gear rotation for processing */
-  @keyframes gear-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
-  /* Fuel pump animation */
-  @keyframes fuel-pump {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-  }
-  
-  /* Speedometer sweep */
-  @keyframes speedometer-sweep {
-    from { transform: rotate(-90deg); }
-    to { transform: rotate(var(--needle-angle)); }
-  }
-  
-  /* Engine start animation */
-  @keyframes engine-start {
-    0% { opacity: 0; transform: scale(0.8); }
-    50% { opacity: 0.8; transform: scale(1.1); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  
-  /* LED pulse animation */
-  @keyframes led-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-  
-  /* Dashboard illumination */
-  @keyframes dashboard-glow {
-    0%, 100% { box-shadow: 0 0 5px var(--primary-blue); }
-    50% { box-shadow: 0 0 20px var(--primary-blue); }
-  }
-  
-  /* ========== UTILITY CLASSES ========== */
-  
-  /* Gear animation utility */
-  .animate-gear {
-    animation: gear-rotate 2s linear infinite;
-  }
-  
-  /* Fuel pump animation utility */
-  .animate-fuel-pump {
-    animation: fuel-pump 1s ease-in-out infinite;
-  }
-  
-  /* Speedometer sweep utility */
-  .animate-speedometer {
-    animation: speedometer-sweep 1s ease-out;
-  }
-  
-  /* Engine start utility */
-  .animate-engine-start {
-    animation: engine-start 0.8s ease-out;
-  }
-  
-  /* LED pulse utility */
-  .animate-led-pulse {
-    animation: led-pulse 2s ease-in-out infinite;
-  }
-  
-  /* Dashboard glow utility */
-  .animate-dashboard-glow {
-    animation: dashboard-glow 3s ease-in-out infinite;
-  }
-  
-  /* Button press effect */
-  .btn-automotive {
-    @apply dashboard-button;
-  }
-  
-  /* Card hover effect (lifting hood) */
-  .card-automotive {
-    @apply vehicle-card;
-  }
-  
-  .card-automotive:hover {
-    transform: translateY(-4px) rotateX(5deg);
-    box-shadow: var(--shadow-float);
-  }
-  
-  /* Icon glow effect */
-  .icon-glow {
-    filter: drop-shadow(0 0 8px var(--primary-blue));
-    transition: filter 0.3s ease;
-  }
-  
-  /* Metallic surface */
-  .surface-metallic {
-    background: var(--gradient-metallic);
-    border: 1px solid hsl(var(--border));
-  }
-  
-  /* Instrument cluster background */
-  .surface-instrument {
-    background: var(--gradient-instrument);
-    color: var(--neutral-white);
-  }
-  
-  /* ========== CHART STYLING ========== */
-  
-  .chart-container {
-    @apply rounded-xl p-6;
-    background: var(--neutral-white);
-    border: 1px solid hsl(var(--border));
-    box-shadow: var(--shadow-dashboard);
-  }
-  
-  .chart-grid {
-    stroke: hsl(var(--border));
-    stroke-width: 1;
-    stroke-dasharray: 2,2;
-  }
-  
-  .chart-line {
-    stroke: var(--primary-blue);
-    stroke-width: 3;
-    fill: none;
-    filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
-  }
-  
-  .chart-point {
-    fill: var(--primary-blue);
-    stroke: var(--neutral-white);
-    stroke-width: 2;
-    r: 4;
-  }
-  
-  /* ========== RESPONSIVE UTILITIES ========== */
-  
+
   /* Hide scrollbars */
   .no-scrollbar {
     -ms-overflow-style: none;
@@ -654,13 +373,13 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Mobile responsive table */
   .mobile-table th:nth-child(n+4),
   .mobile-table td:nth-child(n+4) {
     @apply hidden lg:table-cell;
   }
-  
+
   /* Gradient text */
   .gradient-text {
     background: var(--gradient-primary);
@@ -668,23 +387,111 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
-  /* Status indicators */
+
+  /* Gradient Utilities */
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-success { background: var(--gradient-success); }
+  .gradient-warning { background: var(--gradient-warning); }
+  .gradient-error { background: var(--gradient-error); }
+  .gradient-info { background: var(--gradient-info); }
+  .gradient-purple { background: var(--gradient-purple); }
+  .gradient-pink { background: var(--gradient-pink); }
+  .gradient-orange { background: var(--gradient-orange); }
+  .gradient-teal { background: var(--gradient-teal); }
+  .gradient-card { background: var(--gradient-card); }
+  .gradient-header { background: var(--gradient-header); }
+
+  /* Enhanced Card Variants */
+  .card-success {
+    @apply glass-card border-green-200/50;
+    background: linear-gradient(145deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+    box-shadow: var(--shadow-success);
+  }
+
+  .card-warning {
+    @apply glass-card border-yellow-200/50;
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+    box-shadow: var(--shadow-warning);
+  }
+
+  .card-info {
+    @apply glass-card border-blue-200/50;
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    box-shadow: var(--shadow-colored);
+  }
+
+  .card-purple {
+    @apply glass-card border-purple-200/50;
+    background: linear-gradient(145deg, rgba(147, 51, 234, 0.1), rgba(147, 51, 234, 0.05));
+  }
+
+  /* Button Variants */
+  .btn-gradient {
+    @apply relative overflow-hidden rounded-lg px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-colored);
+  }
+
+  .btn-gradient:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-gradient::before {
+    content: '';
+    @apply absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  }
+
+  .btn-gradient:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Modal Enhancements */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 backdrop-blur-sm;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-content {
+    @apply glass-card border-2 animate-fade-in-scale;
+    background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+    border-color: rgba(255,255,255,0.3);
+    box-shadow: var(--shadow-float);
+  }
+
+  /* Header with gradient */
+  .gradient-header-text {
+    background: var(--gradient-header);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Interactive hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:-translate-y-1;
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Status indicators with gradients */
   .status-active {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white;
-    background: var(--status-success);
-    box-shadow: 0 0 10px var(--status-success);
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    background: var(--gradient-success);
+    color: white;
   }
-  
+
   .status-warning {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white;
-    background: var(--status-warning);
-    box-shadow: 0 0 10px var(--status-warning);
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    background: var(--gradient-warning);
+    color: white;
   }
-  
-  .status-danger {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white;
-    background: var(--status-danger);
-    box-shadow: 0 0 10px var(--status-danger);
+
+  .status-inactive {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    background: var(--gradient-error);
+    color: white;
   }
 }
