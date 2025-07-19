@@ -16,9 +16,14 @@ type Vehicle = Tables<'vehicles'> & {
   default_driver?: {
     name: string;
   } | null;
+  subsidiary?: {
+    subsidiary_name: string;
+    business_type: string;
+  } | null;
 };
 
 interface Filters {
+  subsidiary: string;
   status: string;
   fuelType: string;
   make: string;
@@ -26,12 +31,14 @@ interface Filters {
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [subsidiaries, setSubsidiaries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Filters>({
+    subsidiary: '',
     status: '',
     fuelType: '',
-    make: ''
+    make: '',
   });
   const [sortBy, setSortBy] = useState<keyof Vehicle>('vehicle_number');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -45,7 +52,23 @@ const Vehicles = () => {
 
   useEffect(() => {
     fetchVehicles();
+    fetchSubsidiaries();
   }, []);
+
+  const fetchSubsidiaries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subsidiaries')
+        .select('*')
+        .eq('is_active', true)
+        .order('subsidiary_name');
+
+      if (error) throw error;
+      setSubsidiaries(data || []);
+    } catch (error) {
+      console.error('Error fetching subsidiaries:', error);
+    }
+  };
 
   const fetchVehicles = async () => {
     try {
@@ -207,6 +230,7 @@ const Vehicles = () => {
               filters={filters}
               onFiltersChange={setFilters}
               vehicles={vehicles}
+              subsidiaries={subsidiaries}
             />
           </div>
         </CardContent>

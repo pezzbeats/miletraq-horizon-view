@@ -23,6 +23,7 @@ import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 
 type Vehicle = Tables<'vehicles'>;
 type Driver = Tables<'drivers'>;
+type Subsidiary = Tables<'subsidiaries'>;
 
 const fuelTypes = [
   { value: 'diesel', label: 'Diesel' },
@@ -41,6 +42,8 @@ const vehicleStatuses = [
 const currentYear = new Date().getFullYear();
 
 const vehicleSchema = z.object({
+  vehicle_name: z.string().min(1, 'Vehicle name is required').max(20, 'Vehicle name must be under 20 characters'),
+  subsidiary_id: z.string().min(1, 'Subsidiary is required'),
   vehicle_number: z.string().min(1, 'Vehicle number is required'),
   make: z.string().min(1, 'Make is required'),
   model: z.string().min(1, 'Model is required'),
@@ -75,10 +78,11 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
   onSuccess,
 }) => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [subsidiaries, setSubsidiaries] = useState<Subsidiary[]>([]);
   const [loading, setLoading] = useState(false);
   const [driverComboOpen, setDriverComboOpen] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
 
   const form = useForm<VehicleFormData>({
@@ -87,15 +91,19 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
       status: 'active',
       fuel_types: ['diesel'],
       default_fuel_type: 'diesel',
+      subsidiary_id: currentSubsidiary?.id || '',
     },
   });
 
   useEffect(() => {
     if (open) {
       fetchDrivers();
+      fetchSubsidiaries();
       if (vehicle) {
         // Populate form with vehicle data
         form.reset({
+          vehicle_name: vehicle.vehicle_name || '',
+          subsidiary_id: vehicle.subsidiary_id || currentSubsidiary?.id || '',
           vehicle_number: vehicle.vehicle_number,
           make: vehicle.make,
           model: vehicle.model,
@@ -118,17 +126,22 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
           status: 'active',
           fuel_types: ['diesel'],
           default_fuel_type: 'diesel',
+          subsidiary_id: currentSubsidiary?.id || '',
         });
       }
     }
-  }, [open, vehicle, form]);
+  }, [open, vehicle, form, currentSubsidiary]);
 
   const fetchDrivers = async () => {
     try {
+      const selectedSubsidiaryId = form.watch('subsidiary_id') || currentSubsidiary?.id;
+      if (!selectedSubsidiaryId) return;
+
       const { data, error } = await supabase
         .from('drivers')
         .select('*')
         .eq('is_active', true)
+        .eq('subsidiary_id', selectedSubsidiaryId)
         .order('name');
 
       if (error) throw error;
@@ -138,6 +151,35 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
       toast({
         title: 'Error',
         description: 'Failed to load drivers.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchSubsidiaries = async () => {
+    try {
+      let query = supabase
+        .from('subsidiaries')
+        .select('*')
+        .eq('is_active', true)
+        .order('subsidiary_name');
+
+      // If not super admin, filter by accessible subsidiaries
+      if (!profile?.is_super_admin) {
+        const accessibleSubsidiaryIds = profile?.subsidiary_access as string[] || [];
+        if (accessibleSubsidiaryIds.length > 0) {
+          query = query.in('id', accessibleSubsidiaryIds);
+        }
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setSubsidiaries(data || []);
+    } catch (error) {
+      console.error('Error fetching subsidiaries:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load subsidiaries.',
         variant: 'destructive',
       });
     }
@@ -165,7 +207,26 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
         return;
       }
 
+      // Check for duplicate vehicle name within subsidiary
+      const { data: existingName, error: nameCheckError } = await supabase
+        .from('vehicles')
+        .select('id')
+        .eq('vehicle_name', data.vehicle_name)
+        .eq('subsidiary_id', data.subsidiary_id)
+        .neq('id', vehicle?.id || '');
+
+      if (nameCheckError) throw nameCheckError;
+
+      if (existingName && existingName.length > 0) {
+        form.setError('vehicle_name', {
+          message: 'Vehicle name already exists in this subsidiary',
+        });
+        return;
+      }
+
       const vehicleData = {
+        vehicle_name: data.vehicle_name,
+        subsidiary_id: data.subsidiary_id,
         vehicle_number: data.vehicle_number,
         make: data.make,
         model: data.model,
@@ -185,7 +246,6 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
         puc_expiry: data.puc_expiry?.toISOString().split('T')[0] || null,
         permit_expiry: data.permit_expiry?.toISOString().split('T')[0] || null,
         created_by: user.id,
-        subsidiary_id: currentSubsidiary?.id || "",
       };
 
       let error;
@@ -232,12 +292,70 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{vehicle ? 'Edit Vehicle' : 'Add New Vehicle'}</DialogTitle>
+          <DialogTitle>
+            {vehicle ? `Edit Vehicle: ${vehicle.vehicle_name || vehicle.vehicle_number}` : 'Add New Vehicle'}
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Configure vehicle details and subsidiary assignment
+          </p>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Vehicle Name */}
+              <FormField
+                control={form.control}
+                name="vehicle_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., S-1, M-5, C-3, EECO" {...field} />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Short identifier used for daily operations
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Subsidiary */}
+              <FormField
+                control={form.control}
+                name="subsidiary_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subsidiary *</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Clear driver selection when subsidiary changes
+                        form.setValue('default_driver_id', undefined);
+                        // Refetch drivers for new subsidiary
+                        fetchDrivers();
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subsidiary" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {subsidiaries.map((subsidiary) => (
+                          <SelectItem key={subsidiary.id} value={subsidiary.id}>
+                            {subsidiary.subsidiary_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Vehicle Number */}
               <FormField
                 control={form.control}
@@ -246,7 +364,7 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                   <FormItem>
                     <FormLabel>Vehicle Number *</FormLabel>
                     <FormControl>
-                      <Input placeholder="KA01AB1234" {...field} />
+                      <Input placeholder="UK18PA0049" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -385,6 +503,7 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                           <Button
                             variant="outline"
                             role="combobox"
+                            disabled={!form.watch('subsidiary_id')}
                             className={cn(
                               "justify-between",
                               !field.value && "text-muted-foreground"
@@ -399,7 +518,12 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                         <Command>
                           <CommandInput placeholder="Search drivers..." />
                           <CommandList>
-                            <CommandEmpty>No driver found.</CommandEmpty>
+                            <CommandEmpty>
+                              {form.watch('subsidiary_id') 
+                                ? "No drivers found in this subsidiary." 
+                                : "Please select a subsidiary first."
+                              }
+                            </CommandEmpty>
                             <CommandGroup>
                               <CommandItem
                                 value=""
@@ -439,6 +563,9 @@ export const VehicleDialog: React.FC<VehicleDialogProps> = ({
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    <p className="text-xs text-muted-foreground">
+                      Only shows drivers from selected subsidiary
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}

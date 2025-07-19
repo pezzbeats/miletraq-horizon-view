@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/integrations/supabase/types';
 
 type Vehicle = Tables<'vehicles'>;
+type Subsidiary = Tables<'subsidiaries'>;
 
 interface Filters {
+  subsidiary: string;
   status: string;
   fuelType: string;
   make: string;
@@ -18,12 +20,14 @@ interface VehicleFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   vehicles: Vehicle[];
+  subsidiaries: Subsidiary[];
 }
 
 export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
   filters,
   onFiltersChange,
   vehicles,
+  subsidiaries,
 }) => {
   const uniqueMakes = Array.from(new Set(vehicles.map(v => v.make))).sort();
   const uniqueStatuses = Array.from(new Set(vehicles.map(v => v.status || 'active'))).sort();
@@ -40,6 +44,7 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
 
   const clearAllFilters = () => {
     onFiltersChange({
+      subsidiary: '',
       status: '',
       fuelType: '',
       make: '',
@@ -77,6 +82,27 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
                   Clear all
                 </Button>
               )}
+            </div>
+
+            {/* Subsidiary Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Subsidiary</label>
+              <Select
+                value={filters.subsidiary}
+                onValueChange={(value) => onFiltersChange({ ...filters, subsidiary: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All subsidiaries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All subsidiaries</SelectItem>
+                  {subsidiaries.map((subsidiary) => (
+                    <SelectItem key={subsidiary.id} value={subsidiary.id}>
+                      {subsidiary.subsidiary_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Status Filter */}
@@ -148,6 +174,19 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
       {/* Active Filter Badges */}
       {activeFiltersCount > 0 && (
         <div className="flex items-center gap-1 flex-wrap">
+          {filters.subsidiary && (
+            <Badge variant="secondary" className="gap-1">
+              Subsidiary: {subsidiaries.find(s => s.id === filters.subsidiary)?.subsidiary_name}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 hover:bg-transparent"
+                onClick={() => clearFilter('subsidiary')}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </Badge>
+          )}
           {filters.status && (
             <Badge variant="secondary" className="gap-1">
               Status: {filters.status}

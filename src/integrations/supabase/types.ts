@@ -945,6 +945,7 @@ export type Database = {
           tank_capacity_diesel: number | null
           tank_capacity_petrol: number | null
           updated_at: string | null
+          vehicle_name: string | null
           vehicle_number: string
           year: number | null
         }
@@ -970,6 +971,7 @@ export type Database = {
           tank_capacity_diesel?: number | null
           tank_capacity_petrol?: number | null
           updated_at?: string | null
+          vehicle_name?: string | null
           vehicle_number: string
           year?: number | null
         }
@@ -995,6 +997,7 @@ export type Database = {
           tank_capacity_diesel?: number | null
           tank_capacity_petrol?: number | null
           updated_at?: string | null
+          vehicle_name?: string | null
           vehicle_number?: string
           year?: number | null
         }
