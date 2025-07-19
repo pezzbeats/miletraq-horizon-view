@@ -745,6 +745,69 @@ export type Database = {
           },
         ]
       }
+      maintenance_rules: {
+        Row: {
+          advance_warning_days: number | null
+          advance_warning_km: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          estimated_cost: number | null
+          estimated_duration_hours: number | null
+          id: string
+          is_active: boolean
+          maintenance_type: string
+          mileage_interval: number | null
+          required_parts: Json | null
+          rule_logic: string
+          rule_name: string
+          subsidiary_id: string
+          time_interval_days: number | null
+          updated_at: string
+          vehicle_types: string[] | null
+        }
+        Insert: {
+          advance_warning_days?: number | null
+          advance_warning_km?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          estimated_cost?: number | null
+          estimated_duration_hours?: number | null
+          id?: string
+          is_active?: boolean
+          maintenance_type: string
+          mileage_interval?: number | null
+          required_parts?: Json | null
+          rule_logic?: string
+          rule_name: string
+          subsidiary_id: string
+          time_interval_days?: number | null
+          updated_at?: string
+          vehicle_types?: string[] | null
+        }
+        Update: {
+          advance_warning_days?: number | null
+          advance_warning_km?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          estimated_cost?: number | null
+          estimated_duration_hours?: number | null
+          id?: string
+          is_active?: boolean
+          maintenance_type?: string
+          mileage_interval?: number | null
+          required_parts?: Json | null
+          rule_logic?: string
+          rule_name?: string
+          subsidiary_id?: string
+          time_interval_days?: number | null
+          updated_at?: string
+          vehicle_types?: string[] | null
+        }
+        Relationships: []
+      }
       odometer_readings: {
         Row: {
           created_at: string | null
@@ -915,6 +978,318 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_maintenance_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          auto_ticket_created: boolean | null
+          created_at: string
+          created_ticket_id: string | null
+          current_mileage: number | null
+          days_remaining: number | null
+          due_date: string | null
+          due_mileage: number | null
+          id: string
+          is_acknowledged: boolean | null
+          km_remaining: number | null
+          maintenance_rule_id: string
+          subsidiary_id: string
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          auto_ticket_created?: boolean | null
+          created_at?: string
+          created_ticket_id?: string | null
+          current_mileage?: number | null
+          days_remaining?: number | null
+          due_date?: string | null
+          due_mileage?: number | null
+          id?: string
+          is_acknowledged?: boolean | null
+          km_remaining?: number | null
+          maintenance_rule_id: string
+          subsidiary_id: string
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          auto_ticket_created?: boolean | null
+          created_at?: string
+          created_ticket_id?: string | null
+          current_mileage?: number | null
+          days_remaining?: number | null
+          due_date?: string | null
+          due_mileage?: number | null
+          id?: string
+          is_acknowledged?: boolean | null
+          km_remaining?: number | null
+          maintenance_rule_id?: string
+          subsidiary_id?: string
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_maintenance_alerts_created_ticket_id_fkey"
+            columns: ["created_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "service_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_maintenance_alerts_maintenance_rule_id_fkey"
+            columns: ["maintenance_rule_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_ticket_approvals: {
+        Row: {
+          action: Database["public"]["Enums"]["approval_action"]
+          approver_id: string
+          comments: string | null
+          created_at: string
+          id: string
+          modifications: string | null
+          modified_completion_date: string | null
+          modified_labor_cost_limit: number | null
+          modified_parts_cost_limit: number | null
+          modified_total_cost_limit: number | null
+          modified_vendor_id: string | null
+          subsidiary_id: string
+          ticket_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["approval_action"]
+          approver_id: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          modifications?: string | null
+          modified_completion_date?: string | null
+          modified_labor_cost_limit?: number | null
+          modified_parts_cost_limit?: number | null
+          modified_total_cost_limit?: number | null
+          modified_vendor_id?: string | null
+          subsidiary_id: string
+          ticket_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["approval_action"]
+          approver_id?: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          modifications?: string | null
+          modified_completion_date?: string | null
+          modified_labor_cost_limit?: number | null
+          modified_parts_cost_limit?: number | null
+          modified_total_cost_limit?: number | null
+          modified_vendor_id?: string | null
+          subsidiary_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_ticket_approvals_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "service_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_ticket_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          ticket_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "service_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_ticket_comments: {
+        Row: {
+          comment_text: string
+          created_at: string
+          id: string
+          is_internal: boolean | null
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_ticket_comments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "service_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_tickets: {
+        Row: {
+          actual_labor_cost: number | null
+          actual_parts_cost: number | null
+          actual_total_cost: number | null
+          approved_at: string | null
+          assigned_vendor_id: string | null
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string
+          created_by: string
+          description: string
+          estimated_labor_cost: number | null
+          estimated_labor_hours: number | null
+          estimated_labor_rate: number | null
+          estimated_parts_cost: number | null
+          estimated_total_cost: number | null
+          id: string
+          maintenance_log_id: string | null
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          requested_completion_date: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          submitted_at: string | null
+          subsidiary_id: string
+          ticket_number: string
+          ticket_type: Database["public"]["Enums"]["ticket_type"]
+          title: string
+          updated_at: string
+          urgency: Database["public"]["Enums"]["ticket_urgency"]
+          vehicle_id: string
+          work_completed_at: string | null
+          work_started_at: string | null
+        }
+        Insert: {
+          actual_labor_cost?: number | null
+          actual_parts_cost?: number | null
+          actual_total_cost?: number | null
+          approved_at?: string | null
+          assigned_vendor_id?: string | null
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          estimated_labor_cost?: number | null
+          estimated_labor_hours?: number | null
+          estimated_labor_rate?: number | null
+          estimated_parts_cost?: number | null
+          estimated_total_cost?: number | null
+          id?: string
+          maintenance_log_id?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          requested_completion_date?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          submitted_at?: string | null
+          subsidiary_id: string
+          ticket_number: string
+          ticket_type?: Database["public"]["Enums"]["ticket_type"]
+          title: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["ticket_urgency"]
+          vehicle_id: string
+          work_completed_at?: string | null
+          work_started_at?: string | null
+        }
+        Update: {
+          actual_labor_cost?: number | null
+          actual_parts_cost?: number | null
+          actual_total_cost?: number | null
+          approved_at?: string | null
+          assigned_vendor_id?: string | null
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          estimated_labor_cost?: number | null
+          estimated_labor_hours?: number | null
+          estimated_labor_rate?: number | null
+          estimated_parts_cost?: number | null
+          estimated_total_cost?: number | null
+          id?: string
+          maintenance_log_id?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          requested_completion_date?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          submitted_at?: string | null
+          subsidiary_id?: string
+          ticket_number?: string
+          ticket_type?: Database["public"]["Enums"]["ticket_type"]
+          title?: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["ticket_urgency"]
+          vehicle_id?: string
+          work_completed_at?: string | null
+          work_started_at?: string | null
+        }
+        Relationships: []
       }
       subsidiaries: {
         Row: {
@@ -1218,6 +1593,14 @@ export type Database = {
         Args: { expiry_date: string }
         Returns: string
       }
+      check_scheduled_maintenance: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      generate_ticket_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_setting: {
         Args: { setting_key: string }
         Returns: Json
@@ -1240,11 +1623,27 @@ export type Database = {
       }
     }
     Enums: {
+      approval_action:
+        | "approve"
+        | "approve_with_modifications"
+        | "request_info"
+        | "reject"
       document_type: "rc" | "insurance" | "permit" | "puc" | "license" | "other"
       fuel_type: "petrol" | "diesel" | "cng" | "electric"
       fuel_type_enum: "diesel" | "petrol" | "cng"
       fuel_unit_enum: "liters" | "kg"
       maintenance_type: "breakdown" | "preventive" | "scheduled"
+      ticket_priority: "critical" | "high" | "medium" | "low"
+      ticket_status:
+        | "draft"
+        | "submitted"
+        | "approved"
+        | "rejected"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      ticket_type: "breakdown" | "preventive" | "scheduled"
+      ticket_urgency: "immediate" | "within_24h" | "within_week" | "scheduled"
       user_role: "admin" | "manager" | "fuel_manager" | "viewer"
       vehicle_status: "active" | "inactive" | "maintenance" | "sold"
     }
@@ -1374,11 +1773,29 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      approval_action: [
+        "approve",
+        "approve_with_modifications",
+        "request_info",
+        "reject",
+      ],
       document_type: ["rc", "insurance", "permit", "puc", "license", "other"],
       fuel_type: ["petrol", "diesel", "cng", "electric"],
       fuel_type_enum: ["diesel", "petrol", "cng"],
       fuel_unit_enum: ["liters", "kg"],
       maintenance_type: ["breakdown", "preventive", "scheduled"],
+      ticket_priority: ["critical", "high", "medium", "low"],
+      ticket_status: [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+      ticket_type: ["breakdown", "preventive", "scheduled"],
+      ticket_urgency: ["immediate", "within_24h", "within_week", "scheduled"],
       user_role: ["admin", "manager", "fuel_manager", "viewer"],
       vehicle_status: ["active", "inactive", "maintenance", "sold"],
     },
