@@ -1,16 +1,47 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Upload, X, Plus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { useSubsidiary } from "@/contexts/SubsidiaryContext";
-import { useToast } from "@/hooks/use-toast";
+import { PartDialog } from "@/components/parts/PartDialog";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface ServiceTicketDialogProps {
@@ -50,8 +81,9 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
-  const [attachments, setAttachments] = useState<File[]>([]);
   const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
+  const [partDialogOpen, setPartDialogOpen] = useState(false);
+  const [partSearchStates, setPartSearchStates] = useState<boolean[]>([false]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -67,7 +99,6 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   });
 
   const { currentSubsidiary } = useSubsidiary();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
@@ -145,6 +176,23 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
     }
   };
 
+  const fetchParts = async () => {
+    if (!currentSubsidiary?.id) return;
+
+    try {
+      const { data: partsData, error: partsError } = await supabase
+        .from('parts_master')
+        .select('id, name, part_number')
+        .eq('subsidiary_id', currentSubsidiary.id)
+        .eq('is_active', true);
+
+      if (partsError) throw partsError;
+      setParts(partsData || []);
+    } catch (error) {
+      console.error('Error fetching parts:', error);
+    }
+  };
+
   const populateForm = () => {
     if (!ticket) return;
 
@@ -177,7 +225,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
       assignedVendorId: "none"
     });
     setSelectedParts([]);
-    setAttachments([]);
+    setPartSearchStates([false]);
   };
 
   const addPart = () => {
@@ -187,6 +235,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
       quantity: 1,
       estimatedCost: 0
     }]);
+    setPartSearchStates([...partSearchStates, false]);
   };
 
   const updatePart = (index: number, field: keyof SelectedPart, value: any) => {
@@ -206,6 +255,19 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
 
   const removePart = (index: number) => {
     setSelectedParts(selectedParts.filter((_, i) => i !== index));
+    setPartSearchStates(partSearchStates.filter((_, i) => i !== index));
+  };
+
+  const handlePartSelect = (index: number, partId: string) => {
+    updatePart(index, 'partId', partId);
+    const updatedStates = [...partSearchStates];
+    updatedStates[index] = false;
+    setPartSearchStates(updatedStates);
+  };
+
+  const handlePartDialogSuccess = () => {
+    setPartDialogOpen(false);
+    fetchParts(); // Refresh parts list
   };
 
   const calculateCosts = () => {
@@ -447,22 +509,86 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
                     {selectedParts.map((part, index) => (
                       <div key={index} className="flex gap-2 items-end">
                         <div className="flex-1">
-                          <Select 
-                            value={part.partId} 
-                            onValueChange={(value) => updatePart(index, 'partId', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select part" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="select-part">Select a part</SelectItem>
-                              {parts.map((p) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.name} {p.part_number && `(${p.part_number})`}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Popover open={partSearchStates[index]} onOpenChange={(open) => {
+                            const updatedStates = [...partSearchStates];
+                            updatedStates[index] = open;
+                            setPartSearchStates(updatedStates);
+                          }}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={partSearchStates[index]}
+                                className="w-full justify-between"
+                              >
+                                {part.partId && part.partId !== "select-part" ? 
+                                  (() => {
+                                    const selectedPart = parts.find(p => p.id === part.partId);
+                                    return selectedPart ? 
+                                      `${selectedPart.name} ${selectedPart.part_number ? `(${selectedPart.part_number})` : ''}` 
+                                      : "Select part";
+                                  })()
+                                  : "Select part"
+                                }
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Search parts..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    <div className="py-2 px-2">
+                                      <p className="text-sm text-muted-foreground mb-2">No parts found.</p>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setPartDialogOpen(true);
+                                          const updatedStates = [...partSearchStates];
+                                          updatedStates[index] = false;
+                                          setPartSearchStates(updatedStates);
+                                        }}
+                                        className="w-full"
+                                      >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add New Part
+                                      </Button>
+                                    </div>
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {parts.map((p) => (
+                                      <CommandItem
+                                        key={p.id}
+                                        value={`${p.name} ${p.part_number || ''}`}
+                                        onSelect={() => handlePartSelect(index, p.id)}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            part.partId === p.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {p.name} {p.part_number && `(${p.part_number})`}
+                                      </CommandItem>
+                                    ))}
+                                    <CommandItem
+                                      onSelect={() => {
+                                        setPartDialogOpen(true);
+                                        const updatedStates = [...partSearchStates];
+                                        updatedStates[index] = false;
+                                        setPartSearchStates(updatedStates);
+                                      }}
+                                      className="border-t"
+                                    >
+                                      <Plus className="mr-2 h-4 w-4" />
+                                      Add New Part
+                                    </CommandItem>
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div className="w-20">
                           <Input
@@ -574,6 +700,12 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
           </div>
         </div>
       </DialogContent>
+      
+      <PartDialog
+        open={partDialogOpen}
+        onOpenChange={setPartDialogOpen}
+        onSuccess={handlePartDialogSuccess}
+      />
     </Dialog>
   );
 }
