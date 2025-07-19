@@ -8,73 +8,48 @@
 
 @layer base {
   :root {
-    /* Automotive Base Colors */
-    --background: 248 250 252; /* Light Gray */
-    --foreground: 55 65 81; /* Charcoal Gray */
+    /* Base Colors - HSL format without hsl() wrapper */
+    --background: 248 250 252;
+    --foreground: 15 23 42;
 
-    /* Automotive Color Palette */
-    --automotive-navy: 30 58 138; /* Deep Navy Blue */
-    --automotive-orange: 249 115 22; /* Bright Orange */
-    --automotive-blue: 59 130 246; /* Electric Blue */
-    --automotive-green: 22 163 74; /* Forest Green */
-    --automotive-yellow: 245 158 11; /* Amber Yellow */
-    --automotive-red: 220 38 38; /* Racing Red */
-    --automotive-charcoal: 55 65 81; /* Charcoal Gray */
-    
-    /* Primary Brand Colors - Deep Navy Blue */
+    /* Primary Colors - Deep Navy Blue */
     --primary: 30 58 138;
     --primary-foreground: 248 250 252;
-    --primary-glow: 37 99 235;
-    
+
     /* Secondary Colors - Bright Orange */
     --secondary: 249 115 22;
-    --secondary-foreground: 248 250 252;
+    --secondary-foreground: 15 23 42;
+
+    /* Success Colors - Forest Green */
+    --success: 22 163 74;
+    --success-foreground: 248 250 252;
+
+    /* Warning Colors - Amber Yellow */
+    --warning: 245 158 11;
+    --warning-foreground: 15 23 42;
+
+    /* Destructive Colors - Racing Red */
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
 
     /* Surface Colors */
     --card: 255 255 255;
-    --card-foreground: 55 65 81;
-    --card-border: 226 232 240;
-
+    --card-foreground: 15 23 42;
     --popover: 255 255 255;
-    --popover-foreground: 55 65 81;
+    --popover-foreground: 15 23 42;
 
     /* Interactive Colors */
     --muted: 241 245 249;
     --muted-foreground: 100 116 139;
-
-    --accent: 59 130 246; /* Electric Blue */
+    --accent: 59 130 246;
     --accent-foreground: 248 250 252;
-
-    --destructive: 220 38 38; /* Racing Red */
-    --destructive-foreground: 248 250 252;
-
-    /* Success/Warning Colors */
-    --success: 22 163 74; /* Forest Green */
-    --success-foreground: 248 250 252;
-    
-    --warning: 245 158 11; /* Amber Yellow */
-    --warning-foreground: 55 65 81;
 
     /* Form Colors */
     --border: 226 232 240;
     --input: 255 255 255;
     --ring: 59 130 246;
 
-    /* Radius */
-    --radius: 0.75rem;
-
-    /* Automotive Dashboard Specific */
-    --dashboard-background: 15 23 42; /* Dark dashboard */
-    --dashboard-foreground: 248 250 252;
-    --dashboard-accent: 249 115 22; /* Orange accents */
-    
-    /* Gauge Colors */
-    --gauge-green: 22 163 74;
-    --gauge-yellow: 245 158 11;
-    --gauge-red: 220 38 38;
-    --gauge-blue: 59 130 246;
-
-    /* Sidebar Colors - Automotive Theme */
+    /* Sidebar Colors */
     --sidebar-background: 30 41 59;
     --sidebar-foreground: 248 250 252;
     --sidebar-primary: 59 130 246;
@@ -84,92 +59,66 @@
     --sidebar-border: 71 85 105;
     --sidebar-ring: 59 130 246;
 
-    /* Automotive Gradients */
-    --gradient-dashboard: linear-gradient(135deg, hsl(30 58 138) 0%, hsl(59 130 246) 100%);
-    --gradient-gauge: linear-gradient(90deg, hsl(22 163 74) 0%, hsl(245 158 11) 50%, hsl(220 38 38) 100%);
-    --gradient-fuel: linear-gradient(180deg, hsl(59 130 246) 0%, hsl(30 58 138) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(245 158 11) 0%, hsl(249 115 22) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(22 163 74) 0%, hsl(142 76% 45%) 100%);
-    --gradient-danger: linear-gradient(135deg, hsl(220 38 38) 0%, hsl(0 72% 51%) 100%);
-    --gradient-header: linear-gradient(90deg, hsl(30 58 138) 0%, hsl(59 130 246) 50%, hsl(249 115 22) 100%);
-    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
-    --gradient-backdrop: linear-gradient(135deg, hsl(248 250 252) 0%, hsl(241 245 249) 100%);
-    
-    /* Automotive Shadows */
-    --shadow-dashboard: 0 10px 40px rgba(30, 58, 138, 0.2);
-    --shadow-gauge: 0 8px 32px rgba(59, 130, 246, 0.15);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.1);
-    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.15);
-    --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
-    --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.2);
-    --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.2);
-    --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.2);
+    /* Radius */
+    --radius: 0.75rem;
 
-    /* Glass Background Variables */
+    /* Missing Variables */
     --glass-background: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-
-    /* Additional Missing Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(30 58 138) 0%, hsl(59 130 246) 100%);
-    --gradient-error: linear-gradient(135deg, hsl(220 38 38) 0%, hsl(0 72% 51%) 100%);
-    --gradient-info: linear-gradient(135deg, hsl(59 130 246) 0%, hsl(147 51% 47%) 100%);
-    --gradient-purple: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(263 70% 50%) 100%);
-    --gradient-pink: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(333 71% 51%) 100%);
-    --gradient-orange: linear-gradient(135deg, hsl(249 115 22) 0%, hsl(34 100% 92%) 100%);
-    --gradient-teal: linear-gradient(135deg, hsl(173 58% 39%) 0%, hsl(158 64% 52%) 100%);
-
-    /* Additional Shadows */
+    --gradient-primary: linear-gradient(135deg, hsl(30 58 138), hsl(59 130 246));
+    --gradient-success: linear-gradient(135deg, hsl(22 163 74), hsl(34 197 94));
+    --gradient-warning: linear-gradient(135deg, hsl(245 158 11), hsl(249 115 22));
+    --gradient-error: linear-gradient(135deg, hsl(220 38 38), hsl(239 68 68));
+    --gradient-danger: linear-gradient(135deg, hsl(220 38 38), hsl(239 68 68));
+    --gradient-info: linear-gradient(135deg, hsl(59 130 246), hsl(99 102 241));
+    --gradient-purple: linear-gradient(135deg, hsl(262 83 58), hsl(263 70 50));
+    --gradient-pink: linear-gradient(135deg, hsl(330 81 60), hsl(333 71 51));
+    --gradient-orange: linear-gradient(135deg, hsl(249 115 22), hsl(251 146 58));
+    --gradient-teal: linear-gradient(135deg, hsl(173 58 39), hsl(158 64 52));
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+    --gradient-header: linear-gradient(90deg, hsl(30 58 138), hsl(59 130 246), hsl(249 115 22));
+    --gradient-fuel: linear-gradient(180deg, hsl(59 130 246), hsl(30 58 138));
+    --gradient-gauge: linear-gradient(90deg, hsl(22 163 74), hsl(245 158 11), hsl(220 38 38));
+    --gradient-dashboard: linear-gradient(135deg, hsl(30 58 138), hsl(59 130 246));
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
     --shadow-colored: 0 4px 16px rgba(59, 130, 246, 0.2);
     --shadow-success: 0 4px 16px rgba(22, 163, 74, 0.2);
     --shadow-warning: 0 4px 16px rgba(245, 158, 11, 0.2);
+    --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.2);
+    --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.2);
+    --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.2);
+    --shadow-dashboard: 0 10px 40px rgba(30, 58, 138, 0.2);
+    --shadow-gauge: 0 8px 32px rgba(59, 130, 246, 0.15);
   }
 
   .dark {
-    /* Automotive Dark Dashboard */
-    --background: 15 23 42; /* Dark dashboard */
+    --background: 15 23 42;
     --foreground: 248 250 252;
-
-    /* Automotive Dark Colors */
-    --primary: 59 130 246; /* Electric Blue */
+    --primary: 59 130 246;
     --primary-foreground: 15 23 42;
-    --primary-glow: 37 99 235;
-    
-    --secondary: 249 115 22; /* Bright Orange */
+    --secondary: 249 115 22;
     --secondary-foreground: 15 23 42;
-
-    /* Dark Surface Colors */
-    --card: 30 41 59;
-    --card-foreground: 248 250 252;
-    --card-border: 71 85 105;
-
-    --popover: 30 41 59;
-    --popover-foreground: 248 250 252;
-
-    /* Dark Interactive Colors */
-    --muted: 51 65 85;
-    --muted-foreground: 148 163 184;
-
-    --accent: 59 130 246;
-    --accent-foreground: 15 23 42;
-
-    --destructive: 220 38 38;
-    --destructive-foreground: 248 250 252;
-
-    /* Dark Success/Warning */
     --success: 22 163 74;
     --success-foreground: 248 250 252;
-    
     --warning: 245 158 11;
     --warning-foreground: 15 23 42;
-
-    /* Dark Form Colors */
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
+    --card: 30 41 59;
+    --card-foreground: 248 250 252;
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+    --accent: 59 130 246;
+    --accent-foreground: 15 23 42;
     --border: 71 85 105;
     --input: 30 41 59;
     --ring: 59 130 246;
-
-    /* Dark Sidebar */
     --sidebar-background: 15 23 42;
     --sidebar-foreground: 248 250 252;
     --sidebar-primary: 59 130 246;
@@ -178,43 +127,6 @@
     --sidebar-accent-foreground: 226 232 240;
     --sidebar-border: 51 65 85;
     --sidebar-ring: 59 130 246;
-
-    /* Dark Automotive Gradients */
-    --gradient-dashboard: linear-gradient(135deg, hsl(15 23 42) 0%, hsl(30 41 59) 100%);
-    --gradient-backdrop: linear-gradient(135deg, hsl(15 23 42) 0%, hsl(30 41 59) 100%);
-    --gradient-header: linear-gradient(90deg, hsl(15 23 42) 0%, hsl(59 130 246) 50%, hsl(249 115 22) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(30 41 59) 0%, hsl(51 65 85) 100%);
-    
-    /* Dark Shadows */
-    --shadow-dashboard: 0 10px 40px rgba(0, 0, 0, 0.5);
-    --shadow-gauge: 0 8px 32px rgba(59, 130, 246, 0.3);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
-    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.4);
-    --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.4);
-    --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.3);
-    --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.3);
-  }
-
-  /* Mobile-specific styles */
-  .mobile-card {
-    @apply transition-all duration-200 hover:shadow-md;
-  }
-
-  .mobile-kpi-card {
-    @apply p-3 rounded-lg border bg-card text-card-foreground shadow-sm;
-  }
-
-  .mobile-chart {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
-  }
-
-  .mobile-vehicle-card {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
-  }
-
-  .mobile-driver-card {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
   }
 
   .mobile-fuel-card {
@@ -344,7 +256,7 @@
   body {
     @apply bg-background text-foreground font-inter;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, hsl(248 250 252) 0%, hsl(241 245 249) 100%);
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 }
