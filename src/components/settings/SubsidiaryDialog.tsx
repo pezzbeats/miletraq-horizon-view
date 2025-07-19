@@ -126,6 +126,22 @@ export const SubsidiaryDialog = ({
         return;
       }
 
+      // Get the profile ID for the current user
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        toast({
+          title: 'Error',
+          description: 'User profile not found',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // Check for duplicate subsidiary code (case-insensitive)
       const { data: existingSubsidiaries, error: checkError } = await supabase
         .from('subsidiaries')
@@ -155,6 +171,7 @@ export const SubsidiaryDialog = ({
         contact_person: values.contact_person?.trim() || null,
         phone: values.phone?.trim() || null,
         email: values.email?.trim() || null,
+        created_by: profile.id,
         is_active: true,
       };
 
