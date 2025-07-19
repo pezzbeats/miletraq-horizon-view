@@ -286,7 +286,6 @@
     @apply text-lg md:text-xl;
   }
 }
-}
 
 @layer base {
   * {
