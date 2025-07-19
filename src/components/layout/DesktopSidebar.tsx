@@ -64,6 +64,7 @@ const navigationItems: NavItem[] = [
     icon: Wrench,
     children: [
       { title: 'Maintenance Log', url: '/maintenance', icon: Wrench },
+      { title: 'Service Tickets', url: '/service-tickets', icon: FileText },
       { title: 'Parts Master', url: '/parts-master', icon: Package },
       { title: 'Categories', url: '/categories-master', icon: Tags },
     ],

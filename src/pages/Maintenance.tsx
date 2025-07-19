@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
@@ -8,6 +8,7 @@ import { MobileMaintenanceCard } from "@/components/maintenance/MobileMaintenanc
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 export interface MaintenanceRecord {
   id: string;
@@ -48,6 +49,7 @@ const Maintenance = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<MaintenanceRecord | null>(null);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const fetchMaintenanceRecords = async () => {
     try {
@@ -97,9 +99,8 @@ const Maintenance = () => {
     fetchMaintenanceRecords();
   }, []);
 
-  const handleAddRecord = () => {
-    setEditingRecord(null);
-    setDialogOpen(true);
+  const handleCreateServiceTicket = () => {
+    navigate('/service-tickets');
   };
 
   const handleEditRecord = (record: MaintenanceRecord) => {
@@ -127,9 +128,9 @@ const Maintenance = () => {
           <p className="text-muted-foreground">Track vehicle maintenance and service history</p>
         </div>
         {!isMobile && (
-          <Button onClick={handleAddRecord} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Maintenance
+          <Button onClick={handleCreateServiceTicket} variant="outline" className="w-full sm:w-auto">
+            <FileText className="h-4 w-4 mr-2" />
+            Create Service Ticket
           </Button>
         )}
       </div>
@@ -189,12 +190,12 @@ const Maintenance = () => {
         ) : maintenanceRecords.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Plus className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No maintenance records</h3>
-              <p className="text-muted-foreground mb-4">Start tracking vehicle maintenance</p>
-              <Button onClick={handleAddRecord}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add First Record
+              <p className="text-muted-foreground mb-4">Create a service ticket to request maintenance work</p>
+              <Button onClick={handleCreateServiceTicket} variant="outline">
+                <FileText className="w-4 h-4 mr-2" />
+                Create Service Ticket
               </Button>
             </CardContent>
           </Card>
@@ -225,14 +226,15 @@ const Maintenance = () => {
         onSuccess={handleSuccess}
       />
 
-      {/* Mobile FAB */}
+      {/* Mobile FAB for Service Tickets */}
       {isMobile && (
         <Button
           className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-50"
-          onClick={handleAddRecord}
+          onClick={handleCreateServiceTicket}
           size="icon"
+          variant="outline"
         >
-          <Plus className="h-6 w-6" />
+          <FileText className="h-6 w-6" />
         </Button>
       )}
     </div>
