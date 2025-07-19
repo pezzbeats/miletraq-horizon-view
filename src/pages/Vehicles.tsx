@@ -287,7 +287,7 @@ const Vehicles = () => {
                     </th>
                     <th className="text-left p-4 font-medium hidden sm:table-cell">Year</th>
                     <th className="text-left p-4 font-medium">Fuel Type</th>
-                    <th className="text-left p-4 font-medium hidden lg:table-cell">Default Driver</th>
+                    <th className="text-left p-4 font-medium">Default Driver</th>
                     <th className="text-left p-4 font-medium">Status</th>
                     <th className="text-center p-4 font-medium">Actions</th>
                   </tr>
@@ -301,7 +301,7 @@ const Vehicles = () => {
                       <td className="p-4">{vehicle.model}</td>
                       <td className="p-4 hidden sm:table-cell">{vehicle.year || '-'}</td>
                       <td className="p-4">{getFuelTypeBadge(vehicle.fuel_type)}</td>
-                      <td className="p-4 hidden lg:table-cell">
+                      <td className="p-4">
                         {vehicle.default_driver?.name || 'Not assigned'}
                       </td>
                       <td className="p-4">{getStatusBadge(vehicle.status || 'active')}</td>
