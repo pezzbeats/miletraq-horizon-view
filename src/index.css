@@ -8,143 +8,172 @@
 
 @layer base {
   :root {
-    /* Base Colors */
-    --background: 240 20% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Automotive Base Colors */
+    --background: 248 250 252; /* Light Gray */
+    --foreground: 55 65 81; /* Charcoal Gray */
 
-    /* Glass morphism specific */
-    --glass-background: 255 255 255 / 0.1;
-    --glass-border: 255 255 255 / 0.2;
-    --glass-backdrop: blur(20px);
+    /* Automotive Color Palette */
+    --automotive-navy: 30 58 138; /* Deep Navy Blue */
+    --automotive-orange: 249 115 22; /* Bright Orange */
+    --automotive-blue: 59 130 246; /* Electric Blue */
+    --automotive-green: 22 163 74; /* Forest Green */
+    --automotive-yellow: 245 158 11; /* Amber Yellow */
+    --automotive-red: 220 38 38; /* Racing Red */
+    --automotive-charcoal: 55 65 81; /* Charcoal Gray */
     
-    /* Primary Brand Colors */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 217 91% 70%;
+    /* Primary Brand Colors - Deep Navy Blue */
+    --primary: 30 58 138;
+    --primary-foreground: 248 250 252;
+    --primary-glow: 37 99 235;
     
-    /* Secondary Colors */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary Colors - Bright Orange */
+    --secondary: 249 115 22;
+    --secondary-foreground: 248 250 252;
 
     /* Surface Colors */
-    --card: 0 0% 100% / 0.8;
-    --card-foreground: 222.2 84% 4.9%;
-    --card-border: 0 0% 100% / 0.2;
+    --card: 255 255 255;
+    --card-foreground: 55 65 81;
+    --card-border: 226 232 240;
 
-    --popover: 0 0% 100% / 0.95;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 255 255 255;
+    --popover-foreground: 55 65 81;
 
     /* Interactive Colors */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 59 130 246; /* Electric Blue */
+    --accent-foreground: 248 250 252;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 220 38 38; /* Racing Red */
+    --destructive-foreground: 248 250 252;
+
+    /* Success/Warning Colors */
+    --success: 22 163 74; /* Forest Green */
+    --success-foreground: 248 250 252;
+    
+    --warning: 245 158 11; /* Amber Yellow */
+    --warning-foreground: 55 65 81;
 
     /* Form Colors */
-    --border: 214.3 31.8% 91.4%;
-    --input: 0 0% 100% / 0.8;
-    --ring: 217 91% 60%;
+    --border: 226 232 240;
+    --input: 255 255 255;
+    --ring: 59 130 246;
 
     /* Radius */
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Sidebar Colors */
-    --sidebar-background: 0 0% 98% / 0.9;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9% / 0.8;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91% / 0.3;
-    --sidebar-ring: 217 91% 60%;
-
-    /* Enhanced Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    --gradient-backdrop: linear-gradient(135deg, hsl(240 20% 98%) 0%, hsl(220 20% 95%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 55%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(45 93% 47%) 100%);
-    --gradient-error: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 72% 51%) 100%);
-    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(201 96% 32%) 100%);
-    --gradient-purple: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 90% 74%) 100%);
-    --gradient-pink: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(346 87% 43%) 100%);
-    --gradient-orange: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(20 90% 48%) 100%);
-    --gradient-teal: linear-gradient(135deg, hsl(173 80% 40%) 0%, hsl(172 76% 50%) 100%);
-    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
-    --gradient-header: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(262 83% 58%) 100%);
+    /* Automotive Dashboard Specific */
+    --dashboard-background: 15 23 42; /* Dark dashboard */
+    --dashboard-foreground: 248 250 252;
+    --dashboard-accent: 249 115 22; /* Orange accents */
     
-    /* Enhanced Shadows */
-    --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.15);
-    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.1);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
-    --shadow-colored: 0 10px 30px rgba(59, 130, 246, 0.15);
-    --shadow-success: 0 8px 25px rgba(34, 197, 94, 0.15);
-    --shadow-warning: 0 8px 25px rgba(251, 191, 36, 0.15);
-    --shadow-glow: 0 0 50px rgba(59, 130, 246, 0.2);
+    /* Gauge Colors */
+    --gauge-green: 22 163 74;
+    --gauge-yellow: 245 158 11;
+    --gauge-red: 220 38 38;
+    --gauge-blue: 59 130 246;
+
+    /* Sidebar Colors - Automotive Theme */
+    --sidebar-background: 30 41 59;
+    --sidebar-foreground: 248 250 252;
+    --sidebar-primary: 59 130 246;
+    --sidebar-primary-foreground: 248 250 252;
+    --sidebar-accent: 51 65 85;
+    --sidebar-accent-foreground: 226 232 240;
+    --sidebar-border: 71 85 105;
+    --sidebar-ring: 59 130 246;
+
+    /* Automotive Gradients */
+    --gradient-dashboard: linear-gradient(135deg, hsl(var(--automotive-navy)) 0%, hsl(var(--automotive-blue)) 100%);
+    --gradient-gauge: linear-gradient(90deg, hsl(var(--gauge-green)) 0%, hsl(var(--gauge-yellow)) 50%, hsl(var(--gauge-red)) 100%);
+    --gradient-fuel: linear-gradient(180deg, hsl(var(--automotive-blue)) 0%, hsl(var(--automotive-navy)) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(var(--automotive-yellow)) 0%, hsl(var(--automotive-orange)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--automotive-green)) 0%, hsl(142 76% 45%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(var(--automotive-red)) 0%, hsl(0 72% 51%) 100%);
+    --gradient-header: linear-gradient(90deg, hsl(var(--automotive-navy)) 0%, hsl(var(--automotive-blue)) 50%, hsl(var(--automotive-orange)) 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(248 250 252) 0%, hsl(241 245 249) 100%);
+    
+    /* Automotive Shadows */
+    --shadow-dashboard: 0 10px 40px rgba(30, 58, 138, 0.2);
+    --shadow-gauge: 0 8px 32px rgba(59, 130, 246, 0.15);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
+    --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.2);
+    --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.2);
+    --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.2);
   }
 
   .dark {
-    /* Base Colors */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Automotive Dark Dashboard */
+    --background: 15 23 42; /* Dark dashboard */
+    --foreground: 248 250 252;
 
-    /* Glass morphism specific - darker */
-    --glass-background: 255 255 255 / 0.05;
-    --glass-border: 255 255 255 / 0.1;
+    /* Automotive Dark Colors */
+    --primary: 59 130 246; /* Electric Blue */
+    --primary-foreground: 15 23 42;
+    --primary-glow: 37 99 235;
     
-    /* Primary stays consistent */
-    --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-glow: 217 91% 70%;
+    --secondary: 249 115 22; /* Bright Orange */
+    --secondary-foreground: 15 23 42;
 
-    /* Surface Colors */
-    --card: 0 0% 0% / 0.4;
-    --card-foreground: 210 40% 98%;
-    --card-border: 255 255 255 / 0.1;
+    /* Dark Surface Colors */
+    --card: 30 41 59;
+    --card-foreground: 248 250 252;
+    --card-border: 71 85 105;
 
-    --popover: 222.2 84% 4.9% / 0.95;
-    --popover-foreground: 210 40% 98%;
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
 
-    /* Interactive Colors */
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Dark Interactive Colors */
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 59 130 246;
+    --accent-foreground: 15 23 42;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
 
-    --destructive: 0 62.8% 50%;
-    --destructive-foreground: 210 40% 98%;
+    /* Dark Success/Warning */
+    --success: 22 163 74;
+    --success-foreground: 248 250 252;
+    
+    --warning: 245 158 11;
+    --warning-foreground: 15 23 42;
 
-    /* Form Colors */
-    --border: 217.2 32.6% 17.5%;
-    --input: 0 0% 0% / 0.4;
-    --ring: 217 91% 60%;
+    /* Dark Form Colors */
+    --border: 71 85 105;
+    --input: 30 41 59;
+    --ring: 59 130 246;
 
-    /* Sidebar Colors */
-    --sidebar-background: 240 5.9% 10% / 0.9;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9% / 0.8;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9% / 0.3;
-    --sidebar-ring: 217 91% 60%;
+    /* Dark Sidebar */
+    --sidebar-background: 15 23 42;
+    --sidebar-foreground: 248 250 252;
+    --sidebar-primary: 59 130 246;
+    --sidebar-primary-foreground: 248 250 252;
+    --sidebar-accent: 30 41 59;
+    --sidebar-accent-foreground: 226 232 240;
+    --sidebar-border: 51 65 85;
+    --sidebar-ring: 59 130 246;
 
-    /* Dark Gradients */
-    --gradient-backdrop: linear-gradient(135deg, hsl(222.2 84% 4.9%) 0%, hsl(217.2 32.6% 17.5%) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    /* Dark Automotive Gradients */
+    --gradient-dashboard: linear-gradient(135deg, hsl(15 23 42) 0%, hsl(30 41 59) 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(15 23 42) 0%, hsl(30 41 59) 100%);
+    --gradient-header: linear-gradient(90deg, hsl(15 23 42) 0%, hsl(59 130 246) 50%, hsl(249 115 22) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(30 41 59) 0%, hsl(51 65 85) 100%);
     
     /* Dark Shadows */
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.3);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --shadow-dashboard: 0 10px 40px rgba(0, 0, 0, 0.5);
+    --shadow-gauge: 0 8px 32px rgba(59, 130, 246, 0.3);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.4);
+    --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.4);
+    --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.3);
+    --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.3);
   }
 
   /* Mobile-specific styles */
@@ -491,7 +520,263 @@
 
   .status-inactive {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-    background: var(--gradient-error);
+    background: var(--gradient-danger);
     color: white;
+  }
+
+  /* Automotive Dashboard Components */
+  .automotive-dashboard {
+    @apply rounded-xl border;
+    background: var(--gradient-dashboard);
+    box-shadow: var(--shadow-dashboard);
+    color: hsl(var(--dashboard-foreground));
+  }
+
+  /* Odometer Display */
+  .odometer-display {
+    @apply text-center font-mono font-bold rounded-lg p-4 border;
+    background: linear-gradient(145deg, hsl(var(--dashboard-background)), hsl(30 41 59));
+    color: hsl(var(--dashboard-foreground));
+    border-color: hsl(var(--dashboard-accent));
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px hsl(var(--dashboard-accent));
+  }
+
+  .odometer-number {
+    @apply text-4xl md:text-6xl;
+    animation: odometer-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes odometer-glow {
+    from { text-shadow: 0 0 10px hsl(var(--dashboard-accent)); }
+    to { text-shadow: 0 0 20px hsl(var(--dashboard-accent)), 0 0 30px hsl(var(--dashboard-accent)); }
+  }
+
+  /* Speedometer Gauge */
+  .speedometer-gauge {
+    @apply relative rounded-full;
+    width: 200px;
+    height: 200px;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--gauge-green)) 0deg 120deg,
+      hsl(var(--gauge-yellow)) 120deg 240deg,
+      hsl(var(--gauge-red)) 240deg 360deg
+    );
+    box-shadow: var(--shadow-gauge);
+  }
+
+  .speedometer-needle {
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+    width: 4px;
+    height: 80px;
+    background: hsl(var(--dashboard-foreground));
+    transform-origin: bottom center;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.5s ease-out;
+  }
+
+  .speedometer-center {
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full;
+    width: 20px;
+    height: 20px;
+    background: hsl(var(--dashboard-foreground));
+    z-index: 10;
+  }
+
+  /* Fuel Tank Visualization */
+  .fuel-tank {
+    @apply relative rounded-lg overflow-hidden border;
+    background: linear-gradient(180deg, transparent 0%, hsl(var(--automotive-blue)) 100%);
+    border-color: hsl(var(--border));
+    width: 100%;
+    height: 120px;
+  }
+
+  .fuel-level {
+    @apply absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out;
+    background: var(--gradient-fuel);
+    animation: fuel-flow 3s ease-in-out infinite;
+  }
+
+  @keyframes fuel-flow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Vehicle Status LED */
+  .status-led {
+    @apply inline-block rounded-full;
+    width: 12px;
+    height: 12px;
+    animation: led-pulse 2s ease-in-out infinite;
+  }
+
+  .status-led.active {
+    background: hsl(var(--automotive-green));
+    box-shadow: 0 0 10px hsl(var(--automotive-green));
+  }
+
+  .status-led.warning {
+    background: hsl(var(--automotive-yellow));
+    box-shadow: 0 0 10px hsl(var(--automotive-yellow));
+  }
+
+  .status-led.critical {
+    background: hsl(var(--automotive-red));
+    box-shadow: 0 0 10px hsl(var(--automotive-red));
+  }
+
+  .status-led.service {
+    background: hsl(var(--automotive-blue));
+    box-shadow: 0 0 10px hsl(var(--automotive-blue));
+  }
+
+  @keyframes led-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+
+  /* Automotive Cards */
+  .automotive-card {
+    @apply rounded-xl border p-6 transition-all duration-300 hover:scale-[1.02];
+    background: var(--gradient-card);
+    border-color: hsl(var(--border));
+    box-shadow: var(--shadow-card);
+  }
+
+  .automotive-card:hover {
+    box-shadow: var(--shadow-float);
+  }
+
+  .automotive-card.fuel {
+    border-left: 4px solid hsl(var(--automotive-blue));
+  }
+
+  .automotive-card.maintenance {
+    border-left: 4px solid hsl(var(--automotive-orange));
+  }
+
+  .automotive-card.driver {
+    border-left: 4px solid hsl(var(--automotive-green));
+  }
+
+  .automotive-card.alert {
+    border-left: 4px solid hsl(var(--automotive-red));
+  }
+
+  /* Dashboard Header */
+  .dashboard-header {
+    @apply rounded-lg p-6 text-white;
+    background: var(--gradient-header);
+    box-shadow: var(--shadow-dashboard);
+  }
+
+  /* Automotive Buttons */
+  .btn-automotive {
+    @apply relative px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-automotive.primary {
+    background: var(--gradient-dashboard);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-gauge);
+  }
+
+  .btn-automotive.secondary {
+    background: var(--gradient-warning);
+    color: hsl(var(--secondary-foreground));
+    box-shadow: var(--shadow-orange);
+  }
+
+  .btn-automotive.success {
+    background: var(--gradient-success);
+    color: hsl(var(--success-foreground));
+    box-shadow: var(--shadow-green);
+  }
+
+  .btn-automotive.danger {
+    background: var(--gradient-danger);
+    color: hsl(var(--destructive-foreground));
+    box-shadow: var(--shadow-red);
+  }
+
+  /* Automotive Form Elements */
+  .automotive-input {
+    @apply px-4 py-3 rounded-lg border transition-all duration-200;
+    background: hsl(var(--input));
+    border-color: hsl(var(--border));
+  }
+
+  .automotive-input:focus {
+    @apply outline-none ring-2;
+    ring-color: hsl(var(--automotive-blue));
+    border-color: hsl(var(--automotive-blue));
+    box-shadow: 0 0 0 3px hsl(var(--automotive-blue) / 0.1);
+  }
+
+  /* Maintenance Progress Bars */
+  .maintenance-progress {
+    @apply relative rounded-full overflow-hidden;
+    background: hsl(var(--muted));
+    height: 8px;
+  }
+
+  .maintenance-progress-fill {
+    @apply absolute top-0 left-0 h-full transition-all duration-500 ease-out;
+    background: var(--gradient-gauge);
+  }
+
+  .maintenance-progress.engine { background: var(--gradient-success); }
+  .maintenance-progress.warning { background: var(--gradient-warning); }
+  .maintenance-progress.critical { background: var(--gradient-danger); }
+
+  /* Automotive Loading Animation */
+  .automotive-loading {
+    @apply inline-block rounded-full;
+    width: 40px;
+    height: 40px;
+    border: 4px solid hsl(var(--muted));
+    border-left-color: hsl(var(--automotive-blue));
+    animation: automotive-spin 1s linear infinite;
+  }
+
+  @keyframes automotive-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Gear Animation */
+  .gear-animation {
+    animation: gear-rotate 3s linear infinite;
+  }
+
+  @keyframes gear-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Engine Start Animation */
+  .engine-start {
+    animation: engine-start 2s ease-out;
+  }
+
+  @keyframes engine-start {
+    0% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+    50% { opacity: 0.8; transform: scale(1.1) rotate(2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  /* Dashboard Glow Effect */
+  .dashboard-glow {
+    animation: dashboard-glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes dashboard-glow {
+    from { box-shadow: var(--shadow-gauge); }
+    to { box-shadow: var(--shadow-glow); }
   }
 }
