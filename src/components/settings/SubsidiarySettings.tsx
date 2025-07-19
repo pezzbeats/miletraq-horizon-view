@@ -33,6 +33,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { SubsidiaryDialog } from './SubsidiaryDialog';
+import { BulkImportDialog } from './BulkImportDialog';
 
 interface Subsidiary {
   id: string;
@@ -58,6 +59,7 @@ export const SubsidiarySettings = () => {
   const [editingSubsidiary, setEditingSubsidiary] = useState<Subsidiary | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
   useEffect(() => {
     fetchSubsidiaries();
@@ -204,10 +206,15 @@ export const SubsidiarySettings = () => {
                 Manage subsidiaries and business units
               </p>
             </div>
-            <Button onClick={handleAdd}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Subsidiary
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleAdd}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Subsidiary
+              </Button>
+              <Button variant="outline" onClick={() => setBulkImportOpen(true)}>
+                Import SPS Data
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -325,6 +332,20 @@ export const SubsidiarySettings = () => {
         onOpenChange={setDialogOpen}
         subsidiary={editingSubsidiary}
         onSuccess={handleSuccess}
+      />
+
+      <BulkImportDialog
+        open={bulkImportOpen}
+        onOpenChange={setBulkImportOpen}
+        onSuccess={() => {
+          setBulkImportOpen(false);
+          fetchSubsidiaries();
+          refreshSubsidiaries();
+          toast({
+            title: 'Import Completed',
+            description: 'SPS driver and vehicle data has been imported successfully',
+          });
+        }}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
