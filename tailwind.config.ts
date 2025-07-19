@@ -322,7 +322,7 @@ export default {
 				'.gauge-container': {
 					position: 'relative',
 					borderRadius: '50%',
-					background: 'conic-gradient(from 0deg, hsl(var(--gauge-green)) 0deg 120deg, hsl(var(--gauge-yellow)) 120deg 240deg, hsl(var(--gauge-red)) 240deg 360deg)',
+					background: 'conic-gradient(from 0deg, hsl(22 163 74) 0deg 120deg, hsl(245 158 11) 120deg 240deg, hsl(220 38 38) 240deg 360deg)',
 					boxShadow: 'var(--shadow-gauge)'
 				},
 				'.odometer-display': {
@@ -330,20 +330,20 @@ export default {
 					fontWeight: '700',
 					letterSpacing: '2px',
 					textAlign: 'center',
-					background: 'linear-gradient(145deg, hsl(var(--dashboard-background)), hsl(30 41 59))',
-					color: 'hsl(var(--dashboard-foreground))',
-					border: '1px solid hsl(var(--dashboard-accent))',
+					background: 'linear-gradient(145deg, hsl(15 23 42), hsl(30 41 59))',
+					color: 'hsl(248 250 252)',
+					border: '1px solid hsl(249 115 22)',
 					borderRadius: '8px',
 					padding: '16px',
 					boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)',
-					textShadow: '0 0 10px hsl(var(--dashboard-accent))'
+					textShadow: '0 0 10px hsl(249 115 22)'
 				},
 				'.fuel-tank': {
 					position: 'relative',
 					borderRadius: '8px',
 					overflow: 'hidden',
-					background: 'linear-gradient(180deg, transparent 0%, hsl(var(--automotive-blue)) 100%)',
-					border: '1px solid hsl(var(--border))',
+					background: 'linear-gradient(180deg, transparent 0%, hsl(59 130 246) 100%)',
+					border: '1px solid hsl(226 232 240)',
 					width: '100%',
 					height: '120px'
 				},

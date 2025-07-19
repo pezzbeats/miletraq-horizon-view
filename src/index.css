@@ -104,6 +104,26 @@
     --shadow-orange: 0 8px 25px rgba(249, 115, 22, 0.2);
     --shadow-green: 0 8px 25px rgba(22, 163, 74, 0.2);
     --shadow-red: 0 8px 25px rgba(220, 38, 38, 0.2);
+
+    /* Glass Background Variables */
+    --glass-background: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+
+    /* Additional Missing Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(30 58 138) 0%, hsl(59 130 246) 100%);
+    --gradient-error: linear-gradient(135deg, hsl(220 38 38) 0%, hsl(0 72% 51%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(59 130 246) 0%, hsl(147 51% 47%) 100%);
+    --gradient-purple: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(263 70% 50%) 100%);
+    --gradient-pink: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(333 71% 51%) 100%);
+    --gradient-orange: linear-gradient(135deg, hsl(249 115 22) 0%, hsl(34 100% 92%) 100%);
+    --gradient-teal: linear-gradient(135deg, hsl(173 58% 39%) 0%, hsl(158 64% 52%) 100%);
+
+    /* Additional Shadows */
+    --shadow-colored: 0 4px 16px rgba(59, 130, 246, 0.2);
+    --shadow-success: 0 4px 16px rgba(22, 163, 74, 0.2);
+    --shadow-warning: 0 4px 16px rgba(245, 158, 11, 0.2);
   }
 
   .dark {
@@ -324,7 +344,7 @@
   body {
     @apply bg-background text-foreground font-inter;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: var(--gradient-backdrop);
+    background: linear-gradient(135deg, hsl(248 250 252) 0%, hsl(241 245 249) 100%);
     min-height: 100vh;
   }
 }
