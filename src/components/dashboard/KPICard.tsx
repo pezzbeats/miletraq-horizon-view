@@ -25,23 +25,23 @@ export const KPICard = ({
   className = ''
 }: KPICardProps) => {
   const variantClasses = {
-    default: 'border-border',
-    primary: 'border-primary/20 bg-primary/5',
-    success: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950',
-    warning: 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950',
-    destructive: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950'
+    default: 'border-white/30 bg-gradient-to-br from-white/80 via-white/60 to-white/80 backdrop-blur-sm shadow-lg shadow-blue-500/10',
+    primary: 'border-blue-200/50 bg-gradient-to-br from-blue-50/80 via-white/70 to-blue-50/60 backdrop-blur-sm shadow-lg shadow-blue-500/20',
+    success: 'border-green-200/50 bg-gradient-to-br from-green-50/80 via-white/70 to-emerald-50/60 backdrop-blur-sm shadow-lg shadow-green-500/20',
+    warning: 'border-orange-200/50 bg-gradient-to-br from-orange-50/80 via-white/70 to-amber-50/60 backdrop-blur-sm shadow-lg shadow-orange-500/20',
+    destructive: 'border-red-200/50 bg-gradient-to-br from-red-50/80 via-white/70 to-rose-50/60 backdrop-blur-sm shadow-lg shadow-red-500/20'
   };
 
   const iconVariantClasses = {
-    default: 'bg-muted text-muted-foreground',
-    primary: 'bg-primary text-primary-foreground',
-    success: 'bg-green-500 text-white',
-    warning: 'bg-orange-500 text-white',
-    destructive: 'bg-red-500 text-white'
+    default: 'bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 shadow-sm',
+    primary: 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30',
+    success: 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md shadow-green-500/30',
+    warning: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/30',
+    destructive: 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-red-500/30'
   };
 
   return (
-    <Card className={`${variantClasses[variant]} hover:shadow-md transition-all duration-200 ${className}`}>
+    <Card className={`${variantClasses[variant]} hover:shadow-xl hover:shadow-blue-500/15 hover:-translate-y-1 transition-all duration-300 ${className}`}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2 flex-1">

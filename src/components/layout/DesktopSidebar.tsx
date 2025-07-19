@@ -141,10 +141,10 @@ export function DesktopSidebar() {
           <button
             onClick={() => toggleGroup(item.url)}
             className={cn(
-              "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors",
+              "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all duration-200",
               isChildActive 
-                ? "bg-primary/10 text-primary" 
-                : "text-sidebar-foreground hover:bg-sidebar-accent"
+                ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-primary border border-blue-200/50 shadow-sm" 
+                : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-white/60 hover:to-blue-50/40 hover:shadow-sm"
             )}
           >
             <div className="flex items-center">
@@ -167,10 +167,10 @@ export function DesktopSidebar() {
                     to={child.url}
                     className={({ isActive }) =>
                       cn(
-                        "flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                        "flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200",
                         isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30"
+                          : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-white/40 hover:to-blue-50/30 hover:shadow-sm"
                       )
                     }
                   >
@@ -191,10 +191,10 @@ export function DesktopSidebar() {
         to={item.url}
         className={({ isActive }) =>
           cn(
-            "flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+            "flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200",
             isActive
-              ? "bg-primary text-primary-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent"
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30"
+              : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-white/40 hover:to-blue-50/30 hover:shadow-sm"
           )
         }
       >
@@ -207,7 +207,7 @@ export function DesktopSidebar() {
   const filteredItems = filterItemsByRole(navigationItems);
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 desktop-sidebar overflow-y-auto no-scrollbar">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 backdrop-blur-md border-r border-white/20 bg-gradient-to-b from-white/90 via-white/80 to-white/90 shadow-lg shadow-blue-500/5 overflow-y-auto no-scrollbar">
       <div className="p-4">
         <nav className="space-y-2">
           {filteredItems.map(renderNavItem)}

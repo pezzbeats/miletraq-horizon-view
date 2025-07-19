@@ -28,7 +28,7 @@ export function TopBar() {
   const ThemeIcon = themeIcons[theme];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b glass-card">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b border-white/20 bg-gradient-to-r from-white/90 via-white/80 to-white/90 shadow-lg shadow-blue-500/5">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         {/* Logo & Company */}
         <div className="flex items-center space-x-4">
