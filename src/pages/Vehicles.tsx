@@ -77,12 +77,13 @@ const Vehicles = () => {
         .from('vehicles')
         .select(`
           *,
-          default_driver:drivers(name),
+          default_driver:drivers!default_driver_id(name),
           subsidiary:subsidiaries(subsidiary_name, business_type)
         `)
         .order('vehicle_name', { ascending: true });
 
       if (error) throw error;
+      console.log('Vehicles with drivers:', data);
       setVehicles(data || []);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
