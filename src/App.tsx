@@ -27,6 +27,7 @@ import Subsidiaries from "./pages/Subsidiaries";
 import TankRefills from "./pages/TankRefills";
 import DirectFuelPurchases from "./pages/DirectFuelPurchases";
 import TankTransactionHistory from "./pages/TankTransactionHistory";
+import ServiceTickets from "./pages/ServiceTickets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
         <Route path="/tank-transactions" element={<TankTransactionHistory />} />
                   <Route path="/tank-status" element={<TankStatus />} />
                   <Route path="/maintenance" element={<Maintenance />} />
+                  <Route path="/service-tickets" element={<ServiceTickets />} />
                   <Route path="/categories-master" element={<CategoriesMaster />} />
                   <Route path="/parts-master" element={<PartsMaster />} />
                   <Route path="/vendors" element={<Vendors />} />
