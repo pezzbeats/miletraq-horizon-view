@@ -48,14 +48,6 @@ export default {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
-				success: {
-					DEFAULT: 'hsl(var(--success))',
-					foreground: 'hsl(var(--success-foreground))'
-				},
-				warning: {
-					DEFAULT: 'hsl(var(--warning))',
-					foreground: 'hsl(var(--warning-foreground))'
-				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
@@ -82,27 +74,6 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// Automotive Color Palette
-				automotive: {
-					navy: 'hsl(var(--automotive-navy))',
-					orange: 'hsl(var(--automotive-orange))',
-					blue: 'hsl(var(--automotive-blue))',
-					green: 'hsl(var(--automotive-green))',
-					yellow: 'hsl(var(--automotive-yellow))',
-					red: 'hsl(var(--automotive-red))',
-					charcoal: 'hsl(var(--automotive-charcoal))'
-				},
-				dashboard: {
-					DEFAULT: 'hsl(var(--dashboard-background))',
-					foreground: 'hsl(var(--dashboard-foreground))',
-					accent: 'hsl(var(--dashboard-accent))'
-				},
-				gauge: {
-					green: 'hsl(var(--gauge-green))',
-					yellow: 'hsl(var(--gauge-yellow))',
-					red: 'hsl(var(--gauge-red))',
-					blue: 'hsl(var(--gauge-blue))'
 				},
 				glass: {
 					DEFAULT: 'var(--glass-background)',
@@ -172,84 +143,6 @@ export default {
 					'50%': {
 						boxShadow: '0 0 0 8px hsl(var(--primary) / 0)'
 					}
-				},
-				// Automotive-specific animations
-				'odometer-roll': {
-					'0%': {
-						transform: 'translateY(0px)',
-						opacity: '1'
-					},
-					'50%': {
-						transform: 'translateY(-10px)',
-						opacity: '0.5'
-					},
-					'100%': {
-						transform: 'translateY(0px)',
-						opacity: '1'
-					}
-				},
-				'speedometer-sweep': {
-					'0%': {
-						transform: 'rotate(-90deg)'
-					},
-					'100%': {
-						transform: 'rotate(45deg)'
-					}
-				},
-				'fuel-flow': {
-					'0%, 100%': {
-						opacity: '1',
-						transform: 'scaleY(1)'
-					},
-					'50%': {
-						opacity: '0.8',
-						transform: 'scaleY(0.98)'
-					}
-				},
-				'led-pulse': {
-					'0%, 100%': {
-						opacity: '1',
-						transform: 'scale(1)',
-						boxShadow: '0 0 10px currentColor'
-					},
-					'50%': {
-						opacity: '0.7',
-						transform: 'scale(1.1)',
-						boxShadow: '0 0 20px currentColor'
-					}
-				},
-				'gear-rotate': {
-					'0%': {
-						transform: 'rotate(0deg)'
-					},
-					'100%': {
-						transform: 'rotate(360deg)'
-					}
-				},
-				'engine-start': {
-					'0%': {
-						opacity: '0',
-						transform: 'scale(0.8) rotate(-5deg)'
-					},
-					'50%': {
-						opacity: '0.8',
-						transform: 'scale(1.1) rotate(2deg)'
-					},
-					'100%': {
-						opacity: '1',
-						transform: 'scale(1) rotate(0deg)'
-					}
-				},
-				'dashboard-glow': {
-					'0%': {
-						boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
-					},
-					'50%': {
-						boxShadow: '0 0 50px rgba(59, 130, 246, 0.3)'
-					},
-					'100%': {
-						boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
-					}
 				}
 			},
 			animation: {
@@ -258,15 +151,7 @@ export default {
 				'fade-in-scale': 'fade-in-scale 0.3s ease-out',
 				'slide-up': 'slide-up 0.3s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-				// Automotive animations
-				'odometer-roll': 'odometer-roll 0.8s ease-out',
-				'speedometer-sweep': 'speedometer-sweep 1.5s ease-out',
-				'fuel-flow': 'fuel-flow 3s ease-in-out infinite',
-				'led-pulse': 'led-pulse 2s ease-in-out infinite',
-				'gear-rotate': 'gear-rotate 3s linear infinite',
-				'engine-start': 'engine-start 2s ease-out',
-				'dashboard-glow': 'dashboard-glow 3s ease-in-out infinite'
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},
@@ -298,61 +183,6 @@ export default {
 					paddingBottom: 'env(safe-area-inset-bottom)',
 					paddingLeft: 'env(safe-area-inset-left)',
 					paddingRight: 'env(safe-area-inset-right)'
-				},
-				// Automotive-specific utilities
-				'.automotive-card': {
-					borderRadius: '12px',
-					padding: '24px',
-					backgroundColor: 'hsl(var(--card))',
-					border: '1px solid hsl(var(--border))',
-					boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-					transition: 'all 0.3s ease',
-					'&:hover': {
-						transform: 'scale(1.02)',
-						boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
-					}
-				},
-				'.dashboard-card': {
-					borderRadius: '12px',
-					padding: '24px',
-					background: 'var(--gradient-dashboard)',
-					color: 'hsl(var(--dashboard-foreground))',
-					boxShadow: 'var(--shadow-dashboard)'
-				},
-				'.gauge-container': {
-					position: 'relative',
-					borderRadius: '50%',
-					background: 'conic-gradient(from 0deg, hsl(22 163 74) 0deg 120deg, hsl(245 158 11) 120deg 240deg, hsl(220 38 38) 240deg 360deg)',
-					boxShadow: 'var(--shadow-gauge)'
-				},
-				'.odometer-display': {
-					fontFamily: 'JetBrains Mono, Courier New, monospace',
-					fontWeight: '700',
-					letterSpacing: '2px',
-					textAlign: 'center',
-					background: 'linear-gradient(145deg, hsl(15 23 42), hsl(30 41 59))',
-					color: 'hsl(248 250 252)',
-					border: '1px solid hsl(249 115 22)',
-					borderRadius: '8px',
-					padding: '16px',
-					boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)',
-					textShadow: '0 0 10px hsl(249 115 22)'
-				},
-				'.fuel-tank': {
-					position: 'relative',
-					borderRadius: '8px',
-					overflow: 'hidden',
-					background: 'linear-gradient(180deg, transparent 0%, hsl(59 130 246) 100%)',
-					border: '1px solid hsl(226 232 240)',
-					width: '100%',
-					height: '120px'
-				},
-				'.status-led': {
-					display: 'inline-block',
-					borderRadius: '50%',
-					width: '12px',
-					height: '12px',
-					animation: 'led-pulse 2s ease-in-out infinite'
 				}
 			}
 			addUtilities(newUtilities)
