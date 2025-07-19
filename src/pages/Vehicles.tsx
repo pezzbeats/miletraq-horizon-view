@@ -77,9 +77,10 @@ const Vehicles = () => {
         .from('vehicles')
         .select(`
           *,
-          default_driver:drivers(name)
+          default_driver:drivers(name),
+          subsidiary:subsidiaries(subsidiary_name, business_type)
         `)
-        .order('created_at', { ascending: false });
+        .order('vehicle_name', { ascending: true });
 
       if (error) throw error;
       setVehicles(data || []);
