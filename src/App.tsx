@@ -51,6 +51,7 @@ const App = () => (
                   <Route path="/odometer" element={<Odometer />} />
                   <Route path="/fuel-log" element={<FuelLog />} />
         <Route path="/fuel-purchases" element={<TankRefills />} />
+        <Route path="/tank-refills" element={<TankRefills />} />
         <Route path="/direct-fuel-purchases" element={<DirectFuelPurchases />} />
         <Route path="/tank-transactions" element={<TankTransactionHistory />} />
                   <Route path="/tank-status" element={<TankStatus />} />
