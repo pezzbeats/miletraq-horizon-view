@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { SuperAdminDashboard } from '@/components/dashboard/SuperAdminDashboard';
 import { SubsidiaryAdminDashboard } from '@/components/dashboard/SubsidiaryAdminDashboard';
 import { FuelManagerDashboard } from '@/components/dashboard/FuelManagerDashboard';
-import { Card, CardContent } from '@/components/ui/card';
+import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Building2 } from 'lucide-react';
 
 interface FilterState {
@@ -18,6 +20,7 @@ interface FilterState {
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const { currentSubsidiary } = useSubsidiary();
   const [filters, setFilters] = useState<FilterState>({
     dateRange: 'last_30_days',
     vehicles: [],
@@ -40,13 +43,31 @@ export default function Dashboard() {
       );
     }
 
-    // Super Admin Dashboard - Cross-subsidiary overview
+    // Super Admin Dashboard - Cross-subsidiary overview with subsidiary selector
     if (profile.is_super_admin) {
       return (
-        <SuperAdminDashboard 
-          filters={filters} 
-          onFiltersChange={setFilters}
-        />
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Fleet Dashboard</span>
+                <SubsidiarySelector compact />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                {currentSubsidiary 
+                  ? `Viewing data for ${currentSubsidiary.subsidiary_name}` 
+                  : 'Select a subsidiary to view its dashboard data'
+                }
+              </p>
+            </CardContent>
+          </Card>
+          <SuperAdminDashboard 
+            filters={filters} 
+            onFiltersChange={setFilters}
+          />
+        </div>
       );
     }
 

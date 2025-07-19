@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, Filter } from "lucide-react";
+import { Download, RefreshCw, Filter, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { SubsidiarySelector } from "@/components/subsidiary/SubsidiarySelector";
 import { AnalyticsKPIs } from "@/components/analytics/AnalyticsKPIs";
 import { AnalyticsFilters } from "@/components/analytics/AnalyticsFilters";
 import { FuelEfficiencyChart } from "@/components/analytics/FuelEfficiencyChart";
@@ -35,6 +38,8 @@ interface FilterState {
 }
 
 export default function Analytics() {
+  const { profile } = useAuth();
+  const { currentSubsidiary } = useSubsidiary();
   const [data, setData] = useState<AnalyticsData>({
     fuelLogs: [],
     maintenanceLogs: [],
@@ -64,17 +69,12 @@ export default function Analytics() {
       const dateFrom = from.toISOString().split('T')[0];
       const dateTo = to.toISOString().split('T')[0];
 
+      // Get subsidiary filter for non-super-admin users
+      const subsidiaryFilter = currentSubsidiary?.id;
+
       // Fetch all required data in parallel
-      const [
-        fuelLogsRes,
-        maintenanceLogsRes,
-        budgetsRes,
-        vehiclesRes,
-        driversRes,
-        odometerRes,
-      ] = await Promise.all([
-        // Fuel logs with related data
-        supabase
+      const buildFuelQuery = () => {
+        let query = supabase
           .from('fuel_log')
           .select(`
             *,
@@ -82,11 +82,17 @@ export default function Analytics() {
             drivers (id, name)
           `)
           .gte('date', dateFrom)
-          .lte('date', dateTo)
-          .order('date', { ascending: false }),
+          .lte('date', dateTo);
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('date', { ascending: false });
+      };
 
-        // Maintenance logs with related data
-        supabase
+      const buildMaintenanceQuery = () => {
+        let query = supabase
           .from('maintenance_log')
           .select(`
             *,
@@ -101,39 +107,84 @@ export default function Analytics() {
             )
           `)
           .gte('maintenance_date', dateFrom)
-          .lte('maintenance_date', dateTo)
-          .order('maintenance_date', { ascending: false }),
+          .lte('maintenance_date', dateTo);
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('maintenance_date', { ascending: false });
+      };
 
-        // Budget data
-        supabase
+      const buildBudgetQuery = () => {
+        let query = supabase
           .from('budget')
-          .select('*')
-          .order('period_start', { ascending: false }),
+          .select('*');
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('period_start', { ascending: false });
+      };
 
-        // Vehicles
-        supabase
+      const buildVehiclesQuery = () => {
+        let query = supabase
           .from('vehicles')
           .select('*')
-          .eq('status', 'active')
-          .order('vehicle_number'),
+          .eq('status', 'active');
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('vehicle_number');
+      };
 
-        // Drivers
-        supabase
+      const buildDriversQuery = () => {
+        let query = supabase
           .from('drivers')
           .select('*')
-          .eq('is_active', true)
-          .order('name'),
+          .eq('is_active', true);
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('name');
+      };
 
-        // Odometer readings
-        supabase
+      const buildOdometerQuery = () => {
+        let query = supabase
           .from('odometer_readings')
           .select(`
             *,
             vehicles (id, vehicle_number, make, model)
           `)
           .gte('reading_date', dateFrom)
-          .lte('reading_date', dateTo)
-          .order('reading_date', { ascending: false }),
+          .lte('reading_date', dateTo);
+        
+        if (subsidiaryFilter) {
+          query = query.eq('subsidiary_id', subsidiaryFilter);
+        }
+        
+        return query.order('reading_date', { ascending: false });
+      };
+
+      const [
+        fuelLogsRes,
+        maintenanceLogsRes,
+        budgetsRes,
+        vehiclesRes,
+        driversRes,
+        odometerRes,
+      ] = await Promise.all([
+        buildFuelQuery(),
+        buildMaintenanceQuery(),
+        buildBudgetQuery(),
+        buildVehiclesQuery(),
+        buildDriversQuery(),
+        buildOdometerQuery(),
       ]);
 
       // Check for errors
@@ -168,7 +219,7 @@ export default function Analytics() {
 
   useEffect(() => {
     fetchAnalyticsData();
-  }, [filters.dateRange]);
+  }, [filters.dateRange, currentSubsidiary]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -208,43 +259,68 @@ export default function Analytics() {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fleet Analytics</h1>
-          <p className="text-muted-foreground">
-            Comprehensive performance insights and data analysis
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Last updated: {lastUpdated.toLocaleString()}
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Fleet Analytics</h1>
+            <p className="text-muted-foreground">
+              Comprehensive performance insights and data analysis
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Last updated: {lastUpdated.toLocaleString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFiltersOpen(!filtersOpen)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportData('csv')}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFiltersOpen(!filtersOpen)}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleExportData('csv')}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
+
+        {/* Subsidiary Selector for Super Admin */}
+        {profile?.is_super_admin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Subsidiary Analytics</span>
+                </div>
+                <SubsidiarySelector compact />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                {currentSubsidiary 
+                  ? `Viewing analytics for ${currentSubsidiary.subsidiary_name}` 
+                  : 'Select a subsidiary to view its analytics data'
+                }
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Filters Panel */}
