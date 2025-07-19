@@ -85,13 +85,13 @@
     --sidebar-ring: 59 130 246;
 
     /* Automotive Gradients */
-    --gradient-dashboard: linear-gradient(135deg, hsl(var(--automotive-navy)) 0%, hsl(var(--automotive-blue)) 100%);
-    --gradient-gauge: linear-gradient(90deg, hsl(var(--gauge-green)) 0%, hsl(var(--gauge-yellow)) 50%, hsl(var(--gauge-red)) 100%);
-    --gradient-fuel: linear-gradient(180deg, hsl(var(--automotive-blue)) 0%, hsl(var(--automotive-navy)) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(var(--automotive-yellow)) 0%, hsl(var(--automotive-orange)) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(var(--automotive-green)) 0%, hsl(142 76% 45%) 100%);
-    --gradient-danger: linear-gradient(135deg, hsl(var(--automotive-red)) 0%, hsl(0 72% 51%) 100%);
-    --gradient-header: linear-gradient(90deg, hsl(var(--automotive-navy)) 0%, hsl(var(--automotive-blue)) 50%, hsl(var(--automotive-orange)) 100%);
+    --gradient-dashboard: linear-gradient(135deg, hsl(30 58 138) 0%, hsl(59 130 246) 100%);
+    --gradient-gauge: linear-gradient(90deg, hsl(22 163 74) 0%, hsl(245 158 11) 50%, hsl(220 38 38) 100%);
+    --gradient-fuel: linear-gradient(180deg, hsl(59 130 246) 0%, hsl(30 58 138) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(245 158 11) 0%, hsl(249 115 22) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(22 163 74) 0%, hsl(142 76% 45%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(220 38 38) 0%, hsl(0 72% 51%) 100%);
+    --gradient-header: linear-gradient(90deg, hsl(30 58 138) 0%, hsl(59 130 246) 50%, hsl(249 115 22) 100%);
     --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
     --gradient-backdrop: linear-gradient(135deg, hsl(248 250 252) 0%, hsl(241 245 249) 100%);
     
