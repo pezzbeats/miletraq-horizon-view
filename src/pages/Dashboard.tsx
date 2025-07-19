@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SuperAdminDashboard } from '@/components/dashboard/SuperAdminDashboard';
 import { SubsidiaryAdminDashboard } from '@/components/dashboard/SubsidiaryAdminDashboard';
 import { FuelManagerDashboard } from '@/components/dashboard/FuelManagerDashboard';
+import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Building2 } from 'lucide-react';
@@ -21,6 +23,7 @@ interface FilterState {
 export default function Dashboard() {
   const { profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
+  const isMobile = useIsMobile();
   const [filters, setFilters] = useState<FilterState>({
     dateRange: 'last_30_days',
     vehicles: [],
@@ -29,7 +32,12 @@ export default function Dashboard() {
     status: 'all'
   });
 
-  // Role-based dashboard routing
+  // Use mobile dashboard on mobile devices
+  if (isMobile) {
+    return <MobileDashboard />;
+  }
+
+  // Desktop dashboard logic remains the same
   const getDashboardComponent = () => {
     if (!profile) {
       return (

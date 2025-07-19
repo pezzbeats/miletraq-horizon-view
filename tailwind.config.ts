@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -20,6 +21,13 @@ export default {
 		extend: {
 			fontFamily: {
 				'inter': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+			},
+			screens: {
+				'xs': '320px',
+				'sm-mobile': '375px',
+				'md-mobile': '390px',
+				'lg-mobile': '414px',
+				'xl-mobile': '428px',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -77,6 +85,12 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			spacing: {
+				'safe-top': 'env(safe-area-inset-top)',
+				'safe-bottom': 'env(safe-area-inset-bottom)',
+				'safe-left': 'env(safe-area-inset-left)',
+				'safe-right': 'env(safe-area-inset-right)',
+			},
 			keyframes: {
 				'accordion-down': {
 					from: {
@@ -113,15 +127,65 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0)'
 					}
+				},
+				'bounce-gentle': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-4px)'
+					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 0 0 hsl(var(--primary) / 0.4)'
+					},
+					'50%': {
+						boxShadow: '0 0 0 8px hsl(var(--primary) / 0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in-scale': 'fade-in-scale 0.3s ease-out',
-				'slide-up': 'slide-up 0.3s ease-out'
+				'slide-up': 'slide-up 0.3s ease-out',
+				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }) {
+			const newUtilities = {
+				'.touch-target': {
+					minHeight: '44px',
+					minWidth: '44px',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center'
+				},
+				'.mobile-card': {
+					borderRadius: '12px',
+					padding: '16px',
+					backgroundColor: 'hsl(var(--card))',
+					border: '1px solid hsl(var(--border))',
+					boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+				},
+				'.mobile-input': {
+					height: '48px',
+					fontSize: '16px',
+					borderRadius: '8px'
+				},
+				'.safe-area-inset': {
+					paddingTop: 'env(safe-area-inset-top)',
+					paddingBottom: 'env(safe-area-inset-bottom)',
+					paddingLeft: 'env(safe-area-inset-left)',
+					paddingRight: 'env(safe-area-inset-right)'
+				}
+			}
+			addUtilities(newUtilities)
+		}
+	],
 } satisfies Config;
