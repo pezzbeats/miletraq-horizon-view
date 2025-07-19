@@ -132,7 +132,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
       estimatedLaborRate: ticket.estimated_labor_rate?.toString() || "",
       requestedCompletionDate: ticket.requested_completion_date ? 
         format(new Date(ticket.requested_completion_date), 'yyyy-MM-dd') : "",
-      assignedVendorId: ticket.assigned_vendor_id || ""
+      assignedVendorId: ticket.assigned_vendor_id || "none"
     });
   };
 
@@ -147,7 +147,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
       estimatedLaborHours: "",
       estimatedLaborRate: "",
       requestedCompletionDate: "",
-      assignedVendorId: ""
+      assignedVendorId: "none"
     });
     setSelectedParts([]);
     setAttachments([]);
@@ -155,7 +155,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
 
   const addPart = () => {
     setSelectedParts([...selectedParts, {
-      partId: "",
+      partId: "select-part",
       name: "",
       quantity: 1,
       estimatedCost: 0
@@ -221,7 +221,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
         estimated_parts_cost: costs.partsCost || null,
         estimated_total_cost: costs.totalCost || null,
         requested_completion_date: formData.requestedCompletionDate || null,
-        assigned_vendor_id: formData.assignedVendorId || null,
+        assigned_vendor_id: formData.assignedVendorId === "none" ? null : formData.assignedVendorId || null,
         submitted_at: !isDraft ? new Date().toISOString() : null
       };
 
@@ -428,6 +428,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
                               <SelectValue placeholder="Select part" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="select-part">Select a part</SelectItem>
                               {parts.map((p) => (
                                 <SelectItem key={p.id} value={p.id}>
                                   {p.name} {p.part_number && `(${p.part_number})`}
@@ -491,7 +492,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
                         <SelectValue placeholder="Select vendor (optional)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No preference</SelectItem>
+                        <SelectItem value="none">No preference</SelectItem>
                         {vendors.map((vendor) => (
                           <SelectItem key={vendor.id} value={vendor.id}>
                             {vendor.name}
