@@ -260,6 +260,12 @@ const Vehicles = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-muted/50">
+                     <th 
+                      className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
+                      onClick={() => handleSort('vehicle_name')}
+                    >
+                      Vehicle Name {sortBy === 'vehicle_name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                    </th>
                     <th 
                       className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
                       onClick={() => handleSort('vehicle_number')}
@@ -287,9 +293,10 @@ const Vehicles = () => {
                 </thead>
                 <tbody>
                   {filteredVehicles.map((vehicle) => (
-                    <tr key={vehicle.id} className="border-b hover:bg-muted/20 transition-colors">
-                      <td className="p-4 font-medium">{vehicle.vehicle_number}</td>
-                      <td className="p-4">{vehicle.make}</td>
+                     <tr key={vehicle.id} className="border-b hover:bg-muted/20 transition-colors">
+                       <td className="p-4 font-bold text-lg">{vehicle.vehicle_name || 'Unnamed'}</td>
+                       <td className="p-4 font-medium">{vehicle.vehicle_number}</td>
+                       <td className="p-4">{vehicle.make}</td>
                       <td className="p-4">{vehicle.model}</td>
                       <td className="p-4 hidden sm:table-cell">{vehicle.year || '-'}</td>
                       <td className="p-4">{getFuelTypeBadge(vehicle.fuel_type)}</td>
