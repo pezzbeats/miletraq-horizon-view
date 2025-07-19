@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -35,6 +36,7 @@ export default function TankStatus() {
   const [loading, setLoading] = useState(true);
   const { currentSubsidiary } = useSubsidiary();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (currentSubsidiary?.id) {
@@ -185,7 +187,7 @@ export default function TankStatus() {
           <h1 className="text-3xl font-bold">Tank Status</h1>
           <p className="text-muted-foreground">Monitor fuel tank levels and consumption patterns</p>
         </div>
-        <Button onClick={() => window.location.href = '/tank-refills'}>
+        <Button onClick={() => navigate('/tank-refills')}>
           <Plus className="h-4 w-4 mr-2" />
           Add Fuel Purchase
         </Button>
@@ -201,7 +203,7 @@ export default function TankStatus() {
                 key={tank.id}
                 tank={tank}
                 consumption={consumptionData}
-                onRefillClick={() => window.location.href = '/tank-refills'}
+                onRefillClick={() => navigate('/tank-refills')}
               />
             );
           })}
@@ -322,7 +324,7 @@ export default function TankStatus() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => window.location.href = '/tank-refills'}
+              onClick={() => navigate('/tank-refills')}
             >
               <Plus className="h-4 w-4 mr-2" />
               Record Fuel Purchase
@@ -331,7 +333,7 @@ export default function TankStatus() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => window.location.href = '/fuel-log'}
+              onClick={() => navigate('/fuel-log')}
             >
               <TrendingDown className="h-4 w-4 mr-2" />
               View Fuel Consumption
