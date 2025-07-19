@@ -95,6 +95,75 @@ export const SubsidiaryOverview = ({ className = '' }: SubsidiaryOverviewProps) 
             ? ((budgetData.actual_amount || 0) / (budgetData.budgeted_amount || 1)) * 100
             : 0;
 
+          // Get real alert count
+          const alertPromises = [
+            // Document expiry alerts
+            supabase
+              .from('vehicle_documents')
+              .select('id')
+              .eq('subsidiary_id', subsidiary.id)
+              .lte('expiry_date', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()),
+            // Driver license expiry alerts  
+            supabase
+              .from('drivers')
+              .select('id')
+              .eq('subsidiary_id', subsidiary.id)
+              .lte('license_expiry', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()),
+            // Low fuel tank alerts
+            supabase
+              .from('fuel_tanks')
+              .select('id, current_volume, capacity, low_threshold')
+              .eq('subsidiary_id', subsidiary.id)
+          ];
+
+          const [docsData, driversData, tanksData] = await Promise.all(alertPromises);
+          
+          let alertCount = 0;
+          alertCount += docsData.data?.length || 0;
+          alertCount += driversData.data?.length || 0;
+          
+          // Check fuel tanks below threshold
+          if (tanksData.data) {
+            tanksData.data.forEach((tank: any) => {
+              const currentPercentage = (tank.current_volume / tank.capacity) * 100;
+              const lowThresholdPercentage = (tank.low_threshold / tank.capacity) * 100;
+              if (currentPercentage <= lowThresholdPercentage) {
+                alertCount++;
+              }
+            });
+          }
+
+          // Calculate efficiency trend from last month vs current month
+          const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+          const endOfLastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+          
+          const [currentFuelData, lastFuelData] = await Promise.all([
+            supabase
+              .from('fuel_log')
+              .select('fuel_volume, km_driven')
+              .eq('subsidiary_id', subsidiary.id)
+              .gte('date', startOfMonth.toISOString()),
+            supabase
+              .from('fuel_log')
+              .select('fuel_volume, km_driven')
+              .eq('subsidiary_id', subsidiary.id)
+              .gte('date', lastMonth.toISOString())
+              .lte('date', endOfLastMonth.toISOString())
+          ]);
+
+          const calculateEfficiency = (data: any[]) => {
+            const totalFuel = data?.reduce((sum, log) => sum + (log.fuel_volume || 0), 0) || 0;
+            const totalKm = data?.reduce((sum, log) => sum + (log.km_driven || 0), 0) || 0;
+            return totalFuel > 0 ? totalKm / totalFuel : 0;
+          };
+
+          const currentEfficiency = calculateEfficiency(currentFuelData.data || []);
+          const lastEfficiency = calculateEfficiency(lastFuelData.data || []);
+          
+          let efficiencyTrend: 'up' | 'down' | 'stable' = 'stable';
+          if (currentEfficiency > lastEfficiency * 1.05) efficiencyTrend = 'up';
+          else if (currentEfficiency < lastEfficiency * 0.95) efficiencyTrend = 'down';
+
           return {
             ...subsidiary,
             vehicle_count: vehicleCount || 0,
@@ -102,8 +171,8 @@ export const SubsidiaryOverview = ({ className = '' }: SubsidiaryOverviewProps) 
             monthly_fuel_cost: monthlyFuelCost,
             maintenance_cost: maintenanceCost,
             budget_utilization: Math.min(budgetUtilization, 100),
-            alert_count: Math.floor(Math.random() * 5), // Mock alert count
-            efficiency_trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable'
+            alert_count: alertCount,
+            efficiency_trend: efficiencyTrend
           };
         })
       );

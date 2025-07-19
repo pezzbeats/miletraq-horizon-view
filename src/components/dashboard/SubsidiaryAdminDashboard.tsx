@@ -92,8 +92,8 @@ export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: Subsidiar
         doc.expiry_date && new Date(doc.expiry_date) <= thirtyDaysFromNow
       );
 
-      // Mock alerts specific to this subsidiary
-      const alerts = [
+      // Real alerts specific to this subsidiary  
+      const subsidiaryAlerts = [
         ...(expiringDocuments.length > 0 ? [{
           id: 'doc-expiry',
           type: 'document_expiry' as const,
@@ -115,27 +115,49 @@ export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: Subsidiar
         }
       ];
 
-      // Mock recent activities
+      // Get real recent activities for this subsidiary
+      const recentActivitiesData = await Promise.all([
+        supabase
+          .from('fuel_log')
+          .select('id, total_cost, created_at, vehicles(vehicle_number)')
+          .eq('subsidiary_id', currentSubsidiary?.id)
+          .order('created_at', { ascending: false })
+          .limit(2),
+        supabase
+          .from('maintenance_log')
+          .select('id, total_cost, created_at, vehicles(vehicle_number)')
+          .eq('subsidiary_id', currentSubsidiary?.id)
+          .order('created_at', { ascending: false })
+          .limit(2)
+      ]);
+
       const activities = [
-        {
-          id: '1',
+        ...recentActivitiesData[0].data?.map(log => ({
+          id: log.id,
           type: 'fuel_entry' as const,
-          title: 'Fuel Log Added',
-          description: 'Fuel consumption recorded for vehicle KA-01-AB-1234',
-          user: profile?.full_name || 'User',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          metadata: { vehicleNumber: 'KA-01-AB-1234', amount: 2500 }
-        },
-        {
-          id: '2',
+          title: 'Fuel Log Entry',
+          description: `Fuel logged for vehicle ${log.vehicles?.vehicle_number || 'Unknown'}`,
+          user: 'System User',
+          timestamp: log.created_at,
+          metadata: { 
+            vehicleNumber: log.vehicles?.vehicle_number,
+            amount: log.total_cost 
+          }
+        })) || [],
+        ...recentActivitiesData[1].data?.map(log => ({
+          id: log.id,
           type: 'maintenance' as const,
-          title: 'Maintenance Completed',
-          description: 'Regular service completed for vehicle KA-02-CD-5678',
-          user: 'Mechanic',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-          metadata: { vehicleNumber: 'KA-02-CD-5678', amount: 8500 }
-        }
-      ];
+          title: 'Maintenance Entry', 
+          description: `Maintenance completed for ${log.vehicles?.vehicle_number || 'Unknown'}`,
+          user: 'System User',
+          timestamp: log.created_at,
+          metadata: { 
+            vehicleNumber: log.vehicles?.vehicle_number,
+            amount: log.total_cost 
+          }
+        })) || []
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
 
       setData({
         kpis: {
@@ -146,7 +168,7 @@ export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: Subsidiar
           averageEfficiency,
           costPerKm,
           budgetUtilization,
-          alertsCount: alerts.length
+          alertsCount: subsidiaryAlerts.length
         },
         charts: {
           fuelConsumption: [
@@ -174,7 +196,7 @@ export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: Subsidiar
             { category: 'Parts', budgeted: 80000, actual: 67000, variance: -16.3 },
           ]
         },
-        alerts,
+        alerts: subsidiaryAlerts,
         activities
       });
     } catch (error) {

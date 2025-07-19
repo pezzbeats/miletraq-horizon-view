@@ -67,7 +67,19 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
       // Calculate fuel metrics
       const dailyConsumption = fuelLogs.reduce((sum, log) => sum + (log.fuel_volume || 0), 0);
       const fuelCostToday = fuelLogs.reduce((sum, log) => sum + (log.total_cost || 0), 0);
-      const monthlyFuelBudget = 500000; // Mock budget
+      // Get real fuel budget for this month
+      const currentMonth = new Date();
+      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      
+      const { data: budgetData } = await supabase
+        .from('budget')
+        .select('budgeted_amount')
+        .eq('category', 'fuel')
+        .eq('subsidiary_id', currentSubsidiary?.id)
+        .gte('period_start', startOfMonth.toISOString())
+        .single();
+      
+      const monthlyFuelBudget = budgetData?.budgeted_amount || 500000;
       const budgetUsed = (fuelCostToday / monthlyFuelBudget) * 100;
 
       // Average fuel efficiency
@@ -80,8 +92,8 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
       const lowThreshold = tankData?.low_level_threshold || 1000;
       const daysRemaining = dailyConsumption > 0 ? Math.floor(currentLevel / (dailyConsumption / 30)) : 0;
 
-      // Mock alerts
-      const alerts = [
+      // Real alerts for fuel manager
+      const fuelAlerts = [
         ...(currentLevel <= lowThreshold ? [{
           id: 'tank-low',
           type: 'fuel_low' as const,
@@ -132,7 +144,7 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
           currentLevel,
           capacity,
           daysRemaining,
-          alertsCount: alerts.length
+          alertsCount: fuelAlerts.length
         },
         tank: {
           currentLevel,
@@ -154,7 +166,7 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDa
             { month: 'Apr', fuel: 510000, maintenance: 0, parts: 0 },
           ]
         },
-        alerts,
+        alerts: fuelAlerts,
         activities
       });
     } catch (error) {

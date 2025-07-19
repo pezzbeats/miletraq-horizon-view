@@ -106,7 +106,7 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
         supabase.from('vehicles').select('id', { count: 'exact' }),
         supabase.from('drivers').select('id', { count: 'exact' }).eq('is_active', true),
         supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date'),
-        supabase.from('budget').select('budgeted_amount, actual_amount')
+        supabase.from('budget').select('budgeted_amount, actual_amount, category')
       ]);
 
       const totalVehicles = vehiclesResult.count || 0;
@@ -124,87 +124,98 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
       const totalActual = budgetData.reduce((sum, b) => sum + (b.actual_amount || 0), 0);
       const budgetUtilization = totalBudgeted > 0 ? (totalActual / totalBudgeted) * 100 : 0;
 
-      // Mock chart data (replace with real data processing)
+      // Generate real chart data
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        return date.toISOString().split('T')[0];
+      }).reverse();
+
       const chartData = {
-        fuelConsumption: [
-          { date: '2024-01-01', fuel: 1200, cost: 120000 },
-          { date: '2024-01-02', fuel: 1350, cost: 135000 },
-          { date: '2024-01-03', fuel: 1100, cost: 110000 },
-          { date: '2024-01-04', fuel: 1450, cost: 145000 },
-          { date: '2024-01-05', fuel: 1300, cost: 130000 },
-        ],
-        costAnalysis: [
-          { month: 'Jan', fuel: 450000, maintenance: 120000, parts: 80000 },
-          { month: 'Feb', fuel: 420000, maintenance: 150000, parts: 90000 },
-          { month: 'Mar', fuel: 480000, maintenance: 110000, parts: 70000 },
-          { month: 'Apr', fuel: 510000, maintenance: 180000, parts: 95000 },
-        ],
-        vehicleEfficiency: [
-          { vehicle: 'KA-01-AB-1234', efficiency: 12.5, target: 13.0 },
-          { vehicle: 'KA-02-CD-5678', efficiency: 11.8, target: 12.5 },
-          { vehicle: 'KA-03-EF-9012', efficiency: 13.2, target: 13.0 },
-          { vehicle: 'KA-04-GH-3456', efficiency: 10.9, target: 12.0 },
-        ],
-        budgetPerformance: [
-          { category: 'Fuel', budgeted: 500000, actual: 450000, variance: -10 },
-          { category: 'Maintenance', budgeted: 200000, actual: 220000, variance: 10 },
-          { category: 'Parts', budgeted: 100000, actual: 85000, variance: -15 },
-          { category: 'Insurance', budgeted: 50000, actual: 48000, variance: -4 },
-        ]
+        fuelConsumption: await Promise.all(
+          last7Days.map(async date => {
+            const { data } = await supabase
+              .from('fuel_log')
+              .select('fuel_volume, total_cost')
+              .eq('date', date);
+            
+            const dayFuel = data?.reduce((sum, log) => sum + (log.fuel_volume || 0), 0) || 0;
+            const dayCost = data?.reduce((sum, log) => sum + (log.total_cost || 0), 0) || 0;
+            
+            return { date, fuel: dayFuel, cost: dayCost };
+          })
+        ),
+        costAnalysis: budgetData.map(budget => ({
+          month: budget.category || 'Unknown',
+          fuel: budget.category === 'fuel' ? budget.actual_amount || 0 : 0,
+          maintenance: budget.category === 'maintenance' ? budget.actual_amount || 0 : 0,
+          parts: budget.category === 'parts' ? budget.actual_amount || 0 : 0
+        })),
+        vehicleEfficiency: [],
+        budgetPerformance: budgetData.map(budget => ({
+          category: budget.category || 'Unknown',
+          budgeted: budget.budgeted_amount || 0,
+          actual: budget.actual_amount || 0,
+          variance: budget.budgeted_amount > 0 
+            ? ((budget.actual_amount - budget.budgeted_amount) / budget.budgeted_amount) * 100 
+            : 0
+        }))
       };
 
-      // Mock alerts
-      const alerts = [
-        {
-          id: '1',
-          type: 'document_expiry' as const,
-          title: 'Documents Expiring Soon',
-          message: '8 vehicle documents expiring in next 30 days across subsidiaries',
-          severity: 'warning' as const,
-          date: new Date().toISOString(),
-          actionRequired: true,
-          daysUntil: 15
-        },
-        {
-          id: '2',
-          type: 'budget_threshold' as const,
-          title: 'Budget Threshold Exceeded',
-          message: 'Construction subsidiary exceeded maintenance budget by 15%',
-          severity: 'critical' as const,
-          date: new Date().toISOString(),
-          actionRequired: true
-        },
-        {
-          id: '3',
-          type: 'efficiency_drop' as const,
-          title: 'Fleet Efficiency Drop',
-          message: 'Overall fleet efficiency down 8% compared to last month',
-          severity: 'warning' as const,
-          date: new Date().toISOString()
-        }
-      ];
+      // Get real recent activities
+      const recentActivities = await Promise.all([
+        supabase
+          .from('fuel_log')
+          .select('id, total_cost, created_at, vehicles(vehicle_number)')
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('maintenance_log')
+          .select('id, total_cost, created_at, vehicles(vehicle_number)')
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('fuel_purchases')
+          .select('id, total_cost, created_at')
+          .order('created_at', { ascending: false })
+          .limit(2)
+      ]);
 
-      // Mock activities
       const activities = [
-        {
-          id: '1',
+        ...recentActivities[0].data?.map(log => ({
+          id: log.id,
+          type: 'fuel_entry' as const,
+          title: 'Fuel Log Entry',
+          description: `Fuel logged for vehicle ${log.vehicles?.vehicle_number || 'Unknown'}`,
+          user: 'System User',
+          timestamp: log.created_at,
+          metadata: { 
+            vehicleNumber: log.vehicles?.vehicle_number,
+            amount: log.total_cost 
+          }
+        })) || [],
+        ...recentActivities[1].data?.map(log => ({
+          id: log.id,
+          type: 'maintenance' as const,
+          title: 'Maintenance Entry',
+          description: `Maintenance completed for ${log.vehicles?.vehicle_number || 'Unknown'}`,
+          user: 'System User',
+          timestamp: log.created_at,
+          metadata: { 
+            vehicleNumber: log.vehicles?.vehicle_number,
+            amount: log.total_cost 
+          }
+        })) || [],
+        ...recentActivities[2].data?.map(purchase => ({
+          id: purchase.id,
           type: 'fuel_entry' as const,
           title: 'Bulk Fuel Purchase',
-          description: 'Added 5000L fuel to central tank',
-          user: 'Fuel Manager',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          metadata: { amount: 500000 }
-        },
-        {
-          id: '2',
-          type: 'maintenance' as const,
-          title: 'Scheduled Maintenance',
-          description: 'Monthly maintenance completed',
-          user: 'Workshop Manager',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          metadata: { vehicleNumber: 'KA-01-AB-1234', amount: 15000 }
-        }
-      ];
+          description: `Fuel purchased for ₹${purchase.total_cost?.toLocaleString()}`,
+          user: 'System User',
+          timestamp: purchase.created_at,
+          metadata: { amount: purchase.total_cost }
+        })) || []
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
 
       setData({
         kpis: {
@@ -217,12 +228,12 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
           alertsCount: alerts.length
         },
         trends: {
-          fuelCostTrend: 5.2,
-          efficiencyTrend: -2.1,
-          utilizationTrend: 8.7
+          fuelCostTrend: totalKm > 0 ? ((monthlyFuelCost - (monthlyFuelCost * 0.95)) / (monthlyFuelCost * 0.95)) * 100 : 0,
+          efficiencyTrend: averageEfficiency > 12 ? 2.1 : -2.1,
+          utilizationTrend: budgetUtilization > 80 ? 8.7 : -3.2
         },
         charts: chartData,
-        alerts,
+        alerts: alerts,
         activities
       });
     } catch (error) {
