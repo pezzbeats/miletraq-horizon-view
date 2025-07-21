@@ -41,6 +41,7 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { PartDialog } from "@/components/parts/PartDialog";
+import { VendorDialog } from "@/components/vendors/VendorDialog";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -85,6 +86,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   const [partDialogOpen, setPartDialogOpen] = useState(false);
   const [partSearchStates, setPartSearchStates] = useState<boolean[]>([false]);
   const [vendorSearchOpen, setVendorSearchOpen] = useState(false);
+  const [vendorDialogOpen, setVendorDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -194,6 +196,24 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
     }
   };
 
+  const fetchVendors = async () => {
+    if (!currentSubsidiary?.id) return;
+
+    try {
+      const { data: vendorsData, error: vendorsError } = await supabase
+        .from('vendors')
+        .select('id, name, vendor_type')
+        .eq('subsidiary_id', currentSubsidiary.id)
+        .eq('is_active', true)
+        .not('vendor_type', 'cs', '{fuel}');
+
+      if (vendorsError) throw vendorsError;
+      setVendors(vendorsData || []);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    }
+  };
+
   const populateForm = () => {
     if (!ticket) return;
 
@@ -269,6 +289,11 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   const handlePartDialogSuccess = () => {
     setPartDialogOpen(false);
     fetchParts(); // Refresh parts list
+  };
+
+  const handleVendorDialogSuccess = () => {
+    setVendorDialogOpen(false);
+    fetchVendors(); // Refresh vendors list
   };
 
   const calculateCosts = () => {
@@ -663,7 +688,23 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
                         <Command>
                           <CommandInput placeholder="Search vendors..." />
                           <CommandList>
-                            <CommandEmpty>No vendors found.</CommandEmpty>
+                            <CommandEmpty>
+                              <div className="py-2 px-2">
+                                <p className="text-sm text-muted-foreground mb-2">No vendors found.</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setVendorDialogOpen(true);
+                                    setVendorSearchOpen(false);
+                                  }}
+                                  className="w-full"
+                                >
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Add New Vendor
+                                </Button>
+                              </div>
+                            </CommandEmpty>
                             <CommandGroup>
                               <CommandItem
                                 value="no-preference"
@@ -698,6 +739,16 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
                                   {vendor.name}
                                 </CommandItem>
                               ))}
+                              <CommandItem
+                                onSelect={() => {
+                                  setVendorDialogOpen(true);
+                                  setVendorSearchOpen(false);
+                                }}
+                                className="border-t"
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add New Vendor
+                              </CommandItem>
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -755,6 +806,12 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
         open={partDialogOpen}
         onOpenChange={setPartDialogOpen}
         onSuccess={handlePartDialogSuccess}
+      />
+      
+      <VendorDialog
+        open={vendorDialogOpen}
+        onOpenChange={setVendorDialogOpen}
+        onSuccess={handleVendorDialogSuccess}
       />
     </Dialog>
   );
