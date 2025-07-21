@@ -103,47 +103,5 @@ export function SubsidiarySelector({ compact = false }: SubsidiarySelectorProps)
     );
   }
 
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`w-10 h-10 ${businessTypeColors[currentSubsidiary.business_type]} rounded-lg flex items-center justify-center`}>
-        <Icon className="h-5 w-5 text-white" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <Select
-          value={currentSubsidiary.id}
-          onValueChange={(value) => {
-            const subsidiary = subsidiaries.find(sub => sub.id === value);
-            if (subsidiary) setCurrentSubsidiary(subsidiary);
-          }}
-        >
-          <SelectTrigger className="border-0 bg-transparent p-0 h-auto focus:ring-0">
-            <div className="text-left">
-              <div className="font-medium">{currentSubsidiary.subsidiary_name}</div>
-              <div className="text-sm text-muted-foreground">{currentSubsidiary.subsidiary_code}</div>
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {subsidiaries.map((subsidiary) => {
-              const SubIcon = businessTypeIcons[subsidiary.business_type];
-              return (
-                <SelectItem key={subsidiary.id} value={subsidiary.id}>
-                  <div className="flex items-center gap-3 w-full">
-                    <div className={`w-8 h-8 ${businessTypeColors[subsidiary.business_type]} rounded-lg flex items-center justify-center`}>
-                      <SubIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">{subsidiary.subsidiary_name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {subsidiary.subsidiary_code} • {subsidiary.business_type}
-                      </div>
-                    </div>
-                  </div>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
+  return null;
 }
