@@ -84,6 +84,7 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
   const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
   const [partDialogOpen, setPartDialogOpen] = useState(false);
   const [partSearchStates, setPartSearchStates] = useState<boolean[]>([false]);
+  const [vendorSearchOpen, setVendorSearchOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -640,19 +641,68 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
 
                   <div>
                     <Label>Preferred Vendor</Label>
-                    <Select value={formData.assignedVendorId} onValueChange={(value) => setFormData({ ...formData, assignedVendorId: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select vendor (optional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No preference</SelectItem>
-                        {vendors.map((vendor) => (
-                          <SelectItem key={vendor.id} value={vendor.id}>
-                            {vendor.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={vendorSearchOpen} onOpenChange={setVendorSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={vendorSearchOpen}
+                          className="w-full justify-between"
+                        >
+                          {formData.assignedVendorId && formData.assignedVendorId !== "none" ? 
+                            (() => {
+                              const selectedVendor = vendors.find(v => v.id === formData.assignedVendorId);
+                              return selectedVendor ? selectedVendor.name : "Select vendor (optional)";
+                            })()
+                            : formData.assignedVendorId === "none" ? "No preference" : "Select vendor (optional)"
+                          }
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search vendors..." />
+                          <CommandList>
+                            <CommandEmpty>No vendors found.</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem
+                                value="no-preference"
+                                onSelect={() => {
+                                  setFormData({ ...formData, assignedVendorId: "none" });
+                                  setVendorSearchOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.assignedVendorId === "none" ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                No preference
+                              </CommandItem>
+                              {vendors.map((vendor) => (
+                                <CommandItem
+                                  key={vendor.id}
+                                  value={vendor.name}
+                                  onSelect={() => {
+                                    setFormData({ ...formData, assignedVendorId: vendor.id });
+                                    setVendorSearchOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      formData.assignedVendorId === vendor.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {vendor.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </CardContent>
