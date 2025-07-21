@@ -28,14 +28,16 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  searchQuery?: string;
 }
 
 interface FuelManagerDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
+  onSearchChange?: (searchQuery: string) => void;
 }
 
-export const FuelManagerDashboard = ({ filters, onFiltersChange }: FuelManagerDashboardProps) => {
+export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange }: FuelManagerDashboardProps) => {
   const { profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
   const [data, setData] = useState<any>(null);

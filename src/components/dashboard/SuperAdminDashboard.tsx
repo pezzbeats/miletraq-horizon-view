@@ -98,20 +98,27 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  searchQuery?: string;
 }
 
 interface SuperAdminDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
+  onSearchChange?: (searchQuery: string) => void;
 }
 
-export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDashboardProps) => {
+export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }: SuperAdminDashboardProps) => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { subsidiaries, setCurrentSubsidiary } = useSubsidiary();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    onSearchChange?.(query);
+  };
   const { alerts, loading: alertsLoading } = useAlerts();
 
   useEffect(() => {
@@ -338,7 +345,7 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange }: SuperAdminDash
         subtitle="Consolidated fleet management across all subsidiaries"
         alertsCount={data.kpis.alertsCount}
         showSearch={true}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
       />
 
       <div className="container mx-auto p-6 space-y-8">

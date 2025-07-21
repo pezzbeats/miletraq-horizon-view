@@ -31,14 +31,20 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  searchQuery?: string;
 }
 
 interface SubsidiaryAdminDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
+  onSearchChange?: (searchQuery: string) => void;
 }
 
-export const SubsidiaryAdminDashboard = ({ filters, onFiltersChange }: SubsidiaryAdminDashboardProps) => {
+export function SubsidiaryAdminDashboard({ 
+  filters, 
+  onFiltersChange,
+  onSearchChange 
+}: SubsidiaryAdminDashboardProps) {
   const { profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
   const [data, setData] = useState<any>(null);

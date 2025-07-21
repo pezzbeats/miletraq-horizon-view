@@ -18,6 +18,7 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  searchQuery?: string;
 }
 
 export default function Dashboard() {
@@ -29,8 +30,13 @@ export default function Dashboard() {
     vehicles: [],
     drivers: [],
     costCategories: [],
-    status: 'all'
+    status: 'all',
+    searchQuery: ''
   });
+
+  const handleSearchChange = (searchQuery: string) => {
+    setFilters(prev => ({ ...prev, searchQuery }));
+  };
 
   // Use mobile dashboard on mobile devices
   if (isMobile) {
@@ -74,6 +80,7 @@ export default function Dashboard() {
           <SuperAdminDashboard 
             filters={filters} 
             onFiltersChange={setFilters}
+            onSearchChange={handleSearchChange}
           />
         </div>
       );
@@ -86,6 +93,7 @@ export default function Dashboard() {
           <SubsidiaryAdminDashboard 
             filters={filters} 
             onFiltersChange={setFilters}
+            onSearchChange={handleSearchChange}
           />
         );
       
@@ -94,6 +102,7 @@ export default function Dashboard() {
           <SubsidiaryAdminDashboard 
             filters={filters} 
             onFiltersChange={setFilters}
+            onSearchChange={handleSearchChange}
           />
         );
       
@@ -102,6 +111,7 @@ export default function Dashboard() {
           <FuelManagerDashboard 
             filters={filters} 
             onFiltersChange={setFilters}
+            onSearchChange={handleSearchChange}
           />
         );
       
@@ -110,6 +120,7 @@ export default function Dashboard() {
           <SubsidiaryAdminDashboard 
             filters={filters} 
             onFiltersChange={setFilters}
+            onSearchChange={handleSearchChange}
           />
         );
       
