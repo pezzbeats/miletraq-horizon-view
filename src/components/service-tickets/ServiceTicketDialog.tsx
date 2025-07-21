@@ -134,13 +134,13 @@ export function ServiceTicketDialog({ open, onOpenChange, ticket, onSuccess }: S
 
       console.log('Fetched vehicles:', vehiclesData);
 
-      // Fetch vendors with maintenance capability
+      // Fetch vendors excluding fuel vendors
       const { data: vendorsData, error: vendorsError } = await supabase
         .from('vendors')
         .select('id, name, vendor_type')
         .eq('subsidiary_id', currentSubsidiary.id)
         .eq('is_active', true)
-        .contains('vendor_type', ['maintenance']);
+        .not('vendor_type', 'cs', '{fuel}');
 
       if (vendorsError) {
         console.error('Vendors error:', vendorsError);
