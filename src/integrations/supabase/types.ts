@@ -1350,6 +1350,61 @@ export type Database = {
           },
         ]
       }
+      user_subsidiary_permissions: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string | null
+          id: string
+          permission_level: Database["public"]["Enums"]["subsidiary_permission_level"]
+          subsidiary_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          permission_level?: Database["public"]["Enums"]["subsidiary_permission_level"]
+          subsidiary_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          permission_level?: Database["public"]["Enums"]["subsidiary_permission_level"]
+          subsidiary_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subsidiary_permissions_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subsidiary_permissions_subsidiary_id_fkey"
+            columns: ["subsidiary_id"]
+            isOneToOne: false
+            referencedRelation: "subsidiaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subsidiary_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehicle_documents: {
         Row: {
           alert_days_before: number | null
@@ -1621,6 +1676,13 @@ export type Database = {
         Args: { setting_key: string; setting_value: Json; user_id?: string }
         Returns: boolean
       }
+      user_has_subsidiary_permission: {
+        Args: {
+          target_subsidiary_id: string
+          required_permission: Database["public"]["Enums"]["subsidiary_permission_level"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       approval_action:
@@ -1633,6 +1695,12 @@ export type Database = {
       fuel_type_enum: "diesel" | "petrol" | "cng"
       fuel_unit_enum: "liters" | "kg"
       maintenance_type: "breakdown" | "preventive" | "scheduled"
+      subsidiary_permission_level:
+        | "full_access"
+        | "operational_access"
+        | "read_only_access"
+        | "fuel_only_access"
+        | "maintenance_only_access"
       ticket_priority: "critical" | "high" | "medium" | "low"
       ticket_status:
         | "draft"
@@ -1784,6 +1852,13 @@ export const Constants = {
       fuel_type_enum: ["diesel", "petrol", "cng"],
       fuel_unit_enum: ["liters", "kg"],
       maintenance_type: ["breakdown", "preventive", "scheduled"],
+      subsidiary_permission_level: [
+        "full_access",
+        "operational_access",
+        "read_only_access",
+        "fuel_only_access",
+        "maintenance_only_access",
+      ],
       ticket_priority: ["critical", "high", "medium", "low"],
       ticket_status: [
         "draft",
