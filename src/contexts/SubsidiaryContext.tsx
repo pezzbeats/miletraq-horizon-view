@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+type PermissionLevel = 'full_access' | 'operational_access' | 'read_only_access' | 'fuel_only_access' | 'maintenance_only_access';
+
 interface Subsidiary {
   id: string;
   subsidiary_name: string;
@@ -17,24 +19,36 @@ interface Subsidiary {
   is_active: boolean;
 }
 
+interface SubsidiaryWithPermission extends Subsidiary {
+  permission_level?: PermissionLevel;
+  user_count?: number;
+}
+
 interface SubsidiaryContextType {
-  subsidiaries: Subsidiary[];
-  currentSubsidiary: Subsidiary | null;
-  setCurrentSubsidiary: (subsidiary: Subsidiary) => void;
+  subsidiaries: SubsidiaryWithPermission[];
+  currentSubsidiary: SubsidiaryWithPermission | null;
+  allSubsidiariesView: boolean;
+  setCurrentSubsidiary: (subsidiary: SubsidiaryWithPermission | null) => void;
+  setAllSubsidiariesView: (enabled: boolean) => void;
   loading: boolean;
   refreshSubsidiaries: () => Promise<void>;
   canManageSubsidiaries: boolean;
+  hasMultipleSubsidiaries: boolean;
+  getUserPermissionLevel: (subsidiaryId: string) => PermissionLevel | null;
+  canAccessModule: (module: string, subsidiaryId?: string) => boolean;
 }
 
 const SubsidiaryContext = createContext<SubsidiaryContextType | undefined>(undefined);
 
 export function SubsidiaryProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
-  const [subsidiaries, setSubsidiaries] = useState<Subsidiary[]>([]);
-  const [currentSubsidiary, setCurrentSubsidiaryState] = useState<Subsidiary | null>(null);
+  const [subsidiaries, setSubsidiaries] = useState<SubsidiaryWithPermission[]>([]);
+  const [currentSubsidiary, setCurrentSubsidiaryState] = useState<SubsidiaryWithPermission | null>(null);
+  const [allSubsidiariesView, setAllSubsidiariesViewState] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const canManageSubsidiaries = profile?.is_super_admin || profile?.role === 'admin';
+  const hasMultipleSubsidiaries = subsidiaries.length > 1;
 
   useEffect(() => {
     if (profile) {
@@ -44,23 +58,69 @@ export function SubsidiaryProvider({ children }: { children: React.ReactNode }) 
 
   const fetchSubsidiaries = async () => {
     try {
-      const { data, error } = await supabase
-        .from('subsidiaries')
-        .select('*')
-        .eq('is_active', true)
-        .order('subsidiary_name');
+      let subsidiariesWithPermissions: SubsidiaryWithPermission[] = [];
+      
+      if (profile?.is_super_admin) {
+        // Super admin gets access to all subsidiaries with full access
+        const { data: allSubsidiaries, error: allError } = await supabase
+          .from('subsidiaries')
+          .select('*')
+          .eq('is_active', true)
+          .order('subsidiary_name');
+        
+        if (allError) throw allError;
+        
+        subsidiariesWithPermissions = (allSubsidiaries || []).map(sub => ({
+          ...sub,
+          business_type: sub.business_type as 'construction' | 'hospitality' | 'education' | 'other',
+          permission_level: 'full_access' as PermissionLevel
+        }));
+      } else {
+        // Fetch subsidiaries with user permissions
+        const { data: permissionsData, error: permissionsError } = await supabase
+          .from('user_subsidiary_permissions')
+          .select(`
+            permission_level,
+            subsidiary_id,
+            subsidiaries (*)
+          `)
+          .eq('user_id', profile?.id);
 
-      if (error) throw error;
+        if (permissionsError) throw permissionsError;
 
-      setSubsidiaries(data || [] as any);
+        subsidiariesWithPermissions = (permissionsData || [])
+          .filter(perm => perm.subsidiaries && (perm.subsidiaries as any).is_active)
+          .map(perm => {
+            const sub = perm.subsidiaries as any;
+            return {
+              ...sub,
+              business_type: sub.business_type as 'construction' | 'hospitality' | 'education' | 'other',
+              permission_level: perm.permission_level as PermissionLevel
+            };
+          });
+      }
+
+      setSubsidiaries(subsidiariesWithPermissions);
 
       // Set default subsidiary if not already set
-      if (data && data.length > 0 && !currentSubsidiary) {
-        const defaultSub = data.find(sub => sub.id === profile?.default_subsidiary_id) || data[0];
-        setCurrentSubsidiaryState(defaultSub as any);
+      if (subsidiariesWithPermissions && subsidiariesWithPermissions.length > 0 && !currentSubsidiary && !allSubsidiariesView) {
+        const savedSubsidiaryId = localStorage.getItem('selectedSubsidiary');
+        const savedAllView = localStorage.getItem('allSubsidiariesView') === 'true';
         
-        // Store in localStorage for persistence
-        localStorage.setItem('selectedSubsidiary', defaultSub.id);
+        if (savedAllView && subsidiariesWithPermissions.length > 1) {
+          setAllSubsidiariesViewState(true);
+        } else {
+          let defaultSub = subsidiariesWithPermissions.find(sub => sub.id === profile?.default_subsidiary_id);
+          if (!defaultSub && savedSubsidiaryId) {
+            defaultSub = subsidiariesWithPermissions.find(sub => sub.id === savedSubsidiaryId);
+          }
+          if (!defaultSub) {
+            defaultSub = subsidiariesWithPermissions[0];
+          }
+          
+          setCurrentSubsidiaryState(defaultSub);
+          localStorage.setItem('selectedSubsidiary', defaultSub.id);
+        }
       }
     } catch (error) {
       console.error('Error fetching subsidiaries:', error);
@@ -74,26 +134,86 @@ export function SubsidiaryProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const setCurrentSubsidiary = (subsidiary: Subsidiary) => {
-    setCurrentSubsidiaryState(subsidiary);
-    localStorage.setItem('selectedSubsidiary', subsidiary.id);
-    
-    toast({
-      title: 'Subsidiary Changed',
-      description: `Switched to ${subsidiary.subsidiary_name}`,
-    });
+  const setCurrentSubsidiary = (subsidiary: SubsidiaryWithPermission | null) => {
+    if (subsidiary === null) {
+      // This means switch to "All Subsidiaries" view
+      setAllSubsidiariesViewState(true);
+      setCurrentSubsidiaryState(null);
+      localStorage.setItem('allSubsidiariesView', 'true');
+      localStorage.removeItem('selectedSubsidiary');
+      toast({
+        title: 'View Changed',
+        description: 'Switched to All Subsidiaries view',
+      });
+    } else {
+      setCurrentSubsidiaryState(subsidiary);
+      setAllSubsidiariesViewState(false);
+      localStorage.setItem('selectedSubsidiary', subsidiary.id);
+      localStorage.removeItem('allSubsidiariesView');
+      toast({
+        title: 'Subsidiary Changed',
+        description: `Switched to ${subsidiary.subsidiary_name}`,
+      });
+    }
   };
 
-  // Load selected subsidiary from localStorage on mount
+  const setAllSubsidiariesView = (enabled: boolean) => {
+    if (enabled) {
+      setCurrentSubsidiary(null);
+    } else if (subsidiaries.length > 0) {
+      const defaultSub = subsidiaries.find(sub => sub.id === profile?.default_subsidiary_id) || subsidiaries[0];
+      setCurrentSubsidiary(defaultSub);
+    }
+  };
+
+  const getUserPermissionLevel = (subsidiaryId: string): PermissionLevel | null => {
+    if (profile?.is_super_admin) return 'full_access';
+    const subsidiary = subsidiaries.find(sub => sub.id === subsidiaryId);
+    return subsidiary?.permission_level || null;
+  };
+
+  const canAccessModule = (module: string, subsidiaryId?: string): boolean => {
+    const targetSubsidiary = subsidiaryId || currentSubsidiary?.id;
+    if (!targetSubsidiary) return allSubsidiariesView; // In all subsidiaries view, allow read access
+    
+    const permission = getUserPermissionLevel(targetSubsidiary);
+    if (!permission) return false;
+    
+    // Define module access rules based on permission levels
+    const moduleAccessRules: Record<string, PermissionLevel[]> = {
+      'dashboard': ['full_access', 'operational_access', 'read_only_access', 'fuel_only_access', 'maintenance_only_access'],
+      'vehicles': ['full_access', 'operational_access', 'read_only_access'],
+      'drivers': ['full_access', 'operational_access', 'read_only_access'],
+      'fuel': ['full_access', 'operational_access', 'fuel_only_access'],
+      'maintenance': ['full_access', 'operational_access', 'maintenance_only_access'],
+      'analytics': ['full_access', 'operational_access', 'read_only_access'],
+      'budget': ['full_access', 'operational_access'],
+      'settings': ['full_access'],
+      'users': ['full_access']
+    };
+    
+    const allowedPermissions = moduleAccessRules[module] || ['full_access'];
+    return allowedPermissions.includes(permission);
+  };
+
+  // Load saved view state from localStorage on mount
   useEffect(() => {
+    const savedAllView = localStorage.getItem('allSubsidiariesView') === 'true';
     const savedSubsidiaryId = localStorage.getItem('selectedSubsidiary');
-    if (savedSubsidiaryId && subsidiaries.length > 0) {
-      const savedSubsidiary = subsidiaries.find(sub => sub.id === savedSubsidiaryId);
-      if (savedSubsidiary) {
-        setCurrentSubsidiaryState(savedSubsidiary);
+    
+    if (subsidiaries.length > 0) {
+      if (savedAllView && hasMultipleSubsidiaries) {
+        setAllSubsidiariesViewState(true);
+        setCurrentSubsidiaryState(null);
+      } else if (savedSubsidiaryId) {
+        const savedSubsidiary = subsidiaries.find(sub => sub.id === savedSubsidiaryId);
+        if (savedSubsidiary) {
+          setCurrentSubsidiaryState(savedSubsidiary);
+          setAllSubsidiariesViewState(false);
+        }
       }
     }
-  }, [subsidiaries]);
+  }, [subsidiaries, hasMultipleSubsidiaries]);
 
   const refreshSubsidiaries = async () => {
     await fetchSubsidiaries();
@@ -102,10 +222,15 @@ export function SubsidiaryProvider({ children }: { children: React.ReactNode }) 
   const value = {
     subsidiaries,
     currentSubsidiary,
+    allSubsidiariesView,
     setCurrentSubsidiary,
+    setAllSubsidiariesView,
     loading,
     refreshSubsidiaries,
     canManageSubsidiaries,
+    hasMultipleSubsidiaries,
+    getUserPermissionLevel,
+    canAccessModule,
   };
 
   return (
