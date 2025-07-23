@@ -1,297 +1,446 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { UserDialog } from '@/components/users/UserDialog';
+import { DeleteUserDialog } from '@/components/users/DeleteUserDialog';
+import { ChangePasswordDialog } from '@/components/users/ChangePasswordDialog';
+import { UserSubsidiaryPermissionsDialog } from '@/components/users/UserSubsidiaryPermissionsDialog';
+import { MobileUserCard } from '@/components/users/MobileUserCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, MoreHorizontal, Users as UsersIcon } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Search, Users as UsersIcon, Shield, Building2, Globe, Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { UserDialog } from '@/components/users/UserDialog';
-import { ChangePasswordDialog } from '@/components/users/ChangePasswordDialog';
-import { DeleteUserDialog } from '@/components/users/DeleteUserDialog';
-import { MobileUserCard } from '@/components/users/MobileUserCard';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
-type UserProfile = Tables<'profiles'>;
-
-const roleColors = {
-  admin: 'bg-red-500 text-white',
-  manager: 'bg-blue-500 text-white',
-  fuel_manager: 'bg-green-500 text-white',
-  viewer: 'bg-gray-500 text-white',
-};
-
-const roleLabels = {
-  admin: 'Admin',
-  manager: 'Manager',
-  fuel_manager: 'Fuel Manager',
-  viewer: 'Viewer',
-};
 
 export default function Users() {
-  const { profile, hasPermission } = useAuth();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { profile } = useAuth();
+  const { currentSubsidiary, allSubsidiariesView, subsidiaries, canManageSubsidiaries } = useSubsidiary();
   const isMobile = useIsMobile();
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<any>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<any>(null);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [permissionsUser, setPermissionsUser] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (hasPermission('admin')) {
-      fetchUsers();
-    }
-  }, [hasPermission]);
+  const { data: users, isLoading, refetch } = useQuery({
+    queryKey: ['users', currentSubsidiary?.id, allSubsidiariesView],
+    queryFn: async () => {
+      if (!canManageSubsidiaries) {
+        // Regular users can only see their own profile
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', profile?.user_id);
+        
+        if (error) throw error;
+        return data || [];
+      }
 
-  // Check if user has admin permissions
-  if (!hasPermission('admin')) {
+      if (profile?.is_super_admin) {
+        // Super admins can see all users
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(`
+            *,
+            user_subsidiary_permissions (
+              subsidiary_id,
+              permission_level,
+              subsidiaries (
+                subsidiary_name,
+                subsidiary_code
+              )
+            )
+          `)
+          .order('full_name');
+        
+        if (error) throw error;
+        return data || [];
+      }
+
+      if (allSubsidiariesView) {
+        // Get users from all accessible subsidiaries
+        const subsidiaryIds = subsidiaries.map(sub => sub.id);
+        if (subsidiaryIds.length === 0) return [];
+
+        const { data, error } = await supabase
+          .from('user_subsidiary_permissions')
+          .select(`
+            user_id,
+            permission_level,
+            subsidiary_id,
+            profiles!inner(*),
+            subsidiaries (
+              subsidiary_name,
+              subsidiary_code
+            )
+          `)
+          .in('subsidiary_id', subsidiaryIds);
+
+        if (error) throw error;
+
+        // Transform data to get unique users
+        const userMap = new Map();
+        data?.forEach((perm: any) => {
+          const userId = perm.profiles.id;
+          if (!userMap.has(userId)) {
+            userMap.set(userId, {
+              ...perm.profiles,
+              user_subsidiary_permissions: []
+            });
+          }
+          userMap.get(userId).user_subsidiary_permissions.push({
+            subsidiary_id: perm.subsidiary_id,
+            permission_level: perm.permission_level,
+            subsidiaries: perm.subsidiaries
+          });
+        });
+
+        return Array.from(userMap.values());
+      } else if (currentSubsidiary) {
+        // Get users from current subsidiary
+        const { data, error } = await supabase
+          .from('user_subsidiary_permissions')
+          .select(`
+            user_id,
+            permission_level,
+            profiles!inner(*),
+            subsidiaries (
+              subsidiary_name,
+              subsidiary_code
+            )
+          `)
+          .eq('subsidiary_id', currentSubsidiary.id);
+
+        if (error) throw error;
+
+        return data?.map((perm: any) => ({
+          ...perm.profiles,
+          current_permission_level: perm.permission_level,
+          current_subsidiary: perm.subsidiaries
+        })) || [];
+      }
+
+      return [];
+    },
+    enabled: !!(profile && (canManageSubsidiaries || profile.is_super_admin))
+  });
+
+  const filteredUsers = users?.filter(user => {
+    const searchText = searchTerm.toLowerCase();
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <UsersIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
-              <p className="text-muted-foreground">
-                You don't have permission to access user management.
-              </p>
-            </div>
+      user.full_name?.toLowerCase().includes(searchText) ||
+      user.email?.toLowerCase().includes(searchText) ||
+      user.role?.toLowerCase().includes(searchText)
+    );
+  }) || [];
+
+  const handleEdit = (user: any) => {
+    setEditingUser(user);
+    setUserDialogOpen(true);
+  };
+
+  const handleDelete = (user: any) => {
+    setDeletingUser(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleChangePassword = (user: any) => {
+    setPasswordUser(user);
+    setPasswordDialogOpen(true);
+  };
+
+  const handleManagePermissions = (user: any) => {
+    setPermissionsUser(user);
+    setPermissionsDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setUserDialogOpen(false);
+    setEditingUser(null);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setDeletingUser(null);
+  };
+
+  const handlePasswordDialogClose = () => {
+    setPasswordDialogOpen(false);
+    setPasswordUser(null);
+  };
+
+  const handlePermissionsDialogClose = () => {
+    setPermissionsDialogOpen(false);
+    setPermissionsUser(null);
+  };
+
+  const handleSuccess = () => {
+    refetch();
+    toast({
+      title: 'Success',
+      description: editingUser ? 'User updated successfully' : 'User created successfully',
+    });
+  };
+
+  const handleDeleteSuccess = () => {
+    refetch();
+    toast({
+      title: 'Success',
+      description: 'User deleted successfully',
+    });
+  };
+
+  if (!canManageSubsidiaries && !profile?.is_super_admin) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+            <p className="text-muted-foreground">
+              You don't have permission to manage users
+            </p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const fetchUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setUsers(data || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch users',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUserAction = async (action: string, user: UserProfile) => {
-    switch (action) {
-      case 'edit':
-        setEditingUser(user);
-        setUserDialogOpen(true);
-        break;
-      case 'change-password':
-        setSelectedUser(user);
-        setPasswordDialogOpen(true);
-        break;
-      case 'toggle-status':
-        await toggleUserStatus(user);
-        break;
-      case 'delete':
-        setSelectedUser(user);
-        setDeleteDialogOpen(true);
-        break;
-    }
-  };
-
-  const toggleUserStatus = async (user: UserProfile) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: !user.is_active })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: `User ${user.is_active ? 'deactivated' : 'activated'} successfully`,
-      });
-      fetchUsers();
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update user status',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || 
-      (statusFilter === 'active' && user.is_active) ||
-      (statusFilter === 'inactive' && !user.is_active);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
-  if (loading) {
+  if (!allSubsidiariesView && !currentSubsidiary && !profile?.is_super_admin) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading users...</p>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Subsidiary Selected</h3>
+            <p className="text-muted-foreground">
+              Please select a subsidiary to manage users
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="space-y-4 pb-20">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UsersIcon className="h-5 w-5" />
+            <h1 className="text-lg font-semibold">Users</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
+          {canManageSubsidiaries && (
+            <Button size="sm" onClick={() => setUserDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
         </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* User Cards */}
+        <div className="space-y-3">
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+            ))
+          ) : filteredUsers.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <UsersIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-muted-foreground">No users found</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredUsers.map((user) => (
+              <MobileUserCard
+                key={user.id}
+                user={user}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onChangePassword={handleChangePassword}
+                onManagePermissions={handleManagePermissions}
+                canEdit={canManageSubsidiaries}
+                showSubsidiary={allSubsidiariesView}
+                currentUser={profile}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Dialogs */}
+        {canManageSubsidiaries && (
+          <>
+            <UserDialog
+              open={userDialogOpen}
+              onOpenChange={handleDialogClose}
+              user={editingUser}
+              onSuccess={handleSuccess}
+            />
+
+            <DeleteUserDialog
+              open={deleteDialogOpen}
+              onOpenChange={handleDeleteDialogClose}
+              user={deletingUser}
+              onSuccess={handleDeleteSuccess}
+            />
+
+            <ChangePasswordDialog
+              open={passwordDialogOpen}
+              onOpenChange={handlePasswordDialogClose}
+              user={passwordUser}
+            />
+
+            <UserSubsidiaryPermissionsDialog
+              open={permissionsDialogOpen}
+              onOpenChange={handlePermissionsDialogClose}
+              user={permissionsUser}
+              onSuccess={refetch}
+            />
+          </>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">
-            Manage team members and their access permissions
-          </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <UsersIcon className="h-6 w-6" />
+          <div>
+            <h1 className="text-2xl font-bold">Users</h1>
+            {allSubsidiariesView ? (
+              <p className="text-muted-foreground flex items-center gap-1 mt-1">
+                <Globe className="h-4 w-4" />
+                Showing users from all accessible subsidiaries
+              </p>
+            ) : currentSubsidiary ? (
+              <p className="text-muted-foreground">
+                {currentSubsidiary.subsidiary_name} ({currentSubsidiary.subsidiary_code})
+              </p>
+            ) : profile?.is_super_admin && (
+              <p className="text-muted-foreground">
+                All users (Super Admin view)
+              </p>
+            )}
+          </div>
         </div>
-        <Button onClick={() => setUserDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add User
-        </Button>
+        {canManageSubsidiaries && (
+          <Button onClick={() => setUserDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add User
+          </Button>
+        )}
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="fuel_manager">Fuel Manager</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Users Display - Mobile Cards or Desktop Table */}
+      {/* Users Table */}
       <Card>
-        <CardContent className="p-0">
-          {filteredUsers.length === 0 ? (
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>
+              {filteredUsers.length} User{filteredUsers.length !== 1 ? 's' : ''}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-12 bg-muted animate-pulse rounded" />
+              ))}
+            </div>
+          ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12">
-              <UsersIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <UsersIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No users found</h3>
               <p className="text-muted-foreground mb-4">
-                {users.length === 0 
-                  ? "Add your first team member to start collaboration"
-                  : "Try adjusting your search or filter criteria"
+                {users?.length === 0 
+                  ? "Get started by adding your first user"
+                  : "Try adjusting your search"
                 }
               </p>
-              {users.length === 0 && (
+              {users?.length === 0 && canManageSubsidiaries && (
                 <Button onClick={() => setUserDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add First User
+                  Add User
                 </Button>
               )}
             </div>
-          ) : isMobile ? (
-            /* Mobile Card Layout */
-            <div className="p-4">
-              <div className="grid grid-cols-1 gap-4">
-                {filteredUsers.map((user) => (
-                  <MobileUserCard
-                    key={user.id}
-                    user={user}
-                    onEdit={(user) => handleUserAction('edit', user)}
-                    onDelete={(user) => handleUserAction('delete', user)}
-                    onChangePassword={(user) => handleUserAction('change-password', user)}
-                    onToggleStatus={(user) => handleUserAction('toggle-status', user)}
-                    currentUserId={profile?.id}
-                  />
-                ))}
-              </div>
-            </div>
           ) : (
-            /* Desktop Table Layout */
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Full Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  {(allSubsidiariesView || profile?.is_super_admin) && <TableHead>Subsidiaries</TableHead>}
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.full_name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge className={roleColors[user.role as keyof typeof roleColors]}>
-                        {roleLabels[user.role as keyof typeof roleLabels]}
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{user.full_name}</span>
+                          {user.is_super_admin && (
+                            <Badge variant="default" className="text-xs">
+                              <Shield className="h-3 w-3 mr-1" />
+                              SUPER ADMIN
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">{user.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {user.role?.replace('_', ' ')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -299,43 +448,68 @@ export default function Users() {
                         {user.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user.phone || '-'}</TableCell>
-                    <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            onClick={() => handleUserAction('edit', user)}
-                          >
-                            Edit User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleUserAction('change-password', user)}
-                          >
-                            Change Password
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleUserAction('toggle-status', user)}
-                            disabled={user.id === profile?.id}
-                          >
-                            {user.is_active ? 'Deactivate' : 'Activate'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleUserAction('delete', user)}
-                            disabled={user.id === profile?.id}
-                            className="text-destructive"
-                          >
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    {(allSubsidiariesView || profile?.is_super_admin) && (
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {user.user_subsidiary_permissions?.length > 0 ? (
+                            user.user_subsidiary_permissions.slice(0, 2).map((perm: any, index: number) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {perm.subsidiaries?.subsidiary_code || 'Unknown'}
+                              </Badge>
+                            ))
+                          ) : user.current_subsidiary ? (
+                            <Badge variant="outline" className="text-xs">
+                              {user.current_subsidiary.subsidiary_code}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No access</span>
+                          )}
+                          {user.user_subsidiary_permissions?.length > 2 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{user.user_subsidiary_permissions.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        {canManageSubsidiaries && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleManagePermissions(user)}
+                            >
+                              <Settings className="h-3 w-3 mr-1" />
+                              Permissions
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(user)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleChangePassword(user)}
+                            >
+                              Password
+                            </Button>
+                            {user.id !== profile?.id && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(user)}
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -346,42 +520,36 @@ export default function Users() {
       </Card>
 
       {/* Dialogs */}
-      <UserDialog
-        open={userDialogOpen}
-        onOpenChange={(open) => {
-          setUserDialogOpen(open);
-          if (!open) {
-            setEditingUser(null);
-          }
-        }}
-        user={editingUser}
-        onSuccess={() => {
-          fetchUsers();
-          setUserDialogOpen(false);
-          setEditingUser(null);
-        }}
-      />
+      {canManageSubsidiaries && (
+        <>
+          <UserDialog
+            open={userDialogOpen}
+            onOpenChange={handleDialogClose}
+            user={editingUser}
+            onSuccess={handleSuccess}
+          />
 
-      <ChangePasswordDialog
-        open={passwordDialogOpen}
-        onOpenChange={setPasswordDialogOpen}
-        user={selectedUser}
-        onSuccess={() => {
-          setPasswordDialogOpen(false);
-          setSelectedUser(null);
-        }}
-      />
+          <DeleteUserDialog
+            open={deleteDialogOpen}
+            onOpenChange={handleDeleteDialogClose}
+            user={deletingUser}
+            onSuccess={handleDeleteSuccess}
+          />
 
-      <DeleteUserDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        user={selectedUser}
-        onSuccess={() => {
-          fetchUsers();
-          setDeleteDialogOpen(false);
-          setSelectedUser(null);
-        }}
-      />
+          <ChangePasswordDialog
+            open={passwordDialogOpen}
+            onOpenChange={handlePasswordDialogClose}
+            user={passwordUser}
+          />
+
+          <UserSubsidiaryPermissionsDialog
+            open={permissionsDialogOpen}
+            onOpenChange={handlePermissionsDialogClose}
+            user={permissionsUser}
+            onSuccess={refetch}
+          />
+        </>
+      )}
     </div>
   );
 }

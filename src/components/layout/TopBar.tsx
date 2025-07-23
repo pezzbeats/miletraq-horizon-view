@@ -1,3 +1,4 @@
+
 import { Bell, Moon, Sun, Sunset, LogOut, User, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,13 +11,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
+import { HeaderSubsidiarySelector } from './HeaderSubsidiarySelector';
 
 export function TopBar() {
   const { user, profile, signOut } = useAuth();
-  const { currentSubsidiary } = useSubsidiary();
   const { theme, setTheme } = useTheme();
 
   const themeIcons = {
@@ -41,7 +40,7 @@ export function TopBar() {
           
           {/* Subsidiary Selector - Desktop */}
           <div className="hidden lg:block">
-            <SubsidiarySelector />
+            <HeaderSubsidiarySelector />
           </div>
         </div>
 
@@ -49,7 +48,7 @@ export function TopBar() {
         <div className="flex items-center space-x-2">
           {/* Subsidiary Selector - Mobile */}
           <div className="lg:hidden">
-            <SubsidiarySelector compact />
+            <HeaderSubsidiarySelector />
           </div>
           
           {/* Notifications */}

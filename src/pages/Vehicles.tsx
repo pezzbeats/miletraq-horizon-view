@@ -1,379 +1,395 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { VehicleDialog } from '@/components/vehicles/VehicleDialog';
 import { DeleteVehicleDialog } from '@/components/vehicles/DeleteVehicleDialog';
 import { VehicleFilters } from '@/components/vehicles/VehicleFilters';
 import { MobileVehicleCard } from '@/components/vehicles/MobileVehicleCard';
-import { Tables } from '@/integrations/supabase/types';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Search, Car, Building2, Globe } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
-type Vehicle = Tables<'vehicles'> & {
-  default_driver?: {
-    name: string;
-  } | null;
-  subsidiary?: {
-    subsidiary_name: string;
-    business_type: string;
-  } | null;
-};
-
-interface Filters {
-  subsidiary: string;
-  status: string;
-  fuelType: string;
-  make: string;
-}
-
-const Vehicles = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [subsidiaries, setSubsidiaries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<Filters>({
-    subsidiary: '',
-    status: '',
-    fuelType: '',
-    make: '',
-  });
-  const [sortBy, setSortBy] = useState<keyof Vehicle>('vehicle_number');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
-  
-  const { toast } = useToast();
+export default function Vehicles() {
+  const { currentSubsidiary, allSubsidiariesView, subsidiaries } = useSubsidiary();
   const isMobile = useIsMobile();
+  const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingVehicle, setDeletingVehicle] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    fuelType: 'all',
+    make: 'all'
+  });
 
-  useEffect(() => {
-    fetchVehicles();
-    fetchSubsidiaries();
-  }, []);
-
-  const fetchSubsidiaries = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('subsidiaries')
-        .select('*')
-        .eq('is_active', true)
-        .order('subsidiary_name');
-
-      if (error) throw error;
-      setSubsidiaries(data || []);
-    } catch (error) {
-      console.error('Error fetching subsidiaries:', error);
-    }
-  };
-
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
+  const { data: vehicles, isLoading, refetch } = useQuery({
+    queryKey: ['vehicles', currentSubsidiary?.id, allSubsidiariesView],
+    queryFn: async () => {
+      let query = supabase
         .from('vehicles')
         .select(`
           *,
-          default_driver:drivers!default_driver_id(name),
-          subsidiary:subsidiaries(subsidiary_name, business_type)
+          subsidiaries!inner(id, subsidiary_name, subsidiary_code),
+          drivers(id, name)
         `)
-        .order('vehicle_name', { ascending: true });
+        .order('vehicle_number');
 
-      if (error) throw error;
-      console.log('Vehicles with drivers:', data);
-      setVehicles(data || []);
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load vehicles. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSort = (column: keyof Vehicle) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(column);
-      setSortOrder('asc');
-    }
-  };
-
-  const filteredVehicles = vehicles
-    .filter(vehicle => {
-      const matchesSearch = 
-        vehicle.vehicle_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.default_driver?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        '';
-
-      const matchesStatus = !filters.status || vehicle.status === filters.status;
-      const matchesFuelType = !filters.fuelType || vehicle.fuel_type === filters.fuelType;
-      const matchesMake = !filters.make || vehicle.make.toLowerCase().includes(filters.make.toLowerCase());
-
-      return matchesSearch && matchesStatus && matchesFuelType && matchesMake;
-    })
-    .sort((a, b) => {
-      const aValue = a[sortBy] as string | number;
-      const bValue = b[sortBy] as string | number;
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
+      // Apply subsidiary filtering
+      if (allSubsidiariesView) {
+        // Get all vehicles from accessible subsidiaries
+        const subsidiaryIds = subsidiaries.map(sub => sub.id);
+        if (subsidiaryIds.length > 0) {
+          query = query.in('subsidiary_id', subsidiaryIds);
+        }
+      } else if (currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
       } else {
-        return aValue < bValue ? 1 : -1;
+        // No subsidiary selected, return empty array
+        return [];
       }
-    });
 
-  const handleEdit = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    setIsDialogOpen(true);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!(allSubsidiariesView || currentSubsidiary)
+  });
+
+  const filteredVehicles = vehicles?.filter(vehicle => {
+    const matchesSearch = 
+      vehicle.vehicle_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.vehicle_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = filters.status === 'all' || vehicle.status === filters.status;
+    const matchesFuelType = filters.fuelType === 'all' || vehicle.fuel_type === filters.fuelType;
+    const matchesMake = filters.make === 'all' || vehicle.make === filters.make;
+
+    return matchesSearch && matchesStatus && matchesFuelType && matchesMake;
+  }) || [];
+
+  const handleEdit = (vehicle: any) => {
+    setEditingVehicle(vehicle);
+    setVehicleDialogOpen(true);
   };
 
-  const handleDelete = (vehicle: Vehicle) => {
-    setVehicleToDelete(vehicle);
+  const handleDelete = (vehicle: any) => {
+    setDeletingVehicle(vehicle);
     setDeleteDialogOpen(true);
   };
 
-  const handleAdd = () => {
-    setSelectedVehicle(null);
-    setIsDialogOpen(true);
+  const handleDialogClose = () => {
+    setVehicleDialogOpen(false);
+    setEditingVehicle(null);
   };
 
-  const getStatusBadge = (status: string) => {
-    const variant = status === 'active' ? 'default' : 
-                   status === 'inactive' ? 'secondary' : 
-                   status === 'maintenance' ? 'destructive' : 'outline';
-    
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setDeletingVehicle(null);
+  };
+
+  const handleSuccess = () => {
+    refetch();
+    toast({
+      title: 'Success',
+      description: editingVehicle ? 'Vehicle updated successfully' : 'Vehicle created successfully',
+    });
+  };
+
+  const handleDeleteSuccess = () => {
+    refetch();
+    toast({
+      title: 'Success',
+      description: 'Vehicle deleted successfully',
+    });
+  };
+
+  const getSubsidiaryInfo = (subsidiaryId: string) => {
+    return subsidiaries.find(sub => sub.id === subsidiaryId);
+  };
+
+  if (!allSubsidiariesView && !currentSubsidiary) {
     return (
-      <Badge variant={variant} className="capitalize">
-        {status}
-      </Badge>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Subsidiary Selected</h3>
+            <p className="text-muted-foreground">
+              Please select a subsidiary to view vehicles
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
-  };
+  }
 
-  const getFuelTypeBadge = (fuelType: string) => {
-    const colors = {
-      diesel: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      petrol: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      cng: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      electric: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-    };
-
+  if (isMobile) {
     return (
-      <Badge className={`capitalize ${colors[fuelType as keyof typeof colors] || ''}`}>
-        {fuelType}
-      </Badge>
-    );
-  };
-
-  const EmptyState = () => (
-    <Card className="text-center py-12">
-      <CardContent>
-        <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-          <Plus className="w-12 h-12 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-2">No vehicles found</h3>
-        <p className="text-muted-foreground mb-4">
-          {searchTerm || Object.values(filters).some(f => f) 
-            ? 'No vehicles match your search criteria. Try adjusting your filters.'
-            : 'Start by adding your first vehicle to the fleet.'
-          }
-        </p>
-        {!searchTerm && !Object.values(filters).some(f => f) && (
-          <Button onClick={handleAdd}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add First Vehicle
+      <div className="space-y-4 pb-20">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Car className="h-5 w-5" />
+            <h1 className="text-lg font-semibold">Vehicles</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
+          <Button size="sm" onClick={() => setVehicleDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
           </Button>
-        )}
-      </CardContent>
-    </Card>
-  );
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search vehicles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Filters */}
+        <VehicleFilters filters={filters} onFiltersChange={setFilters} />
+
+        {/* Vehicle Cards */}
+        <div className="space-y-3">
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+            ))
+          ) : filteredVehicles.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Car className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-muted-foreground">No vehicles found</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredVehicles.map((vehicle) => (
+              <MobileVehicleCard
+                key={vehicle.id}
+                vehicle={vehicle}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                showSubsidiary={allSubsidiariesView}
+                subsidiaryInfo={allSubsidiariesView ? getSubsidiaryInfo(vehicle.subsidiary_id) : undefined}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Dialogs */}
+        <VehicleDialog
+          open={vehicleDialogOpen}
+          onOpenChange={handleDialogClose}
+          vehicle={editingVehicle}
+          onSuccess={handleSuccess}
+          currentSubsidiary={currentSubsidiary}
+        />
+
+        <DeleteVehicleDialog
+          open={deleteDialogOpen}
+          onOpenChange={handleDeleteDialogClose}
+          vehicle={deletingVehicle}
+          onSuccess={handleDeleteSuccess}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vehicles Master</h1>
-          <p className="text-muted-foreground">Manage your fleet vehicles</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Car className="h-6 w-6" />
+          <div>
+            <h1 className="text-2xl font-bold">Vehicles</h1>
+            {allSubsidiariesView ? (
+              <p className="text-muted-foreground flex items-center gap-1 mt-1">
+                <Globe className="h-4 w-4" />
+                Showing vehicles from all accessible subsidiaries
+              </p>
+            ) : currentSubsidiary && (
+              <p className="text-muted-foreground">
+                {currentSubsidiary.subsidiary_name} ({currentSubsidiary.subsidiary_code})
+              </p>
+            )}
+          </div>
         </div>
-        {!isMobile && (
-          <Button onClick={handleAdd} className="w-fit">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Vehicle
-          </Button>
-        )}
+        <Button onClick={() => setVehicleDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Vehicle
+        </Button>
       </div>
 
       {/* Search and Filters */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search vehicles by number, make, model, or driver..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <CardContent className="p-4">
+          <div className="flex gap-4 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search vehicles..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <VehicleFilters 
-              filters={filters}
-              onFiltersChange={setFilters}
-              vehicles={vehicles}
-              subsidiaries={subsidiaries}
-            />
           </div>
+          <VehicleFilters filters={filters} onFiltersChange={setFilters} />
         </CardContent>
       </Card>
 
-      {/* Results Summary */}
-      {vehicles.length > 0 && (
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredVehicles.length} of {vehicles.length} vehicles
-        </div>
-      )}
-
-      {/* Data Display - Mobile Cards or Desktop Table */}
-      {loading ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <p>Loading vehicles...</p>
-          </CardContent>
-        </Card>
-      ) : filteredVehicles.length === 0 ? (
-        <EmptyState />
-      ) : isMobile ? (
-        /* Mobile Card Layout */
-        <div className="grid grid-cols-1 gap-4">
-          {filteredVehicles.map((vehicle) => (
-            <MobileVehicleCard
-              key={vehicle.id}
-              vehicle={vehicle}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      ) : (
-        /* Desktop Table Layout */
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                     <th 
-                      className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
-                      onClick={() => handleSort('vehicle_name')}
-                    >
-                      Vehicle Name {sortBy === 'vehicle_name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th 
-                      className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
-                      onClick={() => handleSort('vehicle_number')}
-                    >
-                      Vehicle Number {sortBy === 'vehicle_number' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th 
-                      className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
-                      onClick={() => handleSort('make')}
-                    >
-                      Make {sortBy === 'make' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th 
-                      className="text-left p-4 font-medium cursor-pointer hover:bg-muted transition-colors"
-                      onClick={() => handleSort('model')}
-                    >
-                      Model {sortBy === 'model' && (sortOrder === 'asc' ? '↓' : '↓')}
-                    </th>
-                    <th className="text-left p-4 font-medium hidden sm:table-cell">Year</th>
-                    <th className="text-left p-4 font-medium">Fuel Type</th>
-                    <th className="text-left p-4 font-medium">Default Driver</th>
-                    <th className="text-left p-4 font-medium">Status</th>
-                    <th className="text-center p-4 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredVehicles.map((vehicle) => (
-                     <tr key={vehicle.id} className="border-b hover:bg-muted/20 transition-colors">
-                       <td className="p-4 font-bold text-lg">{vehicle.vehicle_name || 'Unnamed'}</td>
-                       <td className="p-4 font-medium">{vehicle.vehicle_number}</td>
-                       <td className="p-4">{vehicle.make}</td>
-                      <td className="p-4">{vehicle.model}</td>
-                      <td className="p-4 hidden sm:table-cell">{vehicle.year || '-'}</td>
-                      <td className="p-4">{getFuelTypeBadge(vehicle.fuel_type)}</td>
-                      <td className="p-4">
-                        {vehicle.default_driver?.name || 'Not assigned'}
-                      </td>
-                      <td className="p-4">{getStatusBadge(vehicle.status || 'active')}</td>
-                      <td className="p-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(vehicle)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(vehicle)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Vehicles Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>
+              {filteredVehicles.length} Vehicle{filteredVehicles.length !== 1 ? 's' : ''}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-12 bg-muted animate-pulse rounded" />
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Mobile FAB */}
-      {isMobile && (
-        <Button
-          onClick={handleAdd}
-          className="fixed bottom-20 right-4 w-14 h-14 rounded-full shadow-lg z-50"
-          size="icon"
-        >
-          <Plus className="w-6 h-6" />
-        </Button>
-      )}
+          ) : filteredVehicles.length === 0 ? (
+            <div className="text-center py-12">
+              <Car className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No vehicles found</h3>
+              <p className="text-muted-foreground mb-4">
+                {vehicles?.length === 0 
+                  ? "Get started by adding your first vehicle"
+                  : "Try adjusting your search or filters"
+                }
+              </p>
+              {vehicles?.length === 0 && (
+                <Button onClick={() => setVehicleDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Vehicle
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Vehicle</TableHead>
+                  <TableHead>Make & Model</TableHead>
+                  <TableHead>Fuel Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  {allSubsidiariesView && <TableHead>Subsidiary</TableHead>}
+                  <TableHead>Default Driver</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredVehicles.map((vehicle) => (
+                  <TableRow key={vehicle.id}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{vehicle.vehicle_number}</span>
+                        {vehicle.vehicle_name && (
+                          <span className="text-sm text-muted-foreground">{vehicle.vehicle_name}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {vehicle.make} {vehicle.model}
+                      {vehicle.year && (
+                        <span className="text-muted-foreground ml-1">({vehicle.year})</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {vehicle.fuel_type?.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={vehicle.status === 'active' ? 'default' : 
+                                vehicle.status === 'maintenance' ? 'destructive' : 'secondary'}
+                        className="capitalize"
+                      >
+                        {vehicle.status?.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    {allSubsidiariesView && (
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">
+                            {vehicle.subsidiaries?.subsidiary_name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {vehicle.subsidiaries?.subsidiary_code}
+                          </span>
+                        </div>
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      {vehicle.drivers?.name || 'Not assigned'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(vehicle)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(vehicle)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Dialogs */}
       <VehicleDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        vehicle={selectedVehicle}
-        onSuccess={fetchVehicles}
+        open={vehicleDialogOpen}
+        onOpenChange={handleDialogClose}
+        vehicle={editingVehicle}
+        onSuccess={handleSuccess}
+        currentSubsidiary={currentSubsidiary}
       />
 
       <DeleteVehicleDialog
         open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        vehicle={vehicleToDelete}
-        onSuccess={fetchVehicles}
+        onOpenChange={handleDeleteDialogClose}
+        vehicle={deletingVehicle}
+        onSuccess={handleDeleteSuccess}
       />
     </div>
   );
-};
-
-export default Vehicles;
+}
