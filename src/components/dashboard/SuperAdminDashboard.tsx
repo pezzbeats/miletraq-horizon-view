@@ -105,9 +105,11 @@ interface SuperAdminDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onSearchChange?: (searchQuery: string) => void;
+  allSubsidiariesView: boolean;
+  currentSubsidiary: any;
 }
 
-export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }: SuperAdminDashboardProps) => {
+export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, allSubsidiariesView, currentSubsidiary }: SuperAdminDashboardProps) => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { subsidiaries, setCurrentSubsidiary } = useSubsidiary();
@@ -129,12 +131,15 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }
     try {
       setLoading(true);
 
-      // Fetch consolidated metrics across all subsidiaries
+      // Build query filters based on subsidiary selection
+      const subsidiaryFilter = allSubsidiariesView ? {} : currentSubsidiary ? { subsidiary_id: currentSubsidiary.id } : {};
+
+      // Fetch metrics - all subsidiaries or specific subsidiary
       const [vehiclesResult, driversResult, fuelLogResult, budgetResult] = await Promise.all([
-        supabase.from('vehicles').select('id, subsidiary_id, status', { count: 'exact' }),
-        supabase.from('drivers').select('id, subsidiary_id', { count: 'exact' }).eq('is_active', true),
-        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id'),
-        supabase.from('budget').select('budgeted_amount, actual_amount, category, subsidiary_id')
+        supabase.from('vehicles').select('id, subsidiary_id, status', { count: 'exact' }).match(subsidiaryFilter),
+        supabase.from('drivers').select('id, subsidiary_id', { count: 'exact' }).eq('is_active', true).match(subsidiaryFilter),
+        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('budget').select('budgeted_amount, actual_amount, category, subsidiary_id').match(subsidiaryFilter)
       ]);
 
       const totalVehicles = vehiclesResult.count || 0;
@@ -152,8 +157,8 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }
       const totalActual = budgetData.reduce((sum, b) => sum + (b.actual_amount || 0), 0);
       const budgetUtilization = totalBudgeted > 0 ? (totalActual / totalBudgeted) * 100 : 0;
 
-      // Generate subsidiary metrics
-      const subsidiaryMetrics = await Promise.all(
+      // Generate subsidiary metrics only for "All Subsidiaries" view
+      const subsidiaryMetrics = allSubsidiariesView ? await Promise.all(
         subsidiaries.map(async (sub) => {
           const [subVehicles, subDrivers, subFuel, subAlerts] = await Promise.all([
             supabase.from('vehicles').select('id, status').eq('subsidiary_id', sub.id),
@@ -185,7 +190,7 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }
             }
           };
         })
-      );
+      ) : [];
 
       // Generate chart data
       const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -340,13 +345,15 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <DashboardHeader
-        title="Super Admin Dashboard"
-        subtitle="Consolidated fleet management across all subsidiaries"
-        alertsCount={data.kpis.alertsCount}
-        showSearch={true}
-        onSearchChange={handleSearchChange}
-      />
+        <DashboardHeader
+          title="Super Admin Dashboard"
+          subtitle={allSubsidiariesView 
+            ? "Consolidated fleet management across all subsidiaries" 
+            : `Fleet management for ${currentSubsidiary?.subsidiary_name || 'Selected Subsidiary'}`}
+          alertsCount={data.kpis.alertsCount}
+          showSearch={true}
+          onSearchChange={handleSearchChange}
+        />
 
       <div className="container mx-auto p-6 space-y-8">
         {/* Modern KPI Cards Grid */}
@@ -424,38 +431,40 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange }
           />
         </div>
 
-        {/* Subsidiary Overview Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Building2 className="h-6 w-6" />
-                Subsidiary Overview
-              </h2>
-              <p className="text-muted-foreground">
-                Performance metrics across all business units
-              </p>
+        {/* Subsidiary Overview Section - Only show in "All Subsidiaries" view */}
+        {allSubsidiariesView && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Building2 className="h-6 w-6" />
+                  Subsidiary Overview
+                </h2>
+                <p className="text-muted-foreground">
+                  Performance metrics across all business units
+                </p>
+              </div>
+              <Badge variant="outline" className="text-sm">
+                {data.subsidiaries.length} Active Subsidiaries
+              </Badge>
             </div>
-            <Badge variant="outline" className="text-sm">
-              {data.subsidiaries.length} Active Subsidiaries
-            </Badge>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {data.subsidiaries.map((subsidiary) => (
-              <ModernSubsidiaryCard
-                key={subsidiary.id}
-                id={subsidiary.id}
-                name={subsidiary.name}
-                code={subsidiary.code}
-                businessType={subsidiary.businessType}
-                metrics={subsidiary.metrics}
-                onView={handleSubsidiaryView}
-                onSwitchTo={handleSubsidiarySwitchTo}
-              />
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {data.subsidiaries.map((subsidiary) => (
+                <ModernSubsidiaryCard
+                  key={subsidiary.id}
+                  id={subsidiary.id}
+                  name={subsidiary.name}
+                  code={subsidiary.code}
+                  businessType={subsidiary.businessType}
+                  metrics={subsidiary.metrics}
+                  onView={handleSubsidiaryView}
+                  onSwitchTo={handleSubsidiarySwitchTo}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Analytics Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

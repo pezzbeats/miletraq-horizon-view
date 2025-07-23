@@ -35,31 +35,34 @@ interface FuelManagerDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onSearchChange?: (searchQuery: string) => void;
+  allSubsidiariesView: boolean;
+  currentSubsidiary: any;
 }
 
-export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange }: FuelManagerDashboardProps) => {
+export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange, allSubsidiariesView, currentSubsidiary }: FuelManagerDashboardProps) => {
   const { profile } = useAuth();
-  const { currentSubsidiary } = useSubsidiary();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentSubsidiary) {
-      fetchFuelDashboardData();
-    }
-  }, [currentSubsidiary, filters]);
+    fetchFuelDashboardData();
+  }, [currentSubsidiary, filters, allSubsidiariesView]);
 
   const fetchFuelDashboardData = async () => {
-    if (!currentSubsidiary) return;
-
     try {
       setLoading(true);
 
+      // Build query filters based on subsidiary selection
+      const subsidiaryFilter = allSubsidiariesView ? {} : currentSubsidiary ? { subsidiary_id: currentSubsidiary.id } : {};
+
       // Fetch fuel-specific metrics
       const [fuelLogResult, fuelPurchasesResult, tankResult] = await Promise.all([
-        supabase.from('fuel_log').select('fuel_volume, total_cost, rate_per_liter, date, fuel_source').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('fuel_purchases').select('volume, total_cost, rate_per_liter, purchase_date').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('fuel_tank').select('current_level, capacity, low_level_threshold').eq('subsidiary_id', currentSubsidiary.id).single()
+        supabase.from('fuel_log').select('fuel_volume, total_cost, rate_per_liter, date, fuel_source, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('fuel_purchases').select('volume, total_cost, rate_per_liter, purchase_date, subsidiary_id').match(subsidiaryFilter),
+        // For tank data, use the specific subsidiary if selected, otherwise first available tank
+        allSubsidiariesView ? 
+          supabase.from('fuel_tank').select('current_level, capacity, low_level_threshold').limit(1).maybeSingle() :
+          supabase.from('fuel_tank').select('current_level, capacity, low_level_threshold').match(subsidiaryFilter).maybeSingle()
       ]);
 
       const fuelLogs = fuelLogResult.data || [];
@@ -73,13 +76,17 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange 
       const currentMonth = new Date();
       const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       
-      const { data: budgetData } = await supabase
+      const budgetQuery = supabase
         .from('budget')
         .select('budgeted_amount')
         .eq('category', 'fuel')
-        .eq('subsidiary_id', currentSubsidiary?.id)
-        .gte('period_start', startOfMonth.toISOString())
-        .single();
+        .gte('period_start', startOfMonth.toISOString());
+      
+      if (!allSubsidiariesView && currentSubsidiary) {
+        budgetQuery.eq('subsidiary_id', currentSubsidiary.id);
+      }
+      
+      const { data: budgetData } = await budgetQuery.maybeSingle();
       
       const monthlyFuelBudget = budgetData?.budgeted_amount || 500000;
       const budgetUsed = (fuelCostToday / monthlyFuelBudget) * 100;
@@ -197,7 +204,10 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange 
         <div>
           <h1 className="text-3xl font-bold">Fuel Manager Dashboard</h1>
           <p className="text-muted-foreground">
-            Fuel operations and tank management for {currentSubsidiary?.subsidiary_name}
+            {allSubsidiariesView 
+              ? "Fuel operations and tank management across all subsidiaries"
+              : `Fuel operations and tank management for ${currentSubsidiary?.subsidiary_name || 'Selected Subsidiary'}`
+            }
           </p>
         </div>
         <DashboardFilters

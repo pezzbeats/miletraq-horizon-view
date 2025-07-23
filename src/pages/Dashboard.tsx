@@ -23,7 +23,7 @@ interface FilterState {
 
 export default function Dashboard() {
   const { profile } = useAuth();
-  const { currentSubsidiary } = useSubsidiary();
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const isMobile = useIsMobile();
   const [filters, setFilters] = useState<FilterState>({
     dateRange: 'last_30_days',
@@ -81,6 +81,8 @@ export default function Dashboard() {
             filters={filters} 
             onFiltersChange={setFilters}
             onSearchChange={handleSearchChange}
+            allSubsidiariesView={allSubsidiariesView}
+            currentSubsidiary={currentSubsidiary}
           />
         </div>
       );
@@ -94,6 +96,8 @@ export default function Dashboard() {
             filters={filters} 
             onFiltersChange={setFilters}
             onSearchChange={handleSearchChange}
+            allSubsidiariesView={allSubsidiariesView}
+            currentSubsidiary={currentSubsidiary}
           />
         );
       
@@ -103,6 +107,8 @@ export default function Dashboard() {
             filters={filters} 
             onFiltersChange={setFilters}
             onSearchChange={handleSearchChange}
+            allSubsidiariesView={allSubsidiariesView}
+            currentSubsidiary={currentSubsidiary}
           />
         );
       
@@ -112,6 +118,8 @@ export default function Dashboard() {
             filters={filters} 
             onFiltersChange={setFilters}
             onSearchChange={handleSearchChange}
+            allSubsidiariesView={allSubsidiariesView}
+            currentSubsidiary={currentSubsidiary}
           />
         );
       
@@ -121,6 +129,8 @@ export default function Dashboard() {
             filters={filters} 
             onFiltersChange={setFilters}
             onSearchChange={handleSearchChange}
+            allSubsidiariesView={allSubsidiariesView}
+            currentSubsidiary={currentSubsidiary}
           />
         );
       

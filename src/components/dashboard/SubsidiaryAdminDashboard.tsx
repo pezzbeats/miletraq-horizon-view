@@ -38,37 +38,40 @@ interface SubsidiaryAdminDashboardProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onSearchChange?: (searchQuery: string) => void;
+  allSubsidiariesView: boolean;
+  currentSubsidiary: any;
 }
 
 export function SubsidiaryAdminDashboard({ 
   filters, 
   onFiltersChange,
-  onSearchChange 
+  onSearchChange,
+  allSubsidiariesView,
+  currentSubsidiary 
 }: SubsidiaryAdminDashboardProps) {
   const { profile } = useAuth();
-  const { currentSubsidiary } = useSubsidiary();
+  const { subsidiaries } = useSubsidiary();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentSubsidiary) {
-      fetchDashboardData();
-    }
-  }, [currentSubsidiary, filters]);
+    fetchDashboardData();
+  }, [currentSubsidiary, filters, allSubsidiariesView]);
 
   const fetchDashboardData = async () => {
-    if (!currentSubsidiary) return;
-
     try {
       setLoading(true);
 
-      // Fetch subsidiary-specific metrics
+      // Build query filters based on subsidiary selection  
+      const subsidiaryFilter = allSubsidiariesView ? {} : currentSubsidiary ? { subsidiary_id: currentSubsidiary.id } : {};
+
+      // Fetch metrics - all subsidiaries or specific subsidiary
       const [vehiclesResult, driversResult, fuelLogResult, budgetResult, documentsResult] = await Promise.all([
-        supabase.from('vehicles').select('id, status').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('drivers').select('id, is_active').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('budget').select('budgeted_amount, actual_amount').eq('subsidiary_id', currentSubsidiary.id),
-        supabase.from('vehicle_documents').select('id, expiry_date').eq('subsidiary_id', currentSubsidiary.id)
+        supabase.from('vehicles').select('id, status, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('drivers').select('id, is_active, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('budget').select('budgeted_amount, actual_amount, subsidiary_id').match(subsidiaryFilter),
+        supabase.from('vehicle_documents').select('id, expiry_date, subsidiary_id').match(subsidiaryFilter)
       ]);
 
       const vehicles = vehiclesResult.data || [];
@@ -125,14 +128,14 @@ export function SubsidiaryAdminDashboard({
       const recentActivitiesData = await Promise.all([
         supabase
           .from('fuel_log')
-          .select('id, total_cost, created_at, vehicles(vehicle_number)')
-          .eq('subsidiary_id', currentSubsidiary?.id)
+          .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
+          .match(subsidiaryFilter)
           .order('created_at', { ascending: false })
           .limit(2),
         supabase
           .from('maintenance_log')
-          .select('id, total_cost, created_at, vehicles(vehicle_number)')
-          .eq('subsidiary_id', currentSubsidiary?.id)
+          .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
+          .match(subsidiaryFilter)
           .order('created_at', { ascending: false })
           .limit(2)
       ]);
@@ -212,7 +215,7 @@ export function SubsidiaryAdminDashboard({
     }
   };
 
-  if (!currentSubsidiary) {
+  if (!allSubsidiariesView && !currentSubsidiary) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
@@ -242,7 +245,7 @@ export function SubsidiaryAdminDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Subsidiary Context Header */}
+      {/* Context Header */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -251,10 +254,22 @@ export function SubsidiaryAdminDashboard({
                 <Building2 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">{currentSubsidiary.subsidiary_name}</h2>
+                <h2 className="text-xl font-bold">
+                  {allSubsidiariesView 
+                    ? "All Subsidiaries Dashboard" 
+                    : currentSubsidiary?.subsidiary_name || "Selected Subsidiary"
+                  }
+                </h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline">{currentSubsidiary.subsidiary_code}</Badge>
-                  <Badge variant="outline" className="capitalize">{currentSubsidiary.business_type}</Badge>
+                  {!allSubsidiariesView && currentSubsidiary && (
+                    <>
+                      <Badge variant="outline">{currentSubsidiary.subsidiary_code}</Badge>
+                      <Badge variant="outline" className="capitalize">{currentSubsidiary.business_type}</Badge>
+                    </>
+                  )}
+                  {allSubsidiariesView && (
+                    <Badge variant="outline">{subsidiaries.length} Subsidiaries</Badge>
+                  )}
                 </div>
               </div>
             </div>
