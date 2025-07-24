@@ -8,46 +8,46 @@
 
 @layer base {
   :root {
-    /* Base Colors */
-    --background: 240 20% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* High-contrast vibrant color system */
+    --background: 222 84% 4.9%; /* Deep navy #0f172a */
+    --foreground: 0 0% 98%; /* Bright white */
 
-    /* Glass morphism specific */
-    --glass-background: 255 255 255 / 0.1;
-    --glass-border: 255 255 255 / 0.2;
+    /* Vibrant glass morphism */
+    --glass-background: 255 255 255 / 0.95;
+    --glass-border: 59 130 246 / 0.3;
     --glass-backdrop: blur(20px);
     
-    /* Primary Brand Colors */
-    --primary: 217 91% 60%;
+    /* Electric primary colors */
+    --primary: 221.2 83.2% 53.3%; /* Electric blue #3b82f6 */
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 217 91% 70%;
+    --primary-glow: 221.2 83.2% 63.3%;
     
-    /* Secondary Colors */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* High-contrast secondary */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 224 71.4% 4.1%;
 
-    /* Surface Colors */
-    --card: 0 0% 100% / 0.8;
-    --card-foreground: 222.2 84% 4.9%;
-    --card-border: 0 0% 100% / 0.2;
+    /* Bright white cards */
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 224 71.4% 4.1%; /* Charcoal text */
+    --card-border: 221.2 83.2% 53.3% / 0.2;
 
-    --popover: 0 0% 100% / 0.95;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
 
-    /* Interactive Colors */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Enhanced contrast */
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 217 91% 60%;
+    --accent: 221.2 83.2% 53.3%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72.2% 50.6%; /* Bright red #ef4444 */
+    --destructive-foreground: 0 0% 98%;
 
-    /* Form Colors */
-    --border: 214.3 31.8% 91.4%;
-    --input: 0 0% 100% / 0.8;
-    --ring: 217 91% 60%;
+    /* Bright white inputs */
+    --border: 220 13% 91%;
+    --input: 0 0% 100%;
+    --ring: 221.2 83.2% 53.3%;
 
     /* Radius */
     --radius: 1rem;
@@ -316,11 +316,11 @@
     @apply text-foreground font-inter transition-colors duration-300;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: linear-gradient(135deg, 
-      hsl(240 25% 98%) 0%, 
-      hsl(220 25% 96%) 25%, 
-      hsl(210 30% 94%) 50%, 
-      hsl(200 35% 96%) 75%, 
-      hsl(240 20% 98%) 100%
+      hsl(222 84% 4.9%) 0%, 
+      hsl(220 30% 6%) 25%, 
+      hsl(217.2 32.6% 8%) 50%, 
+      hsl(215 35% 8%) 75%, 
+      hsl(222.2 84% 4.9%) 100%
     );
     background-attachment: fixed;
     min-height: 100vh;

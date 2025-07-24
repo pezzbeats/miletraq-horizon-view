@@ -33,60 +33,64 @@ export function MobileVehicleCard({
   };
 
   return (
-    <Card className="relative bg-card/95 backdrop-blur-sm border-border/50 shadow-lg transition-colors duration-300">
-      <CardContent className="p-4 space-y-3">
+    <Card className="relative bg-white border-l-4 border-l-green-500 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/15 rounded-lg backdrop-blur-sm border border-primary/20">
-              <Car className="h-5 w-5 text-primary" />
+            <div className="p-3 bg-gradient-to-br from-green-100 to-green-50 rounded-xl border border-green-200 shadow-md">
+              <Car className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-foreground">{vehicle.vehicle_number}</h3>
+              <h3 className="font-bold text-xl text-gray-800">{vehicle.vehicle_number}</h3>
               {vehicle.vehicle_name && (
-                <p className="text-sm text-muted-foreground">{vehicle.vehicle_name}</p>
+                <p className="text-base text-gray-600 font-medium">{vehicle.vehicle_name}</p>
               )}
             </div>
           </div>
           <div className={`w-3 h-3 rounded-full shadow-sm ${getStatusColor(vehicle.status)}`} />
         </div>
 
-        <div className="space-y-3">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground font-medium">Make & Model:</span>
-            <span className="font-semibold text-foreground">{vehicle.make} {vehicle.model}</span>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-semibold text-base">Make & Model:</span>
+            <span className="font-bold text-gray-800 text-base">{vehicle.make} {vehicle.model}</span>
           </div>
           
           {vehicle.year && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground font-medium">Year:</span>
-              <span className="font-semibold text-foreground">{vehicle.year}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 font-semibold text-base">Year:</span>
+              <span className="font-bold text-gray-800 text-base">{vehicle.year}</span>
             </div>
           )}
 
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground font-medium">Fuel Type:</span>
-            <Badge variant="outline" className="text-xs capitalize bg-card/50 border-border text-foreground">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-semibold text-base">Fuel Type:</span>
+            <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 font-semibold text-sm px-3 py-1">
               {vehicle.fuel_type?.replace('_', ' ')}
             </Badge>
           </div>
 
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground font-medium">Status:</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 font-semibold text-base">Status:</span>
             <Badge 
-              variant={vehicle.status === 'active' ? 'default' : 
-                      vehicle.status === 'maintenance' ? 'destructive' : 'secondary'}
-              className="text-xs capitalize font-medium"
+              className={`font-bold text-sm px-3 py-1 ${
+                vehicle.status === 'active' 
+                  ? 'bg-green-100 text-green-700 border-green-200' 
+                  : vehicle.status === 'maintenance' 
+                  ? 'bg-red-100 text-red-700 border-red-200' 
+                  : 'bg-gray-100 text-gray-700 border-gray-200'
+              }`}
             >
               {vehicle.status?.replace('_', ' ')}
             </Badge>
           </div>
 
           {showSubsidiary && subsidiaryInfo && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground font-medium">Subsidiary:</span>
-              <div className="flex items-center gap-1">
-                <Building2 className="h-3 w-3 text-foreground" />
-                <span className="font-semibold text-foreground text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 font-semibold text-base">Subsidiary:</span>
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-blue-600" />
+                <span className="font-bold text-gray-800 text-sm">
                   {subsidiaryInfo.subsidiary_name}
                 </span>
               </div>
@@ -94,33 +98,33 @@ export function MobileVehicleCard({
           )}
 
           {vehicle.drivers?.name && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground font-medium">Default Driver:</span>
-              <div className="flex items-center gap-1">
-                <User className="h-3 w-3 text-foreground" />
-                <span className="font-semibold text-foreground text-xs">{vehicle.drivers.name}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 font-semibold text-base">Default Driver:</span>
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-600" />
+                <span className="font-bold text-gray-800 text-sm">{vehicle.drivers.name}</span>
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex gap-2 pt-3 border-t border-border/30">
+        <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
           <Button
             variant="outline"
             size="lg"
-            className="flex-1 h-11 font-medium border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+            className="flex-1 h-12 font-bold text-base bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
             onClick={() => onEdit(vehicle)}
           >
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit className="h-5 w-5 mr-2" />
             Edit
           </Button>
           <Button
             variant="destructive"
             size="lg"
-            className="flex-1 h-11 font-medium hover:bg-destructive/90 transition-all duration-200"
+            className="flex-1 h-12 font-bold text-base bg-red-500 hover:bg-red-600 text-white transition-all duration-200"
             onClick={() => onDelete(vehicle)}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-5 w-5 mr-2" />
             Delete
           </Button>
         </div>

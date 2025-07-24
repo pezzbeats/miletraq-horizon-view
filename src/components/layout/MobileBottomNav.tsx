@@ -92,8 +92,8 @@ export function MobileBottomNav() {
   const filteredItems = getFilteredNavItems();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border/50 safe-area-bottom shadow-lg transition-colors duration-300">
-      <div className="flex items-center justify-around py-2 px-2 max-w-screen-xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 safe-area-bottom shadow-2xl">
+      <div className="flex items-center justify-around py-3 px-2 max-w-screen-xl mx-auto">
         {filteredItems.map((item) => {
           const Icon = item.icon;
           const notificationCount = getNotificationCount(item.url);
@@ -104,10 +104,10 @@ export function MobileBottomNav() {
               to={item.url}
               className={({ isActive }) =>
                 cn(
-                  "relative flex flex-col items-center justify-center py-3 px-4 rounded-xl transition-all duration-300 min-w-0 flex-1 large-touch-target active:scale-95",
+                  "relative flex flex-col items-center justify-center py-4 px-3 rounded-2xl transition-all duration-300 min-w-0 flex-1 large-touch-target active:scale-95",
                   isActive
-                    ? "text-primary bg-primary/20 shadow-md border border-primary/30 scale-105"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:scale-105"
+                    ? "text-blue-600 bg-blue-100 shadow-lg border-2 border-blue-200 scale-105 font-bold"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 hover:scale-105 font-medium"
                 )
               }
             >
@@ -118,21 +118,20 @@ export function MobileBottomNav() {
                       "h-6 w-6 transition-all duration-300",
                       isActive && "animate-bounce-gentle scale-110"
                     )} />
-                    {notificationCount > 0 && (
-                      <Badge 
-                        variant="destructive" 
-                        className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center min-w-5 animate-pulse-glow shadow-md bg-destructive text-destructive-foreground border border-destructive/20"
-                      >
-                        {notificationCount > 9 ? '9+' : notificationCount}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className={cn(
-                    "text-xs truncate font-medium transition-all duration-300 leading-tight",
-                    isActive ? "text-primary font-semibold" : "text-muted-foreground"
-                  )}>
-                    {item.title}
-                  </span>
+                     {notificationCount > 0 && (
+                       <Badge 
+                         className="absolute -top-2 -right-2 h-6 w-6 p-0 text-xs flex items-center justify-center min-w-6 bg-red-500 text-white border-2 border-white shadow-lg font-bold"
+                       >
+                         {notificationCount > 9 ? '9+' : notificationCount}
+                       </Badge>
+                     )}
+                   </div>
+                   <span className={cn(
+                     "text-sm truncate transition-all duration-300 leading-tight",
+                     isActive ? "text-blue-600 font-bold" : "text-gray-600 font-medium"
+                   )}>
+                     {item.title}
+                   </span>
                 </>
               )}
             </NavLink>
