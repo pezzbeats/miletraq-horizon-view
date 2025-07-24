@@ -92,8 +92,8 @@
     --background: 222.2 84% 4.9%; /* Keep dark navy */
     --foreground: 0 0% 98%; /* Bright white text */
 
-    /* Bright glass for dark mode */
-    --glass-background: 0 0% 100% / 0.95;
+    /* Dark glass for dark mode */
+    --glass-background: 217.2 32.6% 17.5% / 0.95;
     --glass-border: 59 130 246 / 0.5;
     
     /* Vibrant primary colors stay bright */
@@ -101,20 +101,20 @@
     --primary-foreground: 0 0% 98%;
     --primary-glow: 221.2 83.2% 63.3%;
 
-    /* Dark mode cards are bright white */
-    --card: 0 0% 100%; /* Bright white cards in dark mode */
-    --card-foreground: 224 71.4% 4.1%; /* Dark text on white cards */
+    /* Dark mode cards with light text */
+    --card: 217.2 32.6% 17.5%; /* Dark gray cards */
+    --card-foreground: 0 0% 98%; /* Bright white text on dark cards */
     --card-border: 221.2 83.2% 53.3% / 0.3;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover: 217.2 32.6% 17.5%;
+    --popover-foreground: 0 0% 98%;
 
     /* High contrast elements */
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 224 71.4% 4.1%;
+    --secondary: 217.2 32.6% 20%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 217.2 32.6% 20%;
+    --muted-foreground: 210 40% 80%;
 
     --accent: 221.2 83.2% 53.3%;
     --accent-foreground: 0 0% 98%;
