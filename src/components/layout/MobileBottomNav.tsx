@@ -92,7 +92,7 @@ export function MobileBottomNav() {
   const filteredItems = getFilteredNavItems();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-md bg-card/90 border-t border-border/30 safe-area-bottom shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border/50 safe-area-bottom shadow-lg transition-colors duration-300">
       <div className="flex items-center justify-around py-2 px-2 max-w-screen-xl mx-auto">
         {filteredItems.map((item) => {
           const Icon = item.icon;
@@ -106,7 +106,7 @@ export function MobileBottomNav() {
                 cn(
                   "relative flex flex-col items-center justify-center py-3 px-4 rounded-xl transition-all duration-300 min-w-0 flex-1 large-touch-target active:scale-95",
                   isActive
-                    ? "text-primary bg-primary/15 shadow-md border border-primary/20 scale-105"
+                    ? "text-primary bg-primary/20 shadow-md border border-primary/30 scale-105"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:scale-105"
                 )
               }
@@ -121,7 +121,7 @@ export function MobileBottomNav() {
                     {notificationCount > 0 && (
                       <Badge 
                         variant="destructive" 
-                        className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center min-w-5 animate-pulse-glow shadow-md"
+                        className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center min-w-5 animate-pulse-glow shadow-md bg-destructive text-destructive-foreground border border-destructive/20"
                       >
                         {notificationCount > 9 ? '9+' : notificationCount}
                       </Badge>

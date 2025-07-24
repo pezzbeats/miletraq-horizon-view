@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { DesktopSidebar } from './DesktopSidebar';
+import { DesktopSidebar } from './EnhancedSidebar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { TopBar } from './TopBar';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';

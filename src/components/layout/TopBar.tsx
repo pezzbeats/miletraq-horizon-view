@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { HeaderSubsidiarySelector } from './HeaderSubsidiarySelector';
+import { MobileSidebar } from './EnhancedSidebar';
 
 export function TopBar() {
   const { user, profile, signOut } = useAuth();
@@ -46,6 +47,11 @@ export function TopBar() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-2">
+          {/* Mobile Sidebar Toggle */}
+          <div className="lg:hidden">
+            <MobileSidebar />
+          </div>
+          
           {/* Subsidiary Selector - Mobile */}
           <div className="lg:hidden">
             <HeaderSubsidiarySelector />
