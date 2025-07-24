@@ -159,17 +159,25 @@ export function MobileDashboard() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="h-16 flex-col gap-2 touch-target hover:bg-primary/5 hover:border-primary/20"
-                onClick={() => handleQuickAction(action.action)}
-              >
-                <action.icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{action.label}</span>
-              </Button>
-            ))}
+            {quickActions.map((action, index) => {
+              const colorMap = {
+                'add-vehicle': 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-green-400 text-white shadow-lg hover:shadow-xl',
+                'add-fuel': 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-blue-400 text-white shadow-lg hover:shadow-xl',
+                'add-maintenance': 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 border-orange-400 text-white shadow-lg hover:shadow-xl',
+                'add-driver': 'bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 border-purple-400 text-white shadow-lg hover:shadow-xl'
+              };
+              
+              return (
+                <Button
+                  key={index}
+                  className={`h-16 flex-col gap-2 touch-target transition-all duration-200 hover:scale-105 hover:-translate-y-1 border-2 font-semibold ${colorMap[action.action] || colorMap['add-vehicle']}`}
+                  onClick={() => handleQuickAction(action.action)}
+                >
+                  <action.icon className="h-6 w-6 drop-shadow-sm" />
+                  <span className="text-xs font-bold drop-shadow-sm">{action.label}</span>
+                </Button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -234,21 +242,30 @@ export function MobileDashboard() {
           <CardTitle className="text-base">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[
               { title: 'Vehicle S-1 refueled', time: '2 hours ago', type: 'fuel' },
               { title: 'Maintenance scheduled for UK18PA0049', time: '4 hours ago', type: 'maintenance' },
               { title: 'New driver added: John Doe', time: '1 day ago', type: 'driver' }
             ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                <div>
-                  <p className="text-sm font-medium">{activity.title}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+              <div key={index} className="flex items-center justify-between py-3 px-4 bg-gradient-to-r from-background to-muted/30 rounded-lg border hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full shadow-sm ${
+                    activity.type === 'fuel' ? 'bg-blue-500 shadow-blue-500/30' :
+                    activity.type === 'maintenance' ? 'bg-orange-500 shadow-orange-500/30' : 'bg-green-500 shadow-green-500/30'
+                  }`} />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{activity.title}</p>
+                    <p className="text-xs font-medium text-muted-foreground">{activity.time}</p>
+                  </div>
                 </div>
-                <div className={`w-2 h-2 rounded-full ${
-                  activity.type === 'fuel' ? 'bg-blue-500' :
-                  activity.type === 'maintenance' ? 'bg-orange-500' : 'bg-green-500'
-                }`} />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  activity.type === 'fuel' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' :
+                  activity.type === 'maintenance' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300' : 
+                  'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300'
+                }`}>
+                  {activity.type === 'fuel' ? '⛽' : activity.type === 'maintenance' ? '🔧' : '👤'}
+                </div>
               </div>
             ))}
           </div>
