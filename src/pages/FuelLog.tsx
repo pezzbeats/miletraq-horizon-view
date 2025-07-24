@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { FuelLogTable } from "@/components/fuel-log/FuelLogTable";
 import { FuelLogDialog } from "@/components/fuel-log/FuelLogDialog";
 import { MobileFuelCard } from "@/components/fuel-log/MobileFuelCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -39,6 +41,7 @@ export interface FuelLogEntry {
 }
 
 const FuelLog = () => {
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const [fuelEntries, setFuelEntries] = useState<FuelLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,7 +51,7 @@ const FuelLog = () => {
   const fetchFuelEntries = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('fuel_log')
         .select(`
           *,
@@ -64,7 +67,14 @@ const FuelLog = () => {
           vendors (
             name
           )
-        `)
+        `);
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data, error } = await query
         .order('date', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -84,7 +94,7 @@ const FuelLog = () => {
 
   useEffect(() => {
     fetchFuelEntries();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   const handleAddEntry = () => {
     setEditingEntry(null);
@@ -110,8 +120,23 @@ const FuelLog = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Fuel Log</h1>
-          <p className="text-muted-foreground">Track fuel consumption and efficiency</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Fuel Log</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground">
+            {allSubsidiariesView 
+              ? "Track fuel consumption across all subsidiaries"
+              : currentSubsidiary 
+                ? `Track fuel consumption for ${currentSubsidiary.subsidiary_name}`
+                : "Track fuel consumption and efficiency"
+            }
+          </p>
         </div>
         {!isMobile && (
           <Button onClick={handleAddEntry} className="w-full sm:w-auto">

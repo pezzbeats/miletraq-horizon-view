@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { toast } from '@/hooks/use-toast';
 import { BudgetTable } from '@/components/budget/BudgetTable';
 import { BudgetDialog } from '@/components/budget/BudgetDialog';
@@ -29,6 +31,7 @@ export interface BudgetRecord {
 
 export default function Budget() {
   const { profile } = useAuth();
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const isMobile = useIsMobile();
   const [budgets, setBudgets] = useState<BudgetRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,14 +40,20 @@ export default function Budget() {
 
   useEffect(() => {
     fetchBudgets();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   const fetchBudgets = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('budget')
-        .select('*')
-        .order('period_start', { ascending: false });
+        .select('*');
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data, error } = await query.order('period_start', { ascending: false });
 
       if (error) throw error;
       setBudgets(data || []);
@@ -118,9 +127,22 @@ export default function Budget() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
         <div className="relative z-10 flex items-center justify-between text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Budget Management</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-4xl font-bold">Budget Management</h1>
+              {allSubsidiariesView && (
+                <Badge variant="secondary" className="text-xs">
+                  <Globe className="h-3 w-3 mr-1" />
+                  All Subsidiaries
+                </Badge>
+              )}
+            </div>
             <p className="text-white/90 text-lg">
-              Comprehensive financial planning and variance tracking
+              {allSubsidiariesView 
+                ? "Comprehensive financial planning across all subsidiaries"
+                : currentSubsidiary 
+                  ? `Financial planning for ${currentSubsidiary.subsidiary_name}`
+                  : "Comprehensive financial planning and variance tracking"
+              }
             </p>
           </div>
           <div className="flex gap-3">

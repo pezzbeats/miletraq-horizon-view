@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { VendorsTable } from "@/components/vendors/VendorsTable";
 import { VendorDialog } from "@/components/vendors/VendorDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { toast } from "@/hooks/use-toast";
 
 export interface Vendor {
@@ -29,6 +31,7 @@ export interface Vendor {
 }
 
 const Vendors = () => {
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,12 +41,18 @@ const Vendors = () => {
     try {
       setLoading(true);
       
-      // Fetch vendors
-      const { data: vendorsData, error } = await supabase
+      // Fetch vendors with subsidiary filtering
+      let query = supabase
         .from('vendors')
         .select('*')
-        .eq('is_active', true)
-        .order('name');
+        .eq('is_active', true);
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data: vendorsData, error } = await query.order('name');
 
       if (error) throw error;
 
@@ -118,7 +127,7 @@ const Vendors = () => {
 
   useEffect(() => {
     fetchVendors();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   const handleAddVendor = () => {
     setEditingVendor(null);
@@ -154,8 +163,23 @@ const Vendors = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Vendors</h1>
-          <p className="text-muted-foreground">Manage supplier relationships and performance</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Vendors</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground">
+            {allSubsidiariesView 
+              ? "Manage supplier relationships and performance across all subsidiaries"
+              : currentSubsidiary 
+                ? `Manage suppliers for ${currentSubsidiary.subsidiary_name}`
+                : "Manage supplier relationships and performance"
+            }
+          </p>
         </div>
         <Button onClick={handleAddVendor} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Users } from 'lucide-react';
+import { Plus, Search, Filter, Users, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DriversTable } from '@/components/drivers/DriversTable';
 import { DriverDialog } from '@/components/drivers/DriverDialog';
@@ -22,6 +23,7 @@ type Driver = Tables<'drivers'> & {
 };
 
 const Drivers = () => {
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [filteredDrivers, setFilteredDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +42,17 @@ const Drivers = () => {
     try {
       setLoading(true);
       
-      // Fetch drivers
-      const { data: driversData, error: driversError } = await supabase
+      // Fetch drivers with subsidiary filtering
+      let query = supabase
         .from('drivers')
-        .select('*')
-        .order('name');
+        .select('*');
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data: driversData, error: driversError } = await query.order('name');
 
       if (driversError) throw driversError;
 
@@ -100,7 +108,7 @@ const Drivers = () => {
 
   useEffect(() => {
     fetchDrivers();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   useEffect(() => {
     let filtered = drivers;
@@ -180,9 +188,22 @@ const Drivers = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Drivers Master</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Drivers Master</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">
-            Manage drivers and track license compliance
+            {allSubsidiariesView 
+              ? "Manage drivers and track license compliance across all subsidiaries"
+              : currentSubsidiary 
+                ? `Manage drivers for ${currentSubsidiary.subsidiary_name}`
+                : "Manage drivers and track license compliance"
+            }
           </p>
         </div>
         {!isMobile && (

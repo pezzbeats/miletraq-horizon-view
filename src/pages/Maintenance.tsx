@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
 import { MaintenanceDialog } from "@/components/maintenance/MaintenanceDialog";
 import { MobileMaintenanceCard } from "@/components/maintenance/MobileMaintenanceCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubsidiary } from "@/contexts/SubsidiaryContext";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +46,7 @@ export interface MaintenanceRecord {
 }
 
 const Maintenance = () => {
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -54,7 +57,7 @@ const Maintenance = () => {
   const fetchMaintenanceRecords = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('maintenance_log')
         .select(`
           *,
@@ -77,7 +80,14 @@ const Maintenance = () => {
               part_number
             )
           )
-        `)
+        `);
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data, error } = await query
         .order('maintenance_date', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -97,7 +107,7 @@ const Maintenance = () => {
 
   useEffect(() => {
     fetchMaintenanceRecords();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   const handleCreateServiceTicket = () => {
     navigate('/service-tickets');
@@ -124,8 +134,23 @@ const Maintenance = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Maintenance Log</h1>
-          <p className="text-muted-foreground">Track vehicle maintenance and service history</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Maintenance Log</h1>
+            {allSubsidiariesView && (
+              <Badge variant="secondary" className="text-xs">
+                <Globe className="h-3 w-3 mr-1" />
+                All Subsidiaries
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground">
+            {allSubsidiariesView 
+              ? "Track vehicle maintenance and service history across all subsidiaries"
+              : currentSubsidiary 
+                ? `Track maintenance for ${currentSubsidiary.subsidiary_name}`
+                : "Track vehicle maintenance and service history"
+            }
+          </p>
         </div>
         {!isMobile && (
           <Button onClick={handleCreateServiceTicket} variant="outline" className="w-full sm:w-auto">

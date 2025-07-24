@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { toast } from '@/hooks/use-toast';
 import { DocumentsTable } from '@/components/documents/DocumentsTable';
 import { DocumentDialog } from '@/components/documents/DocumentDialog';
@@ -34,6 +36,7 @@ export interface DocumentRecord {
 
 export default function Documents() {
   const { profile } = useAuth();
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const isMobile = useIsMobile();
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,11 +45,11 @@ export default function Documents() {
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [currentSubsidiary, allSubsidiariesView]);
 
   const fetchDocuments = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('vehicle_documents')
         .select(`
           *,
@@ -56,8 +59,14 @@ export default function Documents() {
             make,
             model
           )
-        `)
-        .order('expiry_date', { ascending: true, nullsFirst: false });
+        `);
+
+      // Apply subsidiary filtering
+      if (!allSubsidiariesView && currentSubsidiary) {
+        query = query.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
+      const { data, error } = await query.order('expiry_date', { ascending: true, nullsFirst: false });
 
       if (error) throw error;
       setDocuments(data || []);
@@ -108,9 +117,22 @@ export default function Documents() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
         <div className="relative z-10 flex items-center justify-between text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Document Management</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-4xl font-bold">Document Management</h1>
+              {allSubsidiariesView && (
+                <Badge variant="secondary" className="text-xs">
+                  <Globe className="h-3 w-3 mr-1" />
+                  All Subsidiaries
+                </Badge>
+              )}
+            </div>
             <p className="text-white/90 text-lg">
-              Track vehicle compliance and manage document renewals
+              {allSubsidiariesView 
+                ? "Track vehicle compliance and manage document renewals across all subsidiaries"
+                : currentSubsidiary 
+                  ? `Document management for ${currentSubsidiary.subsidiary_name}`
+                  : "Track vehicle compliance and manage document renewals"
+              }
             </p>
           </div>
           <Button
