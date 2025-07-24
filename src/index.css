@@ -581,7 +581,11 @@
   }
 
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-glow;
+    @apply transition-all duration-300;
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
   }
 
   .hover-scale-102 {
