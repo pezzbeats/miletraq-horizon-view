@@ -691,4 +691,21 @@
     background: var(--gradient-error);
     color: white;
   }
+
+  /* Dark mode status indicators */
+  .dark .status-online {
+    @apply bg-green-400 text-green-900;
+  }
+
+  .dark .status-offline {
+    @apply bg-red-400 text-red-900;
+  }
+
+  .dark .status-away {
+    @apply bg-yellow-400 text-yellow-900;
+  }
+
+  .dark .status-busy {
+    @apply bg-purple-400 text-purple-900;
+  }
 }
