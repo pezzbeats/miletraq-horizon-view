@@ -23,7 +23,7 @@ import {
 
 export function MobileDashboard() {
   const { profile } = useAuth();
-  const { currentSubsidiary } = useSubsidiary();
+  const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     vehicles: { active: 0, total: 0 },
@@ -37,58 +37,77 @@ export function MobileDashboard() {
   const fetchDashboardData = async () => {
     try {
       const subsidiaryId = currentSubsidiary?.id;
+      const isAllSubsidiariesView = allSubsidiariesView;
       
-      // Fetch vehicles count
-      const { data: vehicles } = await supabase
-        .from('vehicles')
-        .select('status')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id);
+      let vehiclesQuery = supabase.from('vehicles').select('status');
+      let driversQuery = supabase.from('drivers').select('is_active').eq('is_active', true);
+      let fuelLogsQuery = supabase.from('fuel_log').select('total_cost');
+      let maintenanceAlertsQuery = supabase.from('scheduled_maintenance_alerts').select('*').eq('is_acknowledged', false);
+      let recentFuelQuery = supabase.from('fuel_log').select('*, vehicles(vehicle_number)').order('created_at', { ascending: false }).limit(5);
+      let recentMaintenanceQuery = supabase.from('maintenance_log').select('*, vehicles(vehicle_number)').order('created_at', { ascending: false }).limit(5);
+
+      // Apply subsidiary filtering based on view mode
+      if (!isAllSubsidiariesView && subsidiaryId) {
+        // Single subsidiary view
+        vehiclesQuery = vehiclesQuery.eq('subsidiary_id', subsidiaryId);
+        driversQuery = driversQuery.eq('subsidiary_id', subsidiaryId);
+        fuelLogsQuery = fuelLogsQuery.eq('subsidiary_id', subsidiaryId);
+        maintenanceAlertsQuery = maintenanceAlertsQuery.eq('subsidiary_id', subsidiaryId);
+        recentFuelQuery = recentFuelQuery.eq('subsidiary_id', subsidiaryId);
+        recentMaintenanceQuery = recentMaintenanceQuery.eq('subsidiary_id', subsidiaryId);
+      } else if (isAllSubsidiariesView && profile?.is_super_admin) {
+        // All subsidiaries view for super admin - no filtering
+        // Queries will fetch from all subsidiaries
+      } else if (isAllSubsidiariesView && !profile?.is_super_admin) {
+        // All subsidiaries view for regular user - filter by accessible subsidiaries
+        const { data: userSubsidiaries } = await supabase.rpc('get_user_accessible_subsidiaries');
+        if (userSubsidiaries && userSubsidiaries.length > 0) {
+          vehiclesQuery = vehiclesQuery.in('subsidiary_id', userSubsidiaries);
+          driversQuery = driversQuery.in('subsidiary_id', userSubsidiaries);
+          fuelLogsQuery = fuelLogsQuery.in('subsidiary_id', userSubsidiaries);
+          maintenanceAlertsQuery = maintenanceAlertsQuery.in('subsidiary_id', userSubsidiaries);
+          recentFuelQuery = recentFuelQuery.in('subsidiary_id', userSubsidiaries);
+          recentMaintenanceQuery = recentMaintenanceQuery.in('subsidiary_id', userSubsidiaries);
+        }
+      } else {
+        // Fallback to user's default subsidiary
+        const defaultSubsidiaryId = profile?.default_subsidiary_id;
+        if (defaultSubsidiaryId) {
+          vehiclesQuery = vehiclesQuery.eq('subsidiary_id', defaultSubsidiaryId);
+          driversQuery = driversQuery.eq('subsidiary_id', defaultSubsidiaryId);
+          fuelLogsQuery = fuelLogsQuery.eq('subsidiary_id', defaultSubsidiaryId);
+          maintenanceAlertsQuery = maintenanceAlertsQuery.eq('subsidiary_id', defaultSubsidiaryId);
+          recentFuelQuery = recentFuelQuery.eq('subsidiary_id', defaultSubsidiaryId);
+          recentMaintenanceQuery = recentMaintenanceQuery.eq('subsidiary_id', defaultSubsidiaryId);
+        }
+      }
+
+      // Add date filter for fuel cost (current month)
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      fuelLogsQuery = fuelLogsQuery.gte('date', currentMonth + '-01');
+      
+      // Execute all queries
+      const [
+        { data: vehicles },
+        { data: drivers },
+        { data: fuelLogs },
+        { data: maintenanceAlerts },
+        { data: recentFuel },
+        { data: recentMaintenance }
+      ] = await Promise.all([
+        vehiclesQuery,
+        driversQuery,
+        fuelLogsQuery,
+        maintenanceAlertsQuery,
+        recentFuelQuery,
+        recentMaintenanceQuery
+      ]);
       
       const activeVehicles = vehicles?.filter(v => v.status === 'active').length || 0;
       const totalVehicles = vehicles?.length || 0;
-
-      // Fetch drivers count
-      const { data: drivers } = await supabase
-        .from('drivers')
-        .select('is_active')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
-        .eq('is_active', true);
-      
       const activeDrivers = drivers?.length || 0;
-
-      // Fetch recent fuel cost (current month)
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-      const { data: fuelLogs } = await supabase
-        .from('fuel_log')
-        .select('total_cost')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
-        .gte('date', currentMonth + '-01');
-      
       const fuelCost = fuelLogs?.reduce((sum, log) => sum + (log.total_cost || 0), 0) || 0;
-
-      // Fetch pending maintenance alerts
-      const { data: maintenanceAlerts } = await supabase
-        .from('scheduled_maintenance_alerts')
-        .select('*')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
-        .eq('is_acknowledged', false);
-      
       const pendingMaintenance = maintenanceAlerts?.length || 0;
-
-      // Fetch recent activity (last 10 entries)
-      const { data: recentFuel } = await supabase
-        .from('fuel_log')
-        .select('*, vehicles(vehicle_number)')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data: recentMaintenance } = await supabase
-        .from('maintenance_log')
-        .select('*, vehicles(vehicle_number)')
-        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
-        .order('created_at', { ascending: false })
-        .limit(5);
 
       // Format recent activity
       const activity = [];
@@ -141,7 +160,7 @@ export function MobileDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [currentSubsidiary, profile]);
+  }, [currentSubsidiary, allSubsidiariesView, profile]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -245,13 +264,15 @@ export function MobileDashboard() {
             <CardContent className="pt-0">
               <div className="bg-card/50 backdrop-blur-sm rounded-lg p-3 border border-primary/30">
                 <p className="text-sm font-semibold text-foreground">
-                  {currentSubsidiary 
-                    ? `🏢 Currently viewing: ${currentSubsidiary.subsidiary_name}` 
-                    : '🌐 Select a subsidiary to view specific data'
+                  {allSubsidiariesView 
+                    ? '🌐 Currently viewing: All Subsidiaries (Consolidated View)' 
+                    : currentSubsidiary 
+                      ? `🏢 Currently viewing: ${currentSubsidiary.subsidiary_name}` 
+                      : '🌐 Select a subsidiary to view specific data'
                   }
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 font-medium">
-                  Data scope: {currentSubsidiary ? 'Single subsidiary' : 'All subsidiaries'}
+                  Data scope: {allSubsidiariesView ? 'All accessible subsidiaries' : currentSubsidiary ? 'Single subsidiary' : 'No selection'}
                 </p>
               </div>
             </CardContent>

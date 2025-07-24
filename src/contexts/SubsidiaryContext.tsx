@@ -107,6 +107,7 @@ export function SubsidiaryProvider({ children }: { children: React.ReactNode }) 
         const savedSubsidiaryId = localStorage.getItem('selectedSubsidiary');
         const savedAllView = localStorage.getItem('allSubsidiariesView') === 'true';
         
+        // Enable "All Subsidiaries" view for users with multiple subsidiaries (not just super admins)
         if (savedAllView && subsidiariesWithPermissions.length > 1) {
           setAllSubsidiariesViewState(true);
         } else {

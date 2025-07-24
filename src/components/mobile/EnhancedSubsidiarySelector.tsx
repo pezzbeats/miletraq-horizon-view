@@ -16,7 +16,7 @@ export function EnhancedSubsidiarySelector({ className }: EnhancedSubsidiarySele
     currentSubsidiary, 
     allSubsidiariesView, 
     subsidiaries, 
-    canManageSubsidiaries,
+    hasMultipleSubsidiaries,
     setCurrentSubsidiary,
     setAllSubsidiariesView
   } = useSubsidiary();
@@ -93,7 +93,7 @@ export function EnhancedSubsidiarySelector({ className }: EnhancedSubsidiarySele
     };
   };
 
-  if (!canManageSubsidiaries) {
+  if (!hasMultipleSubsidiaries) {
     return null;
   }
 
@@ -145,7 +145,7 @@ export function EnhancedSubsidiarySelector({ className }: EnhancedSubsidiarySele
 
         <div className="space-y-4">
           {/* All Subsidiaries Option */}
-          {canManageSubsidiaries && (
+          {hasMultipleSubsidiaries && (
             <>
               <Button
                 variant="ghost"
