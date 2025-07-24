@@ -100,8 +100,8 @@ export function MobileDashboard() {
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">📊 Dashboard</h1>
+            <p className="text-foreground opacity-75 font-medium">
               Fleet overview and key metrics
             </p>
           </div>
@@ -160,7 +160,7 @@ export function MobileDashboard() {
       {/* Quick Actions */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Quick Actions</CardTitle>
+          <CardTitle className="text-base font-bold text-card-foreground">⚡ Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 gap-3">
@@ -244,7 +244,7 @@ export function MobileDashboard() {
       {/* Recent Activity */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Recent Activity</CardTitle>
+          <CardTitle className="text-base font-bold text-card-foreground">📋 Recent Activity</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-4">
