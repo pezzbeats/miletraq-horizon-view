@@ -275,11 +275,15 @@ export function SubsidiaryComparisonReport() {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
             <DatePickerWithRange
-              date={dateRange}
-              onDateChange={setDateRange}
+              date={{ from: dateRange.from, to: dateRange.to }}
+              onDateChange={(range) => {
+                if (range?.from && range?.to) {
+                  setDateRange({ from: range.from, to: range.to });
+                }
+              }}
               className="w-full sm:w-auto"
             />
-            <Select value={comparisonType} onValueChange={setComparisonType}>
+            <Select value={comparisonType} onValueChange={(value: "costs" | "efficiency" | "utilization") => setComparisonType(value)}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Comparison Type" />
               </SelectTrigger>

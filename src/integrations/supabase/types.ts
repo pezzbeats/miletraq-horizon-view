@@ -120,6 +120,66 @@ export type Database = {
           },
         ]
       }
+      budget_transfers: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          effective_date: string
+          from_subsidiary_id: string
+          id: string
+          notes: string | null
+          requested_by: string
+          status: string
+          subsidiary_id: string
+          to_subsidiary_id: string
+          transfer_reason: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          effective_date: string
+          from_subsidiary_id: string
+          id?: string
+          notes?: string | null
+          requested_by: string
+          status?: string
+          subsidiary_id: string
+          to_subsidiary_id: string
+          transfer_reason: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          effective_date?: string
+          from_subsidiary_id?: string
+          id?: string
+          notes?: string | null
+          requested_by?: string
+          status?: string
+          subsidiary_id?: string
+          to_subsidiary_id?: string
+          transfer_reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drivers: {
         Row: {
           address: string | null
@@ -1477,6 +1537,63 @@ export type Database = {
           },
         ]
       }
+      vehicle_transfers: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          effective_date: string
+          from_subsidiary_id: string
+          id: string
+          notes: string | null
+          requested_by: string
+          status: string
+          subsidiary_id: string
+          to_subsidiary_id: string
+          transfer_reason: string
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          effective_date: string
+          from_subsidiary_id: string
+          id?: string
+          notes?: string | null
+          requested_by: string
+          status?: string
+          subsidiary_id: string
+          to_subsidiary_id: string
+          transfer_reason: string
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          effective_date?: string
+          from_subsidiary_id?: string
+          id?: string
+          notes?: string | null
+          requested_by?: string
+          status?: string
+          subsidiary_id?: string
+          to_subsidiary_id?: string
+          transfer_reason?: string
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: []
+      }
       vehicles: {
         Row: {
           created_at: string | null
@@ -1651,6 +1768,10 @@ export type Database = {
       check_scheduled_maintenance: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      complete_vehicle_transfer: {
+        Args: { transfer_id: string }
+        Returns: boolean
       }
       generate_ticket_number: {
         Args: Record<PropertyKey, never>
