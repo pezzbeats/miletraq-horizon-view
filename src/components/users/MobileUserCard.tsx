@@ -63,7 +63,7 @@ export function MobileUserCard({
   };
 
   return (
-    <Card className="mobile-user-card hover:shadow-md transition-all duration-200">
+    <Card className="mobile-user-card hover:shadow-md transition-all duration-200 bg-card border-primary/20">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -72,7 +72,7 @@ export function MobileUserCard({
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg font-bold truncate">
+                <CardTitle className="text-lg font-bold truncate text-card-foreground">
                   {user.full_name}
                   {isCurrentUser && (
                     <Badge variant="outline" className="ml-2 text-xs">You</Badge>
@@ -112,25 +112,25 @@ export function MobileUserCard({
         <div className="space-y-2">
           <div className="flex items-center space-x-2 text-sm">
             <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium truncate">{user.email}</span>
+            <span className="font-medium truncate text-card-foreground">{user.email}</span>
           </div>
           
           {user.phone && (
             <div className="flex items-center space-x-2 text-sm">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{user.phone}</span>
+              <span className="font-medium text-card-foreground">{user.phone}</span>
             </div>
           )}
         </div>
 
         {/* User Details */}
-        <div className="border-t pt-3 space-y-2">
+        <div className="border-t border-border pt-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground flex items-center">
               <Calendar className="h-3 w-3 mr-1" />
               Joined:
             </span>
-            <span className="font-medium">{formatDate(user.created_at)}</span>
+            <span className="font-medium text-card-foreground">{formatDate(user.created_at)}</span>
           </div>
           
           {user.is_super_admin && (
@@ -145,13 +145,14 @@ export function MobileUserCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="border-t pt-3 space-y-2">
+        <div className="border-t border-border pt-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               size="sm"
               className="touch-target"
               onClick={() => onEdit(user)}
+              disabled={!canEdit && !isCurrentUser}
             >
               <Edit className="h-4 w-4 mr-1" />
               Edit
@@ -161,6 +162,7 @@ export function MobileUserCard({
               size="sm"
               className="touch-target"
               onClick={() => onChangePassword(user)}
+              disabled={!canEdit && !isCurrentUser}
             >
               <Shield className="h-4 w-4 mr-1" />
               Password
@@ -168,7 +170,7 @@ export function MobileUserCard({
           </div>
           
           <div className="grid grid-cols-2 gap-2">
-            {onManagePermissions && (
+            {onManagePermissions && canEdit && (
               <Button
                 variant="outline"
                 size="sm"
@@ -179,21 +181,29 @@ export function MobileUserCard({
                 Permissions
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="touch-target text-destructive"
-              onClick={() => onDelete(user)}
-              disabled={isCurrentUser}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete
-            </Button>
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="touch-target text-destructive"
+                onClick={() => onDelete(user)}
+                disabled={isCurrentUser}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
           </div>
           
-          {isCurrentUser && (
+          {!canEdit && isCurrentUser && (
             <p className="text-xs text-muted-foreground text-center">
-              You cannot modify your own account status
+              You can edit your own profile and change your password
+            </p>
+          )}
+          
+          {isCurrentUser && canEdit && (
+            <p className="text-xs text-muted-foreground text-center">
+              You cannot delete your own account
             </p>
           )}
         </div>

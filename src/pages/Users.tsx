@@ -33,10 +33,12 @@ export default function Users() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: users, isLoading, refetch } = useQuery({
-    queryKey: ['users', currentSubsidiary?.id, allSubsidiariesView],
+    queryKey: ['users', currentSubsidiary?.id, allSubsidiariesView, profile?.id],
     queryFn: async () => {
-      if (!canManageSubsidiaries) {
-        // Regular users can only see their own profile
+      if (!profile) return [];
+
+      // Regular users (non-managers) can only see their own profile
+      if (!canManageSubsidiaries && !profile?.is_super_admin) {
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -61,6 +63,7 @@ export default function Users() {
               )
             )
           `)
+          .eq('is_active', true)
           .order('full_name');
         
         if (error) throw error;
@@ -84,7 +87,8 @@ export default function Users() {
               subsidiary_code
             )
           `)
-          .in('subsidiary_id', subsidiaryIds);
+          .in('subsidiary_id', subsidiaryIds)
+          .eq('profiles.is_active', true);
 
         if (error) throw error;
 
@@ -119,7 +123,8 @@ export default function Users() {
               subsidiary_code
             )
           `)
-          .eq('subsidiary_id', currentSubsidiary.id);
+          .eq('subsidiary_id', currentSubsidiary.id)
+          .eq('profiles.is_active', true);
 
         if (error) throw error;
 
@@ -132,7 +137,7 @@ export default function Users() {
 
       return [];
     },
-    enabled: !!(profile && (canManageSubsidiaries || profile.is_super_admin))
+    enabled: !!profile
   });
 
   const filteredUsers = users?.filter(user => {
@@ -200,21 +205,6 @@ export default function Users() {
     });
   };
 
-  if (!canManageSubsidiaries && !profile?.is_super_admin) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
-            <p className="text-muted-foreground">
-              You don't have permission to manage users
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (!allSubsidiariesView && !currentSubsidiary && !profile?.is_super_admin) {
     return (
