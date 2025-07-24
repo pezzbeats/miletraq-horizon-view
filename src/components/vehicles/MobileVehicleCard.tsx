@@ -33,17 +33,17 @@ export function MobileVehicleCard({
   };
 
   return (
-    <Card className="relative bg-white border-l-4 border-l-green-500 shadow-xl hover:shadow-2xl transition-all duration-300">
+    <Card className="relative bg-card border-l-4 border-l-primary shadow-xl hover:shadow-2xl transition-all duration-300 border-primary/20">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-green-100 to-green-50 rounded-xl border border-green-200 shadow-md">
-              <Car className="h-6 w-6 text-green-600" />
+            <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 shadow-md">
+              <Car className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-xl text-gray-800">{vehicle.vehicle_number}</h3>
+              <h3 className="font-bold text-xl text-card-foreground">{vehicle.vehicle_number}</h3>
               {vehicle.vehicle_name && (
-                <p className="text-base text-gray-600 font-medium">{vehicle.vehicle_name}</p>
+                <p className="text-base text-card-foreground opacity-75 font-medium">{vehicle.vehicle_name}</p>
               )}
             </div>
           </div>
@@ -52,33 +52,33 @@ export function MobileVehicleCard({
 
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600 font-semibold text-base">Make & Model:</span>
-            <span className="font-bold text-gray-800 text-base">{vehicle.make} {vehicle.model}</span>
+            <span className="text-card-foreground opacity-80 font-semibold text-base">Make & Model:</span>
+            <span className="font-bold text-card-foreground text-base">{vehicle.make} {vehicle.model}</span>
           </div>
           
           {vehicle.year && (
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-semibold text-base">Year:</span>
-              <span className="font-bold text-gray-800 text-base">{vehicle.year}</span>
+              <span className="text-card-foreground opacity-80 font-semibold text-base">Year:</span>
+              <span className="font-bold text-card-foreground text-base">{vehicle.year}</span>
             </div>
           )}
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-600 font-semibold text-base">Fuel Type:</span>
-            <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 font-semibold text-sm px-3 py-1">
+            <span className="text-card-foreground opacity-80 font-semibold text-base">Fuel Type:</span>
+            <Badge variant="outline" className="bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 font-semibold text-sm px-3 py-1">
               {vehicle.fuel_type?.replace('_', ' ')}
             </Badge>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-600 font-semibold text-base">Status:</span>
+            <span className="text-card-foreground opacity-80 font-semibold text-base">Status:</span>
             <Badge 
               className={`font-bold text-sm px-3 py-1 ${
                 vehicle.status === 'active' 
-                  ? 'bg-green-100 text-green-700 border-green-200' 
+                  ? 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30' 
                   : vehicle.status === 'maintenance' 
-                  ? 'bg-red-100 text-red-700 border-red-200' 
-                  : 'bg-gray-100 text-gray-700 border-gray-200'
+                  ? 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30' 
+                  : 'bg-gray-500/20 text-gray-700 dark:text-gray-400 border-gray-500/30'
               }`}
             >
               {vehicle.status?.replace('_', ' ')}
@@ -87,10 +87,10 @@ export function MobileVehicleCard({
 
           {showSubsidiary && subsidiaryInfo && (
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-semibold text-base">Subsidiary:</span>
+              <span className="text-card-foreground opacity-80 font-semibold text-base">Subsidiary:</span>
               <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-blue-600" />
-                <span className="font-bold text-gray-800 text-sm">
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="font-bold text-card-foreground text-sm">
                   {subsidiaryInfo.subsidiary_name}
                 </span>
               </div>
@@ -99,20 +99,20 @@ export function MobileVehicleCard({
 
           {vehicle.drivers?.name && (
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-semibold text-base">Default Driver:</span>
+              <span className="text-card-foreground opacity-80 font-semibold text-base">Default Driver:</span>
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-blue-600" />
-                <span className="font-bold text-gray-800 text-sm">{vehicle.drivers.name}</span>
+                <User className="h-4 w-4 text-primary" />
+                <span className="font-bold text-card-foreground text-sm">{vehicle.drivers.name}</span>
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
+        <div className="flex gap-3 pt-4 border-t-2 border-border">
           <Button
             variant="outline"
             size="lg"
-            className="flex-1 h-12 font-bold text-base bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+            className="flex-1 h-12 font-bold text-base bg-card border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
             onClick={() => onEdit(vehicle)}
           >
             <Edit className="h-5 w-5 mr-2" />
