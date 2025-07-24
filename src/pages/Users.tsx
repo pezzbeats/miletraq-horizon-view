@@ -49,25 +49,38 @@ export default function Users() {
       }
 
       if (profile?.is_super_admin) {
-        // Super admins can see all users
+        // Super admins can see all users - simplified query
         const { data, error } = await supabase
           .from('profiles')
-          .select(`
-            *,
-            user_subsidiary_permissions (
-              subsidiary_id,
-              permission_level,
-              subsidiaries (
-                subsidiary_name,
-                subsidiary_code
-              )
-            )
-          `)
+          .select('*')
           .eq('is_active', true)
           .order('full_name');
         
         if (error) throw error;
-        return data || [];
+        
+        // For each user, get their subsidiary permissions separately
+        const usersWithPermissions = await Promise.all(
+          (data || []).map(async (user) => {
+            const { data: permissions } = await supabase
+              .from('user_subsidiary_permissions')
+              .select(`
+                subsidiary_id,
+                permission_level,
+                subsidiaries (
+                  subsidiary_name,
+                  subsidiary_code
+                )
+              `)
+              .eq('user_id', user.id);
+            
+            return {
+              ...user,
+              user_subsidiary_permissions: permissions || []
+            };
+          })
+        );
+        
+        return usersWithPermissions;
       }
 
       if (allSubsidiariesView) {
