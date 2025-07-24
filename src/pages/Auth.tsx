@@ -74,21 +74,21 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center mx-auto mb-4 shadow-lg">
             <span className="text-white font-bold text-2xl">MT</span>
           </div>
-          <h1 className="text-3xl font-bold gradient-text">MileTraq</h1>
-          <p className="text-muted-foreground mt-2">Vehicle Management System</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">MileTraq</h1>
+          <p className="text-foreground opacity-75 font-medium">Vehicle Management System</p>
         </div>
 
-        <Card className="enhanced-card">
+        <Card className="bg-card border-2 border-primary/20 shadow-xl">
           <CardHeader>
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-card-foreground font-bold">🔐 Welcome</CardTitle>
+            <CardDescription className="text-card-foreground opacity-80">
               Sign in to your account or create a new one to get started.
             </CardDescription>
           </CardHeader>
@@ -102,25 +102,25 @@ export default function Auth() {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+                    <Label htmlFor="signin-email" className="text-card-foreground font-medium">📧 Email</Label>
                     <Input
                       id="signin-email"
                       name="email"
                       type="email"
                       placeholder="Enter your email"
                       required
-                      className="glass-input"
+                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
+                    <Label htmlFor="signin-password" className="text-card-foreground font-medium">🔒 Password</Label>
                     <Input
                       id="signin-password"
                       name="password"
                       type="password"
                       placeholder="Enter your password"
                       required
-                      className="glass-input"
+                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
@@ -132,36 +132,36 @@ export default function Auth() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Label htmlFor="signup-name" className="text-card-foreground font-medium">👤 Full Name</Label>
                     <Input
                       id="signup-name"
                       name="fullName"
                       type="text"
                       placeholder="Enter your full name"
                       required
-                      className="glass-input"
+                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email" className="text-card-foreground font-medium">📧 Email</Label>
                     <Input
                       id="signup-email"
                       name="email"
                       type="email"
                       placeholder="Enter your email"
                       required
-                      className="glass-input"
+                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password" className="text-card-foreground font-medium">🔒 Password</Label>
                     <Input
                       id="signup-password"
                       name="password"
                       type="password"
                       placeholder="Create a password"
                       required
-                      className="glass-input"
+                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
