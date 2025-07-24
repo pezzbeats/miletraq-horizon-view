@@ -316,6 +316,7 @@ export default function Users() {
               open={passwordDialogOpen}
               onOpenChange={handlePasswordDialogClose}
               user={passwordUser}
+              onSuccess={refetch}
             />
 
             <UserSubsidiaryPermissionsDialog
@@ -540,6 +541,7 @@ export default function Users() {
             open={passwordDialogOpen}
             onOpenChange={handlePasswordDialogClose}
             user={passwordUser}
+            onSuccess={refetch}
           />
 
           <UserSubsidiaryPermissionsDialog

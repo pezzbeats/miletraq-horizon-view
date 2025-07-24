@@ -12,8 +12,10 @@ interface MobileUserCardProps {
   onEdit: (user: UserProfile) => void;
   onDelete: (user: UserProfile) => void;
   onChangePassword: (user: UserProfile) => void;
-  onToggleStatus: (user: UserProfile) => void;
-  currentUserId?: string;
+  onManagePermissions?: (user: UserProfile) => void;
+  canEdit?: boolean;
+  showSubsidiary?: boolean;
+  currentUser?: any;
 }
 
 const roleColors = {
@@ -35,10 +37,12 @@ export function MobileUserCard({
   onEdit, 
   onDelete, 
   onChangePassword,
-  onToggleStatus,
-  currentUserId
+  onManagePermissions,
+  canEdit = true,
+  showSubsidiary = false,
+  currentUser
 }: MobileUserCardProps) {
-  const isCurrentUser = user.id === currentUserId;
+  const isCurrentUser = user.id === currentUser?.id;
   
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -164,15 +168,17 @@ export function MobileUserCard({
           </div>
           
           <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className={`touch-target ${user.is_active ? 'text-orange-600' : 'text-green-600'}`}
-              onClick={() => onToggleStatus(user)}
-              disabled={isCurrentUser}
-            >
-              {user.is_active ? 'Deactivate' : 'Activate'}
-            </Button>
+            {onManagePermissions && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="touch-target"
+                onClick={() => onManagePermissions(user)}
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Permissions
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

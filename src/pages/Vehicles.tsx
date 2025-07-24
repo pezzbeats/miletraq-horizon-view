@@ -165,7 +165,16 @@ export default function Vehicles() {
         </div>
 
         {/* Filters */}
-        <VehicleFilters filters={filters} onFiltersChange={setFilters} />
+        <VehicleFilters 
+          filters={{ ...filters, subsidiary: '' }} 
+          onFiltersChange={(newFilters) => setFilters({
+            status: newFilters.status,
+            fuelType: newFilters.fuelType,
+            make: newFilters.make
+          })}
+          vehicles={vehicles || []}
+          subsidiaries={[]}
+        />
 
         {/* Vehicle Cards */}
         <div className="space-y-3">
@@ -200,7 +209,6 @@ export default function Vehicles() {
           onOpenChange={handleDialogClose}
           vehicle={editingVehicle}
           onSuccess={handleSuccess}
-          currentSubsidiary={currentSubsidiary}
         />
 
         <DeleteVehicleDialog
@@ -253,7 +261,16 @@ export default function Vehicles() {
               />
             </div>
           </div>
-          <VehicleFilters filters={filters} onFiltersChange={setFilters} />
+          <VehicleFilters 
+            filters={{ ...filters, subsidiary: '' }} 
+            onFiltersChange={(newFilters) => setFilters({
+              status: newFilters.status,
+              fuelType: newFilters.fuelType,
+              make: newFilters.make
+            })}
+            vehicles={vehicles || []}
+            subsidiaries={[]}
+          />
         </CardContent>
       </Card>
 
@@ -376,13 +393,12 @@ export default function Vehicles() {
       </Card>
 
       {/* Dialogs */}
-      <VehicleDialog
-        open={vehicleDialogOpen}
-        onOpenChange={handleDialogClose}
-        vehicle={editingVehicle}
-        onSuccess={handleSuccess}
-        currentSubsidiary={currentSubsidiary}
-      />
+        <VehicleDialog
+          open={vehicleDialogOpen}
+          onOpenChange={handleDialogClose}
+          vehicle={editingVehicle}
+          onSuccess={handleSuccess}
+        />
 
       <DeleteVehicleDialog
         open={deleteDialogOpen}
