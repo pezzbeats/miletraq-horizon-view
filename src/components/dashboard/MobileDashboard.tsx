@@ -118,20 +118,25 @@ export function MobileDashboard() {
         </div>
 
         {profile?.is_super_admin && (
-          <Card>
+          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 border-2">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center justify-between">
-                <span>Subsidiary View</span>
+              <CardTitle className="text-base flex items-center justify-between font-bold text-foreground">
+                <span>📊 Subsidiary View</span>
                 <SubsidiarySelector compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground">
-                {currentSubsidiary 
-                  ? `Viewing data for ${currentSubsidiary.subsidiary_name}` 
-                  : 'Select a subsidiary to view specific data'
-                }
-              </p>
+              <div className="bg-card/50 backdrop-blur-sm rounded-lg p-3 border border-primary/30">
+                <p className="text-sm font-semibold text-foreground">
+                  {currentSubsidiary 
+                    ? `🏢 Currently viewing: ${currentSubsidiary.subsidiary_name}` 
+                    : '🌐 Select a subsidiary to view specific data'
+                  }
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium">
+                  Data scope: {currentSubsidiary ? 'Single subsidiary' : 'All subsidiaries'}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -187,50 +192,50 @@ export function MobileDashboard() {
         charts={[
           {
             id: 'fuel-consumption',
-            title: 'Fuel Consumption',
+            title: 'Fuel Consumption Trends',
             type: 'line',
             data: [
-              { date: '1', diesel: 120, petrol: 80, cng: 40 },
-              { date: '2', diesel: 150, petrol: 90, cng: 50 },
-              { date: '3', diesel: 130, petrol: 85, cng: 45 },
-              { date: '4', diesel: 170, petrol: 95, cng: 55 },
-              { date: '5', diesel: 140, petrol: 88, cng: 48 }
+              { date: 'Week 1', diesel: 120, petrol: 80, cng: 40 },
+              { date: 'Week 2', diesel: 150, petrol: 90, cng: 50 },
+              { date: 'Week 3', diesel: 130, petrol: 85, cng: 45 },
+              { date: 'Week 4', diesel: 170, petrol: 95, cng: 55 },
+              { date: 'Week 5', diesel: 140, petrol: 88, cng: 48 }
             ],
             dataKeys: {
               x: 'date',
               y: ['diesel', 'petrol', 'cng'],
-              colors: ['#0088FE', '#00C49F', '#FFBB28']
+              colors: ['#3B82F6', '#10B981', '#F59E0B']
             }
           },
           {
             id: 'cost-analysis',
-            title: 'Monthly Costs',
+            title: 'Monthly Cost Analysis',
             type: 'bar',
             data: [
-              { month: 'Jan', fuel: 45000, maintenance: 12000 },
-              { month: 'Feb', fuel: 52000, maintenance: 8000 },
-              { month: 'Mar', fuel: 48000, maintenance: 15000 },
-              { month: 'Apr', fuel: 55000, maintenance: 10000 }
+              { month: 'January', fuel: 45000, maintenance: 12000, other: 5000 },
+              { month: 'February', fuel: 52000, maintenance: 8000, other: 6000 },
+              { month: 'March', fuel: 48000, maintenance: 15000, other: 4500 },
+              { month: 'April', fuel: 55000, maintenance: 10000, other: 7000 }
             ],
             dataKeys: {
               x: 'month',
-              y: ['fuel', 'maintenance'],
-              colors: ['#0088FE', '#00C49F']
+              y: ['fuel', 'maintenance', 'other'],
+              colors: ['#3B82F6', '#F97316', '#8B5CF6']
             }
           },
           {
             id: 'vehicle-status',
-            title: 'Vehicle Status',
+            title: 'Vehicle Status Distribution',
             type: 'pie',
             data: [
               { name: 'Active', value: 24 },
-              { name: 'Maintenance', value: 2 },
+              { name: 'Under Maintenance', value: 2 },
               { name: 'Inactive', value: 1 }
             ],
             dataKeys: {
               x: 'name',
               y: 'value',
-              colors: ['#00C49F', '#FFBB28', '#FF8042']
+              colors: ['#10B981', '#F59E0B', '#EF4444']
             }
           }
         ]}

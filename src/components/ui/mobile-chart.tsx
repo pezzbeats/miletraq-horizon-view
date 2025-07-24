@@ -28,6 +28,28 @@ export function MobileChart({
 }: MobileChartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Ensure we have valid data
+  if (!data || data.length === 0) {
+    return (
+      <Card className={cn("mobile-chart touch-target border-2", className)}>
+        <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-bold text-foreground">{title}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4 bg-card">
+          <div className="flex flex-col items-center justify-center h-48 text-center">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl">📊</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground">No data available</p>
+            <p className="text-xs text-muted-foreground mt-1">Chart data will appear here once available</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const renderChart = () => {
     const chartHeight = isExpanded ? height * 1.5 : height;
     
