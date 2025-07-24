@@ -116,19 +116,19 @@ export function MobileKPICard({
   className
 }: MobileKPICardProps) {
   const variantClasses = {
-    default: 'border-border',
-    primary: 'border-primary/20 bg-primary/5',
-    success: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950',
-    warning: 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950',
-    destructive: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950'
+    default: 'border-border bg-card',
+    primary: 'border-blue-200 bg-blue-50 dark:border-blue-400/30 dark:bg-blue-950/50',
+    success: 'border-green-200 bg-green-50 dark:border-green-400/30 dark:bg-green-950/50',
+    warning: 'border-orange-200 bg-orange-50 dark:border-orange-400/30 dark:bg-orange-950/50',
+    destructive: 'border-red-200 bg-red-50 dark:border-red-400/30 dark:bg-red-950/50'
   };
 
   const iconColors = {
-    default: 'text-muted-foreground',
-    primary: 'text-primary',
-    success: 'text-green-600 dark:text-green-400',
-    warning: 'text-orange-600 dark:text-orange-400',
-    destructive: 'text-red-600 dark:text-red-400'
+    default: 'text-foreground',
+    primary: 'text-blue-700 dark:text-blue-300',
+    success: 'text-green-700 dark:text-green-300',
+    warning: 'text-orange-700 dark:text-orange-300',
+    destructive: 'text-red-700 dark:text-red-300'
   };
 
   return (
@@ -140,28 +140,29 @@ export function MobileKPICard({
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-3">
           <div className={cn(
-            "p-2 rounded-lg bg-background",
-            variant === 'primary' && "bg-primary/10",
-            variant === 'success' && "bg-green-100 dark:bg-green-900",
-            variant === 'warning' && "bg-orange-100 dark:bg-orange-900",
-            variant === 'destructive' && "bg-red-100 dark:bg-red-900"
+            "p-2 rounded-lg border",
+            variant === 'default' && "bg-background border-border",
+            variant === 'primary' && "bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-700",
+            variant === 'success' && "bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-700",
+            variant === 'warning' && "bg-orange-100 dark:bg-orange-900/50 border-orange-200 dark:border-orange-700",
+            variant === 'destructive' && "bg-red-100 dark:bg-red-900/50 border-red-200 dark:border-red-700"
           )}>
             <Icon className={cn("h-5 w-5", iconColors[variant])} />
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-xl font-bold">{value}</p>
+            <p className="text-sm font-semibold text-foreground opacity-90">{title}</p>
+            <p className="text-xl font-bold text-foreground">{value}</p>
             {subValue && (
-              <p className="text-xs text-muted-foreground">{subValue}</p>
+              <p className="text-xs font-medium text-foreground opacity-75">{subValue}</p>
             )}
           </div>
         </div>
         {trend && (
           <div className={cn(
-            "text-xs font-medium px-2 py-1 rounded",
+            "text-xs font-bold px-3 py-1.5 rounded-full border",
             trend.isPositive 
-              ? "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900"
-              : "text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900"
+              ? "text-green-800 bg-green-100 border-green-200 dark:text-green-200 dark:bg-green-900/50 dark:border-green-700"
+              : "text-red-800 bg-red-100 border-red-200 dark:text-red-200 dark:bg-red-900/50 dark:border-red-700"
           )}>
             {trend.isPositive ? '+' : ''}{trend.value}
           </div>

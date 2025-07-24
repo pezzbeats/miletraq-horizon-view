@@ -26,23 +26,23 @@ interface ModernKPICardProps {
 }
 
 const gradientStyles = {
-  blue: 'from-blue-500 to-blue-600',
-  green: 'from-green-500 to-green-600',
-  orange: 'from-orange-500 to-orange-600',
-  purple: 'from-purple-500 to-purple-600',
-  teal: 'from-teal-500 to-teal-600',
-  red: 'from-red-500 to-red-600',
-  yellow: 'from-yellow-500 to-yellow-600',
+  blue: 'from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600',
+  green: 'from-green-600 to-green-700 dark:from-green-500 dark:to-green-600',
+  orange: 'from-orange-600 to-orange-700 dark:from-orange-500 dark:to-orange-600',
+  purple: 'from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600',
+  teal: 'from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600',
+  red: 'from-red-600 to-red-700 dark:from-red-500 dark:to-red-600',
+  yellow: 'from-yellow-600 to-yellow-700 dark:from-yellow-500 dark:to-yellow-600',
 };
 
 const iconBackgroundStyles = {
-  blue: 'bg-blue-400/20',
-  green: 'bg-green-400/20',
-  orange: 'bg-orange-400/20',
-  purple: 'bg-purple-400/20',
-  teal: 'bg-teal-400/20',
-  red: 'bg-red-400/20',
-  yellow: 'bg-yellow-400/20',
+  blue: 'bg-white/20 border border-white/30',
+  green: 'bg-white/20 border border-white/30',
+  orange: 'bg-white/20 border border-white/30',
+  purple: 'bg-white/20 border border-white/30',
+  teal: 'bg-white/20 border border-white/30',
+  red: 'bg-white/20 border border-white/30',
+  yellow: 'bg-white/20 border border-white/30',
 };
 
 export function ModernKPICard({
@@ -95,9 +95,9 @@ export function ModernKPICard({
 
   const getTrendColor = (direction: string) => {
     switch (direction) {
-      case 'up': return 'text-green-300';
-      case 'down': return 'text-red-300';
-      default: return 'text-white/60';
+      case 'up': return 'text-green-200 font-bold';
+      case 'down': return 'text-red-200 font-bold';
+      default: return 'text-white/80 font-medium';
     }
   };
 
@@ -142,10 +142,10 @@ export function ModernKPICard({
     <div 
       className={cn(
         "group relative overflow-hidden rounded-xl h-[140px] md:h-[140px] sm:h-[120px]",
-        "bg-gradient-to-br backdrop-blur-sm border border-white/10",
+        "bg-gradient-to-br backdrop-blur-sm border-2 border-white/20 shadow-lg",
         gradientStyles[gradient],
         "transition-all duration-300 ease-out",
-        "hover:scale-[1.02] hover:shadow-2xl hover:shadow-current/25",
+        "hover:scale-[1.02] hover:shadow-2xl hover:shadow-current/25 hover:border-white/30",
         onClick && "cursor-pointer",
         "transform-gpu",
         isVisible ? "animate-fade-in" : "opacity-0",
@@ -153,18 +153,18 @@ export function ModernKPICard({
       )}
       onClick={onClick}
     >
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+      {/* Enhanced glassmorphism overlay */}
+      <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
       
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Stronger hover glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       {/* Content */}
       <div className="relative p-4 h-full flex flex-col justify-between text-white">
         {/* Header with icon */}
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-white/90 truncate">
+            <h3 className="text-sm font-bold text-white/95 truncate tracking-wide">
               {title}
             </h3>
           </div>
@@ -173,18 +173,18 @@ export function ModernKPICard({
             iconBackgroundStyles[gradient],
             "group-hover:scale-110 transition-transform duration-300"
           )}>
-            <Icon className="w-5 h-5 text-white" />
+            <Icon className="w-5 h-5 text-white drop-shadow-sm" />
           </div>
         </div>
 
         {/* Main value */}
         <div className="flex-1 flex items-center">
           <div className="min-w-0">
-            <div className="text-3xl md:text-4xl font-bold text-white leading-none">
+            <div className="text-3xl md:text-4xl font-bold text-white leading-none drop-shadow-sm">
               {formatValue(value)}
             </div>
             {subtitle && (
-              <div className="text-sm text-white/80 mt-1 font-medium">
+              <div className="text-sm text-white/90 mt-1 font-semibold drop-shadow-sm">
                 {subtitle}
               </div>
             )}
@@ -195,7 +195,7 @@ export function ModernKPICard({
         <div className="flex items-end justify-between">
           <div className="flex-1 min-w-0">
             {tertiary && (
-              <div className="text-xs text-white/60 truncate">
+              <div className="text-xs text-white/75 truncate font-medium">
                 {tertiary}
               </div>
             )}
@@ -203,13 +203,13 @@ export function ModernKPICard({
           
           {trend && (
             <div className={cn(
-              "flex items-center gap-1 text-xs font-medium",
+              "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm",
               getTrendColor(trend.direction)
             )}>
-              <span className="text-sm">
+              <span className="text-sm drop-shadow-sm">
                 {getTrendIcon(trend.direction)}
               </span>
-              <span>
+              <span className="drop-shadow-sm">
                 {Math.abs(trend.value)}%
               </span>
             </div>
