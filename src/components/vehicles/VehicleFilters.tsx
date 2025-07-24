@@ -88,14 +88,14 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium">Subsidiary</label>
               <Select
-                value={filters.subsidiary}
-                onValueChange={(value) => onFiltersChange({ ...filters, subsidiary: value })}
+                value={filters.subsidiary || "all"}
+                onValueChange={(value) => onFiltersChange({ ...filters, subsidiary: value === "all" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All subsidiaries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All subsidiaries</SelectItem>
+                  <SelectItem value="all">All subsidiaries</SelectItem>
                   {subsidiaries.map((subsidiary) => (
                     <SelectItem key={subsidiary.id} value={subsidiary.id}>
                       {subsidiary.subsidiary_name}
@@ -109,14 +109,14 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
               <Select
-                value={filters.status}
-                onValueChange={(value) => onFiltersChange({ ...filters, status: value })}
+                value={filters.status || "all"}
+                onValueChange={(value) => onFiltersChange({ ...filters, status: value === "all" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   {uniqueStatuses.map((status) => (
                     <SelectItem key={status} value={status}>
                       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -130,14 +130,14 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium">Fuel Type</label>
               <Select
-                value={filters.fuelType}
-                onValueChange={(value) => onFiltersChange({ ...filters, fuelType: value })}
+                value={filters.fuelType || "all"}
+                onValueChange={(value) => onFiltersChange({ ...filters, fuelType: value === "all" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All fuel types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All fuel types</SelectItem>
+                  <SelectItem value="all">All fuel types</SelectItem>
                   {uniqueFuelTypes.map((fuelType) => (
                     <SelectItem key={fuelType} value={fuelType}>
                       {fuelType.charAt(0).toUpperCase() + fuelType.slice(1)}
@@ -151,14 +151,14 @@ export const VehicleFilters: React.FC<VehicleFiltersProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium">Make</label>
               <Select
-                value={filters.make}
-                onValueChange={(value) => onFiltersChange({ ...filters, make: value })}
+                value={filters.make || "all"}
+                onValueChange={(value) => onFiltersChange({ ...filters, make: value === "all" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All makes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All makes</SelectItem>
+                  <SelectItem value="all">All makes</SelectItem>
                   {uniqueMakes.map((make) => (
                     <SelectItem key={make} value={make}>
                       {make}

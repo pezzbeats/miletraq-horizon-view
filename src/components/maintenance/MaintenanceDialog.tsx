@@ -870,7 +870,7 @@ export const MaintenanceDialog = ({
                                <SelectValue placeholder="Parts vendor" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">No vendor</SelectItem>
+                               <SelectItem value="none">No vendor</SelectItem>
                                {partVendors.map((vendor) => (
                                  <SelectItem key={vendor.id} value={vendor.id}>
                                    {vendor.name}
