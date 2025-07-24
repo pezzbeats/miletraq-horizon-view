@@ -93,20 +93,20 @@
     --foreground: 210 40% 98%;
 
     /* Glass morphism specific - darker */
-    --glass-background: 255 255 255 / 0.05;
-    --glass-border: 255 255 255 / 0.1;
+    --glass-background: 0 0% 8% / 0.8;
+    --glass-border: 255 255 255 / 0.15;
     
     /* Primary stays consistent */
     --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 0 0% 98%;
     --primary-glow: 217 91% 70%;
 
     /* Surface Colors */
-    --card: 0 0% 0% / 0.4;
+    --card: 0 0% 8% / 0.9;
     --card-foreground: 210 40% 98%;
-    --card-border: 255 255 255 / 0.1;
+    --card-border: 255 255 255 / 0.15;
 
-    --popover: 222.2 84% 4.9% / 0.95;
+    --popover: 0 0% 8% / 0.98;
     --popover-foreground: 210 40% 98%;
 
     /* Interactive Colors */
@@ -194,7 +194,17 @@
 
   /* Touch target optimization */
   .touch-target {
-    @apply min-h-[44px] min-w-[44px];
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Enhanced mobile touch targets */
+  .mobile-touch-target {
+    @apply min-h-[48px] min-w-[48px] flex items-center justify-center;
+  }
+
+  /* Large touch targets for critical actions */
+  .large-touch-target {
+    @apply min-h-[56px] min-w-[56px] flex items-center justify-center;
   }
 
   /* Safe area handling for notched devices */
@@ -257,19 +267,29 @@
   /* Improved mobile form styles */
   @media (max-width: 768px) {
     .mobile-form-section {
-      @apply space-y-4 p-4 border rounded-lg;
+      @apply space-y-4 p-4 border rounded-lg bg-card/80 backdrop-blur-sm;
     }
     
     .mobile-form-field {
-      @apply space-y-2;
+      @apply space-y-3;
     }
     
     .mobile-form-label {
-      @apply text-sm font-medium;
+      @apply text-sm font-medium text-foreground;
     }
     
     .mobile-form-input {
-      @apply h-12 text-base; /* Larger inputs for easier mobile interaction */
+      @apply h-12 text-base px-4 py-3 rounded-lg border-2 bg-background/50 backdrop-blur-sm;
+      border-color: hsl(var(--border));
+      transition: all 0.2s ease-in-out;
+    }
+
+    .mobile-form-input:focus {
+      @apply outline-none ring-2 ring-primary/50 border-primary scale-[1.02];
+    }
+
+    .mobile-form-button {
+      @apply h-12 px-6 text-base font-medium rounded-lg transition-all duration-200;
     }
   }
 
@@ -293,7 +313,7 @@
   }
 
   body {
-    @apply text-foreground font-inter;
+    @apply text-foreground font-inter transition-colors duration-300;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: linear-gradient(135deg, 
       hsl(240 25% 98%) 0%, 
@@ -304,6 +324,16 @@
     );
     background-attachment: fixed;
     min-height: 100vh;
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, 
+      hsl(222.2 84% 4.9%) 0%, 
+      hsl(217.2 32.6% 8%) 25%, 
+      hsl(220 30% 6%) 50%, 
+      hsl(215 35% 8%) 75%, 
+      hsl(222.2 84% 4.9%) 100%
+    );
   }
 }
 
@@ -518,6 +548,120 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Enhanced Typography System */
+  .text-responsive-xs {
+    @apply text-xs md:text-sm;
+  }
+
+  .text-responsive-sm {
+    @apply text-sm md:text-base;
+  }
+
+  .text-responsive-base {
+    @apply text-base md:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg md:text-xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl md:text-2xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-2xl md:text-3xl;
+  }
+
+  /* Interactive hover effects */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+
+  .hover-scale-102 {
+    @apply transition-transform duration-200 hover:scale-[1.02];
+  }
+
+  /* Loading states */
+  .skeleton {
+    @apply animate-pulse bg-muted/50 rounded;
+  }
+
+  .loading-dots::after {
+    content: '';
+    @apply inline-block w-4 text-left animate-pulse;
+    animation: dots 1.5s infinite;
+  }
+
+  @keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
+
+  /* Enhanced scroll area */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground));
+  }
+
+  /* Status indicators with improved contrast */
+  .status-online {
+    @apply bg-green-500 text-white;
+  }
+
+  .status-offline {
+    @apply bg-red-500 text-white;
+  }
+
+  .status-away {
+    @apply bg-yellow-500 text-white;
+  }
+
+  .status-busy {
+    @apply bg-purple-500 text-white;
+  }
+
+  /* Dark mode status indicators */
+  .dark .status-online {
+    @apply bg-green-400 text-green-900;
+  }
+
+  .dark .status-offline {
+    @apply bg-red-400 text-red-900;
+  }
+
+  .dark .status-away {
+    @apply bg-yellow-400 text-yellow-900;
+  }
+
+  .dark .status-busy {
+    @apply bg-purple-400 text-purple-900;
+  }
   }
 
   /* Interactive hover effects */

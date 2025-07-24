@@ -32,9 +32,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const computedTheme = isNightTime ? 'dark' : 'light';
         root.classList.add(computedTheme);
         setActualTheme(computedTheme);
+        
+        // Add smooth transition for auto theme changes
+        root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
       } else {
         root.classList.add(theme);
         setActualTheme(theme);
+        root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
       }
     };
 

@@ -92,8 +92,8 @@ export function MobileBottomNav() {
   const filteredItems = getFilteredNavItems();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-inset">
-      <div className="flex items-center justify-around py-1 px-2 max-w-screen-xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-md bg-card/90 border-t border-border/30 safe-area-bottom shadow-lg">
+      <div className="flex items-center justify-around py-2 px-2 max-w-screen-xl mx-auto">
         {filteredItems.map((item) => {
           const Icon = item.icon;
           const notificationCount = getNotificationCount(item.url);
@@ -104,32 +104,32 @@ export function MobileBottomNav() {
               to={item.url}
               className={({ isActive }) =>
                 cn(
-                  "relative flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 min-w-0 flex-1 touch-target",
+                  "relative flex flex-col items-center justify-center py-3 px-4 rounded-xl transition-all duration-300 min-w-0 flex-1 large-touch-target active:scale-95",
                   isActive
-                    ? "text-primary bg-primary/10 scale-105"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "text-primary bg-primary/15 shadow-md border border-primary/20 scale-105"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:scale-105"
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <div className="relative">
+                  <div className="relative mb-1">
                     <Icon className={cn(
-                      "h-5 w-5 mb-1 transition-transform duration-200",
-                      isActive && "animate-bounce-gentle"
+                      "h-6 w-6 transition-all duration-300",
+                      isActive && "animate-bounce-gentle scale-110"
                     )} />
                     {notificationCount > 0 && (
                       <Badge 
                         variant="destructive" 
-                        className="absolute -top-2 -right-2 h-4 w-4 p-0 text-xs flex items-center justify-center min-w-4 animate-pulse-glow"
+                        className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center min-w-5 animate-pulse-glow shadow-md"
                       >
                         {notificationCount > 9 ? '9+' : notificationCount}
                       </Badge>
                     )}
                   </div>
                   <span className={cn(
-                    "text-xs truncate font-medium transition-all duration-200",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    "text-xs truncate font-medium transition-all duration-300 leading-tight",
+                    isActive ? "text-primary font-semibold" : "text-muted-foreground"
                   )}>
                     {item.title}
                   </span>

@@ -27,7 +27,7 @@ export function TopBar() {
   const ThemeIcon = themeIcons[theme];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b border-white/20 bg-gradient-to-r from-white/90 via-white/80 to-white/90 shadow-lg shadow-blue-500/5">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b border-border/30 bg-card/90 shadow-lg transition-colors duration-300 safe-area-top">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         {/* Logo & Company */}
         <div className="flex items-center space-x-4">
@@ -52,19 +52,19 @@ export function TopBar() {
           </div>
           
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon-lg" className="relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full animate-pulse-glow"></span>
           </Button>
 
           {/* Theme Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon-lg">
                 <ThemeIcon className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => setTheme('light')}>
                 <Sun className="h-4 w-4 mr-2" />
                 Light
@@ -83,16 +83,16 @@ export function TopBar() {
           {/* Profile Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full mobile-touch-target">
+                <Avatar className="h-8 w-8 md:h-9 md:w-9">
                   <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || ''} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64" align="end">
+            <DropdownMenuContent className="w-72" align="end">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
                   <div className="flex items-center gap-2">

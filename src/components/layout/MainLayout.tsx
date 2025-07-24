@@ -23,11 +23,11 @@ export function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen w-full relative">
+    <div className="min-h-screen w-full relative transition-colors duration-300">
       {/* Background Gradient Overlay */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white/30 to-purple-50/50" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-50/20 to-indigo-50/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-background/60 to-purple-50/30 dark:from-slate-900/30 dark:via-background/80 dark:to-slate-800/30" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-50/10 to-indigo-50/20 dark:via-slate-800/10 dark:to-slate-700/20" />
       </div>
       
       {/* Top Bar */}
@@ -44,8 +44,8 @@ export function MainLayout() {
           "mt-16"
         )}>
           <div className={cn(
-            "min-h-[calc(100vh-4rem)] relative",
-            isMobile ? "p-4 pb-20" : "p-4 lg:p-6"
+            "min-h-[calc(100vh-4rem)] relative custom-scrollbar",
+            isMobile ? "p-4 pb-20 safe-area-bottom" : "p-4 lg:p-6"
           )}>
             <Outlet />
           </div>
