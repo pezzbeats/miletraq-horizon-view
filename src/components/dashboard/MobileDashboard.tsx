@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { MobileKPICard } from '@/components/ui/mobile-card';
@@ -8,6 +8,7 @@ import { MobileChartCarousel } from '@/components/ui/mobile-chart';
 import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Car, 
   Fuel, 
@@ -24,11 +25,127 @@ export function MobileDashboard() {
   const { profile } = useAuth();
   const { currentSubsidiary } = useSubsidiary();
   const [refreshing, setRefreshing] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    vehicles: { active: 0, total: 0 },
+    drivers: { active: 0 },
+    fuelCost: { current: 0, change: 0 },
+    maintenance: { pending: 0 },
+    alerts: { count: 0 },
+    recentActivity: []
+  });
+
+  const fetchDashboardData = async () => {
+    try {
+      const subsidiaryId = currentSubsidiary?.id;
+      
+      // Fetch vehicles count
+      const { data: vehicles } = await supabase
+        .from('vehicles')
+        .select('status')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id);
+      
+      const activeVehicles = vehicles?.filter(v => v.status === 'active').length || 0;
+      const totalVehicles = vehicles?.length || 0;
+
+      // Fetch drivers count
+      const { data: drivers } = await supabase
+        .from('drivers')
+        .select('is_active')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
+        .eq('is_active', true);
+      
+      const activeDrivers = drivers?.length || 0;
+
+      // Fetch recent fuel cost (current month)
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const { data: fuelLogs } = await supabase
+        .from('fuel_log')
+        .select('total_cost')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
+        .gte('date', currentMonth + '-01');
+      
+      const fuelCost = fuelLogs?.reduce((sum, log) => sum + (log.total_cost || 0), 0) || 0;
+
+      // Fetch pending maintenance alerts
+      const { data: maintenanceAlerts } = await supabase
+        .from('scheduled_maintenance_alerts')
+        .select('*')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
+        .eq('is_acknowledged', false);
+      
+      const pendingMaintenance = maintenanceAlerts?.length || 0;
+
+      // Fetch recent activity (last 10 entries)
+      const { data: recentFuel } = await supabase
+        .from('fuel_log')
+        .select('*, vehicles(vehicle_number)')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: recentMaintenance } = await supabase
+        .from('maintenance_log')
+        .select('*, vehicles(vehicle_number)')
+        .eq('subsidiary_id', subsidiaryId || profile?.default_subsidiary_id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Format recent activity
+      const activity = [];
+      if (recentFuel) {
+        activity.push(...recentFuel.map(log => ({
+          title: `Vehicle ${log.vehicles?.vehicle_number || 'Unknown'} refueled`,
+          time: formatTimeAgo(log.created_at),
+          type: 'fuel'
+        })));
+      }
+      if (recentMaintenance) {
+        activity.push(...recentMaintenance.map(log => ({
+          title: `Maintenance for ${log.vehicles?.vehicle_number || 'Unknown'}`,
+          time: formatTimeAgo(log.created_at),
+          type: 'maintenance'
+        })));
+      }
+
+      // Sort by time and take top 5
+      activity.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+      setDashboardData({
+        vehicles: { active: activeVehicles, total: totalVehicles },
+        drivers: { active: activeDrivers },
+        fuelCost: { current: fuelCost, change: 0 }, // TODO: Calculate month-over-month change
+        maintenance: { pending: pendingMaintenance },
+        alerts: { count: pendingMaintenance },
+        recentActivity: activity.slice(0, 5)
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays > 0) {
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    } else if (diffInHours > 0) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Less than an hour ago';
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [currentSubsidiary, profile]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate refresh
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await fetchDashboardData();
     setRefreshing(false);
   };
 
@@ -37,53 +154,53 @@ export function MobileDashboard() {
     // Navigate to appropriate page or open modal
   };
 
-  // Mock data - in real implementation, fetch from API
+  // Generate KPI data from real data
   const kpiData = [
     {
       title: 'Active Vehicles',
-      value: '24',
-      subValue: 'of 26 total',
+      value: dashboardData.vehicles.active.toString(),
+      subValue: `of ${dashboardData.vehicles.total} total`,
       icon: Car,
-      trend: { value: '2.3%', isPositive: true },
+      trend: dashboardData.vehicles.total > 0 ? { 
+        value: `${Math.round((dashboardData.vehicles.active / dashboardData.vehicles.total) * 100)}%`, 
+        isPositive: true 
+      } : undefined,
       variant: 'primary' as const
     },
     {
       title: 'Fuel Cost',
-      value: '₹45.2K',
+      value: `₹${(dashboardData.fuelCost.current / 1000).toFixed(1)}K`,
       subValue: 'this month',
       icon: Fuel,
-      trend: { value: '8.1%', isPositive: false },
       variant: 'warning' as const
     },
     {
       title: 'Maintenance',
-      value: '6',
+      value: dashboardData.maintenance.pending.toString(),
       subValue: 'pending tasks',
       icon: Wrench,
-      trend: { value: '2', isPositive: false },
-      variant: 'destructive' as const
+      variant: dashboardData.maintenance.pending > 0 ? 'destructive' as const : 'success' as const
     },
     {
       title: 'Drivers',
-      value: '18',
+      value: dashboardData.drivers.active.toString(),
       subValue: 'active drivers',
       icon: Users,
       variant: 'success' as const
     },
     {
       title: 'Total Expenses',
-      value: '₹1.2L',
+      value: `₹${(dashboardData.fuelCost.current / 100000).toFixed(1)}L`,
       subValue: 'this month',
       icon: DollarSign,
-      trend: { value: '12.5%', isPositive: true },
       variant: 'default' as const
     },
     {
       title: 'Alerts',
-      value: '3',
+      value: dashboardData.alerts.count.toString(),
       subValue: 'require attention',
       icon: AlertTriangle,
-      variant: 'warning' as const
+      variant: dashboardData.alerts.count > 0 ? 'warning' as const : 'success' as const
     }
   ];
 
@@ -248,31 +365,36 @@ export function MobileDashboard() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-4">
-            {[
-              { title: 'Vehicle S-1 refueled', time: '2 hours ago', type: 'fuel' },
-              { title: 'Maintenance scheduled for UK18PA0049', time: '4 hours ago', type: 'maintenance' },
-              { title: 'New driver added: John Doe', time: '1 day ago', type: 'driver' }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-3 px-4 bg-gradient-to-r from-background to-muted/30 rounded-lg border hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full shadow-sm ${
-                    activity.type === 'fuel' ? 'bg-blue-500 shadow-blue-500/30' :
-                    activity.type === 'maintenance' ? 'bg-orange-500 shadow-orange-500/30' : 'bg-green-500 shadow-green-500/30'
-                  }`} />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{activity.title}</p>
-                    <p className="text-xs font-medium text-muted-foreground">{activity.time}</p>
+            {dashboardData.recentActivity.length > 0 ? 
+              dashboardData.recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between py-3 px-4 bg-gradient-to-r from-background to-muted/30 rounded-lg border hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full shadow-sm ${
+                      activity.type === 'fuel' ? 'bg-blue-500 shadow-blue-500/30' :
+                      activity.type === 'maintenance' ? 'bg-orange-500 shadow-orange-500/30' : 'bg-green-500 shadow-green-500/30'
+                    }`} />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{activity.title}</p>
+                      <p className="text-xs font-medium text-muted-foreground">{activity.time}</p>
+                    </div>
+                  </div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activity.type === 'fuel' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' :
+                    activity.type === 'maintenance' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300' : 
+                    'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300'
+                  }`}>
+                    {activity.type === 'fuel' ? '⛽' : activity.type === 'maintenance' ? '🔧' : '👤'}
                   </div>
                 </div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  activity.type === 'fuel' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300' :
-                  activity.type === 'maintenance' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300' : 
-                  'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300'
-                }`}>
-                  {activity.type === 'fuel' ? '⛽' : activity.type === 'maintenance' ? '🔧' : '👤'}
+              )) : 
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <div className="text-center">
+                  <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium">No recent activity</p>
+                  <p className="text-xs">Start by adding vehicles or fuel logs</p>
                 </div>
               </div>
-            ))}
+            }
           </div>
         </CardContent>
       </Card>
