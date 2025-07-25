@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { MobileKPICard } from '@/components/ui/mobile-card';
@@ -24,6 +25,7 @@ import {
 export function MobileDashboard() {
   const { profile } = useAuth();
   const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
+  const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     vehicles: { active: 0, total: 0 },
@@ -169,8 +171,47 @@ export function MobileDashboard() {
   };
 
   const handleQuickAction = (action: string) => {
-    console.log('Quick action:', action);
-    // Navigate to appropriate page or open modal
+    switch (action) {
+      case 'add-vehicle':
+        navigate('/vehicles');
+        break;
+      case 'add-fuel':
+        navigate('/fuel-log');
+        break;
+      case 'add-maintenance':
+        navigate('/maintenance');
+        break;
+      case 'add-driver':
+        navigate('/drivers');
+        break;
+      default:
+        console.log('Unknown action:', action);
+    }
+  };
+
+  const handleKPIClick = (title: string) => {
+    switch (title) {
+      case 'Active Vehicles':
+        navigate('/vehicles');
+        break;
+      case 'Fuel Cost':
+        navigate('/fuel-log');
+        break;
+      case 'Maintenance':
+        navigate('/maintenance');
+        break;
+      case 'Drivers':
+        navigate('/drivers');
+        break;
+      case 'Total Expenses':
+        navigate('/budget');
+        break;
+      case 'Alerts':
+        navigate('/maintenance');
+        break;
+      default:
+        console.log('Unknown KPI:', title);
+    }
   };
 
   // Generate KPI data from real data
@@ -184,42 +225,48 @@ export function MobileDashboard() {
         value: `${Math.round((dashboardData.vehicles.active / dashboardData.vehicles.total) * 100)}%`, 
         isPositive: true 
       } : undefined,
-      variant: 'primary' as const
+      variant: 'primary' as const,
+      onClick: () => handleKPIClick('Active Vehicles')
     },
     {
       title: 'Fuel Cost',
       value: `₹${(dashboardData.fuelCost.current / 1000).toFixed(1)}K`,
       subValue: 'this month',
       icon: Fuel,
-      variant: 'warning' as const
+      variant: 'warning' as const,
+      onClick: () => handleKPIClick('Fuel Cost')
     },
     {
       title: 'Maintenance',
       value: dashboardData.maintenance.pending.toString(),
       subValue: 'pending tasks',
       icon: Wrench,
-      variant: dashboardData.maintenance.pending > 0 ? 'destructive' as const : 'success' as const
+      variant: dashboardData.maintenance.pending > 0 ? 'destructive' as const : 'success' as const,
+      onClick: () => handleKPIClick('Maintenance')
     },
     {
       title: 'Drivers',
       value: dashboardData.drivers.active.toString(),
       subValue: 'active drivers',
       icon: Users,
-      variant: 'success' as const
+      variant: 'success' as const,
+      onClick: () => handleKPIClick('Drivers')
     },
     {
       title: 'Total Expenses',
       value: `₹${(dashboardData.fuelCost.current / 100000).toFixed(1)}L`,
       subValue: 'this month',
       icon: DollarSign,
-      variant: 'default' as const
+      variant: 'default' as const,
+      onClick: () => handleKPIClick('Total Expenses')
     },
     {
       title: 'Alerts',
       value: dashboardData.alerts.count.toString(),
       subValue: 'require attention',
       icon: AlertTriangle,
-      variant: dashboardData.alerts.count > 0 ? 'warning' as const : 'success' as const
+      variant: dashboardData.alerts.count > 0 ? 'warning' as const : 'success' as const,
+      onClick: () => handleKPIClick('Alerts')
     }
   ];
 
@@ -283,15 +330,17 @@ export function MobileDashboard() {
       {/* KPI Cards Grid - 2 columns on mobile */}
       <div className="grid grid-cols-2 gap-3">
         {kpiData.map((kpi, index) => (
-          <MobileKPICard
-            key={index}
-            title={kpi.title}
-            value={kpi.value}
-            subValue={kpi.subValue}
-            icon={kpi.icon}
-            trend={kpi.trend}
-            variant={kpi.variant}
-          />
+          <div key={index} onClick={kpi.onClick} className="cursor-pointer">
+            <MobileKPICard
+              title={kpi.title}
+              value={kpi.value}
+              subValue={kpi.subValue}
+              icon={kpi.icon}
+              trend={kpi.trend}
+              variant={kpi.variant}
+              className="hover:shadow-lg transition-all duration-200 active:scale-95"
+            />
+          </div>
         ))}
       </div>
 
