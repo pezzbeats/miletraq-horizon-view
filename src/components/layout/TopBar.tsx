@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { Bell, Moon, Sun, Sunset, LogOut, User, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,10 +15,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { HeaderSubsidiarySelector } from './HeaderSubsidiarySelector';
 import { MobileSidebar } from './EnhancedSidebar';
+import { ProfileDialog } from '@/components/profile/ProfileDialog';
 
 export function TopBar() {
   const { user, profile, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const themeIcons = {
     light: Sun,
@@ -118,7 +121,7 @@ export function TopBar() {
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setProfileDialogOpen(true)}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </DropdownMenuItem>
@@ -131,6 +134,9 @@ export function TopBar() {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* Profile Dialog */}
+      <ProfileDialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen} />
     </header>
   );
 }
