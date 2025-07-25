@@ -151,7 +151,7 @@ const CategoriesMaster = () => {
 
       {/* Mobile FAB */}
       <Button
-        className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg md:hidden z-50 bg-primary hover:bg-primary/90"
+        className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg md:hidden z-50 bg-primary hover:bg-primary/90"
         onClick={handleAddCategory}
         size="icon"
       >

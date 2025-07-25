@@ -161,7 +161,7 @@ export default function Odometer() {
       />
 
       {/* Mobile FAB */}
-      <div className="fixed bottom-20 right-4 md:hidden">
+      <div className="fixed bottom-24 right-4 md:hidden">
         <Button
           size="icon"
           className="rounded-full h-14 w-14 shadow-lg z-50 bg-primary hover:bg-primary/90"

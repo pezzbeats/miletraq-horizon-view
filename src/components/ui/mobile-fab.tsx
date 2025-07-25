@@ -37,7 +37,7 @@ export function MobileFAB({
     <Button
       onClick={onClick}
       className={cn(
-        "fixed bottom-20 right-4 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110 active:scale-95 touch-target",
+        "fixed bottom-24 right-4 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110 active:scale-95 touch-target",
         sizeClasses[size],
         variant === 'primary' && "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/25",
         variant === 'secondary' && "bg-secondary hover:bg-secondary/90 text-secondary-foreground",
