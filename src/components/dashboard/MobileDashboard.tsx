@@ -184,6 +184,10 @@ export function MobileDashboard() {
       case 'add-driver':
         navigate('/drivers');
         break;
+      case 'quick-add':
+        // Show a quick action menu or navigate to most relevant page
+        navigate('/vehicles');
+        break;
       default:
         console.log('Unknown action:', action);
     }
