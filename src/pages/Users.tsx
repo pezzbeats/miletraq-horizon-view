@@ -560,7 +560,7 @@ export default function Users() {
       {isMobile && canManageSubsidiaries && (
         <Button
           onClick={() => setUserDialogOpen(true)}
-          className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
+          className="fixed bottom-32 right-4 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
           size="icon"
         >
           <Plus className="h-6 w-6" />
