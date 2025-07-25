@@ -62,16 +62,29 @@ export function SubsidiaryAdminDashboard({
     try {
       setLoading(true);
 
-      // Build query filters based on subsidiary selection  
-      const subsidiaryFilter = allSubsidiariesView ? {} : currentSubsidiary ? { subsidiary_id: currentSubsidiary.id } : {};
+      // Build query filters based on subsidiary selection - fixed logic
+      let vehiclesQuery = supabase.from('vehicles').select('id, status, subsidiary_id');
+      let driversQuery = supabase.from('drivers').select('id, is_active, subsidiary_id');
+      let fuelLogQuery = supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id');
+      let budgetQuery = supabase.from('budget').select('budgeted_amount, actual_amount, subsidiary_id');
+      let documentsQuery = supabase.from('vehicle_documents').select('id, expiry_date, subsidiary_id');
+
+      // Apply subsidiary filter only if not in all subsidiaries view and current subsidiary is selected
+      if (!allSubsidiariesView && currentSubsidiary?.id) {
+        vehiclesQuery = vehiclesQuery.eq('subsidiary_id', currentSubsidiary.id);
+        driversQuery = driversQuery.eq('subsidiary_id', currentSubsidiary.id);
+        fuelLogQuery = fuelLogQuery.eq('subsidiary_id', currentSubsidiary.id);
+        budgetQuery = budgetQuery.eq('subsidiary_id', currentSubsidiary.id);
+        documentsQuery = documentsQuery.eq('subsidiary_id', currentSubsidiary.id);
+      }
 
       // Fetch metrics - all subsidiaries or specific subsidiary
       const [vehiclesResult, driversResult, fuelLogResult, budgetResult, documentsResult] = await Promise.all([
-        supabase.from('vehicles').select('id, status, subsidiary_id').match(subsidiaryFilter),
-        supabase.from('drivers').select('id, is_active, subsidiary_id').match(subsidiaryFilter),
-        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id').match(subsidiaryFilter),
-        supabase.from('budget').select('budgeted_amount, actual_amount, subsidiary_id').match(subsidiaryFilter),
-        supabase.from('vehicle_documents').select('id, expiry_date, subsidiary_id').match(subsidiaryFilter)
+        vehiclesQuery,
+        driversQuery,
+        fuelLogQuery,
+        budgetQuery,
+        documentsQuery
       ]);
 
       const vehicles = vehiclesResult.data || [];
@@ -125,19 +138,27 @@ export function SubsidiaryAdminDashboard({
       ];
 
       // Get real recent activities for this subsidiary
+      let fuelActivitiesQuery = supabase
+        .from('fuel_log')
+        .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
+        .order('created_at', { ascending: false })
+        .limit(2);
+      
+      let maintenanceActivitiesQuery = supabase
+        .from('maintenance_log')
+        .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
+        .order('created_at', { ascending: false })
+        .limit(2);
+
+      // Apply subsidiary filter if needed
+      if (!allSubsidiariesView && currentSubsidiary?.id) {
+        fuelActivitiesQuery = fuelActivitiesQuery.eq('subsidiary_id', currentSubsidiary.id);
+        maintenanceActivitiesQuery = maintenanceActivitiesQuery.eq('subsidiary_id', currentSubsidiary.id);
+      }
+
       const recentActivitiesData = await Promise.all([
-        supabase
-          .from('fuel_log')
-          .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
-          .match(subsidiaryFilter)
-          .order('created_at', { ascending: false })
-          .limit(2),
-        supabase
-          .from('maintenance_log')
-          .select('id, total_cost, created_at, vehicles(vehicle_number), subsidiary_id')
-          .match(subsidiaryFilter)
-          .order('created_at', { ascending: false })
-          .limit(2)
+        fuelActivitiesQuery,
+        maintenanceActivitiesQuery
       ]);
 
       const activities = [

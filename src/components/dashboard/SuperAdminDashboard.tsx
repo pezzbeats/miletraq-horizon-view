@@ -125,21 +125,32 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, 
 
   useEffect(() => {
     fetchDashboardData();
-  }, [filters]);
+  }, [filters, currentSubsidiary, allSubsidiariesView]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
 
-      // Build query filters based on subsidiary selection
-      const subsidiaryFilter = allSubsidiariesView ? {} : currentSubsidiary ? { subsidiary_id: currentSubsidiary.id } : {};
+      // Build query filters based on subsidiary selection - fixed logic
+      let vehiclesQuery = supabase.from('vehicles').select('id, subsidiary_id, status', { count: 'exact' });
+      let driversQuery = supabase.from('drivers').select('id, subsidiary_id', { count: 'exact' }).eq('is_active', true);
+      let fuelLogQuery = supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id');
+      let budgetQuery = supabase.from('budget').select('budgeted_amount, actual_amount, category, subsidiary_id');
+
+      // Apply subsidiary filter only if not in all subsidiaries view and current subsidiary is selected
+      if (!allSubsidiariesView && currentSubsidiary?.id) {
+        vehiclesQuery = vehiclesQuery.eq('subsidiary_id', currentSubsidiary.id);
+        driversQuery = driversQuery.eq('subsidiary_id', currentSubsidiary.id);
+        fuelLogQuery = fuelLogQuery.eq('subsidiary_id', currentSubsidiary.id);
+        budgetQuery = budgetQuery.eq('subsidiary_id', currentSubsidiary.id);
+      }
 
       // Fetch metrics - all subsidiaries or specific subsidiary
       const [vehiclesResult, driversResult, fuelLogResult, budgetResult] = await Promise.all([
-        supabase.from('vehicles').select('id, subsidiary_id, status', { count: 'exact' }).match(subsidiaryFilter),
-        supabase.from('drivers').select('id, subsidiary_id', { count: 'exact' }).eq('is_active', true).match(subsidiaryFilter),
-        supabase.from('fuel_log').select('fuel_volume, total_cost, km_driven, date, subsidiary_id').match(subsidiaryFilter),
-        supabase.from('budget').select('budgeted_amount, actual_amount, category, subsidiary_id').match(subsidiaryFilter)
+        vehiclesQuery,
+        driversQuery,
+        fuelLogQuery,
+        budgetQuery
       ]);
 
       const totalVehicles = vehiclesResult.count || 0;
