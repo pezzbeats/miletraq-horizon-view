@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export default function Auth() {
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn } = useAuth();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
 
@@ -46,32 +46,6 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const fullName = formData.get('fullName') as string;
-
-    const { error } = await signUp(email, password, fullName);
-
-    if (error) {
-      toast({
-        title: 'Sign up failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Account created!',
-        description: 'Check your email to confirm your account.',
-      });
-    }
-
-    setLoading(false);
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -89,87 +63,37 @@ export default function Auth() {
           <CardHeader>
             <CardTitle className="text-card-foreground font-bold">🔐 Welcome</CardTitle>
             <CardDescription className="text-card-foreground opacity-80">
-              Sign in to your account or create a new one to get started.
+              Sign in to your account to access the system.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-card-foreground font-medium">📧 Email</Label>
-                    <Input
-                      id="signin-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-card-foreground font-medium">🔒 Password</Label>
-                    <Input
-                      id="signin-password"
-                      name="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      required
-                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-card-foreground font-medium">👤 Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      name="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      required
-                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-card-foreground font-medium">📧 Email</Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-card-foreground font-medium">🔒 Password</Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      placeholder="Create a password"
-                      required
-                      className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Create Account'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signin-email" className="text-card-foreground font-medium">📧 Email</Label>
+                <Input
+                  id="signin-email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signin-password" className="text-card-foreground font-medium">🔒 Password</Label>
+                <Input
+                  id="signin-password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  required
+                  className="bg-background border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary"
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
