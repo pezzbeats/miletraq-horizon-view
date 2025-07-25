@@ -8,9 +8,9 @@
 
 @layer base {
   :root {
-    /* High-contrast vibrant color system */
-    --background: 222 84% 4.9%; /* Deep navy #0f172a */
-    --foreground: 0 0% 98%; /* Bright white */
+    /* High-contrast vibrant color system - LIGHT MODE */
+    --background: 0 0% 100%; /* Pure white background */
+    --foreground: 224 71.4% 4.1%; /* Dark text */
 
     /* Vibrant glass morphism */
     --glass-background: 255 255 255 / 0.95;
