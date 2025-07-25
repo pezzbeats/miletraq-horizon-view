@@ -254,10 +254,9 @@ const Maintenance = () => {
       {/* Mobile FAB for Service Tickets */}
       {isMobile && (
         <Button
-          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-50"
+          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
           onClick={handleCreateServiceTicket}
           size="icon"
-          variant="outline"
         >
           <FileText className="h-6 w-6" />
         </Button>
