@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -113,6 +113,20 @@ export function MobileSidebar() {
   const location = useLocation();
   const { hasPermission } = useAuth();
   const [openGroups, setOpenGroups] = useState<string[]>(['/fleet', '/fuel', '/maintenance']);
+
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const toggleGroup = (url: string) => {
     setOpenGroups(prev => 
@@ -237,12 +251,12 @@ export function MobileSidebar() {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 h-full w-80 z-50 bg-card/98 backdrop-blur-md border-r border-border/50 shadow-xl transition-transform duration-300 lg:hidden flex flex-col",
+        "fixed top-0 left-0 h-screen w-80 z-50 bg-card/98 backdrop-blur-md border-r border-border/50 shadow-xl transition-transform duration-300 lg:hidden flex flex-col safe-area-top",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 h-full">
           {/* Header */}
-          <div className="flex-shrink-0 p-4 border-b border-border/30">
+          <div className="flex-shrink-0 p-4 border-b border-border/30 bg-card/95">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center">
@@ -254,6 +268,7 @@ export function MobileSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
+                className="mobile-touch-target"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -261,10 +276,12 @@ export function MobileSidebar() {
           </div>
 
           {/* Navigation - Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar p-4">
-            <nav className="space-y-2 pb-4">
-              {filteredItems.map(renderNavItem)}
-            </nav>
+          <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
+            <div className="p-4">
+              <nav className="space-y-2 pb-4">
+                {filteredItems.map(renderNavItem)}
+              </nav>
+            </div>
           </div>
         </div>
       </aside>
