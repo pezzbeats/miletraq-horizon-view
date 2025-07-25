@@ -19,6 +19,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { ExpandableFAB } from '@/components/ui/expandable-fab';
+import { useDashboardActions } from '@/hooks/useDashboardActions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FilterState {
   dateRange: 'last_7_days' | 'last_30_days' | 'last_90_days' | 'this_month' | 'last_month' | 'custom';
@@ -43,6 +46,8 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange,
   const { profile } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
+  const dashboardActions = useDashboardActions();
 
   useEffect(() => {
     fetchFuelDashboardData();
@@ -353,6 +358,9 @@ export const FuelManagerDashboard = ({ filters, onFiltersChange, onSearchChange,
           </div>
         </CardContent>
       </Card>
+
+      {/* Mobile FAB */}
+      {isMobile && <ExpandableFAB actions={dashboardActions} />}
     </div>
   );
 };

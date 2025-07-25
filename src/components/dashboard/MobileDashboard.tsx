@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { MobileKPICard } from '@/components/ui/mobile-card';
-import { MobileFAB } from '@/components/ui/mobile-fab';
+import { ExpandableFAB } from '@/components/ui/expandable-fab';
+import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { MobileChartCarousel } from '@/components/ui/mobile-chart';
 import { SubsidiarySelector } from '@/components/subsidiary/SubsidiarySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,7 @@ export function MobileDashboard() {
   const { currentSubsidiary, allSubsidiariesView } = useSubsidiary();
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
+  const dashboardActions = useDashboardActions();
   const [dashboardData, setDashboardData] = useState({
     vehicles: { active: 0, total: 0 },
     drivers: { active: 0 },
@@ -473,12 +475,8 @@ export function MobileDashboard() {
         </CardContent>
       </Card>
 
-      {/* Floating Action Button */}
-      <MobileFAB
-        onClick={() => handleQuickAction('quick-add')}
-        variant="primary"
-        label="Quick Add"
-      />
+      {/* Expandable Floating Action Button */}
+      <ExpandableFAB actions={dashboardActions} />
     </div>
   );
 }

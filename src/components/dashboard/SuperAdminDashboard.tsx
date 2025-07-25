@@ -22,6 +22,9 @@ import {
   BarChart3
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ExpandableFAB } from '@/components/ui/expandable-fab';
+import { useDashboardActions } from '@/hooks/useDashboardActions';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +119,8 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const isMobile = useIsMobile();
+  const dashboardActions = useDashboardActions();
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -504,6 +509,9 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, 
             <ActivityFeed activities={data.activities} />
           </div>
         </div>
+
+        {/* Mobile FAB */}
+        {isMobile && <ExpandableFAB actions={dashboardActions} />}
       </div>
     </div>
   );
