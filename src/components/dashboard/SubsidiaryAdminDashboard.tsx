@@ -65,6 +65,8 @@ export function SubsidiaryAdminDashboard({
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [dashboardLayout, setDashboardLayout] = useState<any>(null);
   const isMobile = useIsMobile();
   const dashboardActions = useDashboardActions();
 
