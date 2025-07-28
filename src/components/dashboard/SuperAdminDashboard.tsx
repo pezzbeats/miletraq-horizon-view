@@ -101,6 +101,10 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  fuelTypes: string[];
+  costRange: [number, number];
+  mileageRange: [number, number];
+  subsidiaries: string[];
   searchQuery?: string;
 }
 

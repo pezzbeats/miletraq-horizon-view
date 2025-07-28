@@ -18,6 +18,10 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  fuelTypes: string[];
+  costRange: [number, number];
+  mileageRange: [number, number];
+  subsidiaries: string[];
   searchQuery?: string;
 }
 
@@ -31,6 +35,10 @@ export default function Dashboard() {
     drivers: [],
     costCategories: [],
     status: 'all',
+    fuelTypes: [],
+    costRange: [0, 100000],
+    mileageRange: [0, 50],
+    subsidiaries: [],
     searchQuery: ''
   });
 
