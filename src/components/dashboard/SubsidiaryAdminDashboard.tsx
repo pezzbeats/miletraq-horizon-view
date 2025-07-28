@@ -3,6 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubsidiary } from '@/contexts/SubsidiaryContext';
 import { useAlerts } from '@/hooks/useAlerts';
 import { KPICard } from '@/components/dashboard/KPICard';
+import { EnhancedKPICard } from '@/components/dashboard/EnhancedKPICard';
+import { SmartSearch } from '@/components/dashboard/SmartSearch';
+import { AdvancedFilters } from '@/components/dashboard/AdvancedFilters';
+import { EnhancedCharts } from '@/components/dashboard/EnhancedCharts';
 import { ChartContainer } from '@/components/dashboard/ChartContainer';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { QuickActions } from '@/components/dashboard/QuickActions';
@@ -34,6 +38,10 @@ interface FilterState {
   drivers: string[];
   costCategories: string[];
   status: 'all' | 'active' | 'inactive' | 'maintenance';
+  fuelTypes: string[];
+  costRange: [number, number];
+  mileageRange: [number, number];
+  subsidiaries: string[];
   searchQuery?: string;
 }
 
@@ -56,6 +64,7 @@ export function SubsidiaryAdminDashboard({
   const { subsidiaries } = useSubsidiary();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const isMobile = useIsMobile();
   const dashboardActions = useDashboardActions();
 
@@ -307,44 +316,74 @@ export function SubsidiaryAdminDashboard({
         </CardContent>
       </Card>
 
-      {/* KPI Cards */}
+      {/* Smart Search & Advanced Filters */}
+      <div className="space-y-4">
+        <SmartSearch
+          onSearch={onSearchChange}
+          placeholder="Search vehicles, drivers, or ask 'Show fuel efficiency trends'"
+        />
+        <AdvancedFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          isOpen={showAdvancedFilters}
+          onOpenChange={setShowAdvancedFilters}
+        />
+      </div>
+
+      {/* Enhanced KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <KPICard
+        <EnhancedKPICard
           title="Total Vehicles"
           value={data.kpis.totalVehicles}
           subValue={`${data.kpis.activeVehicles} active`}
           icon={Car}
           variant="primary"
+          href="/vehicles"
+          animateValue
+          trend={{ value: "12%", direction: "up", comparison: "vs last month" }}
         />
-        <KPICard
+        <EnhancedKPICard
           title="Active Drivers"
           value={data.kpis.activeDrivers}
           icon={Users}
           variant="success"
+          href="/drivers"
+          animateValue
         />
-        <KPICard
+        <EnhancedKPICard
           title="Monthly Fuel Cost"
           value={`₹${(data.kpis.monthlyFuelCost / 1000).toFixed(0)}K`}
           icon={Fuel}
           variant="warning"
+          href="/fuel-log"
+          animateValue
+          trend={{ value: "8%", direction: "down", comparison: "vs last month" }}
         />
-        <KPICard
+        <EnhancedKPICard
           title="Avg Efficiency"
           value={`${data.kpis.averageEfficiency.toFixed(1)} km/L`}
           icon={Gauge}
-          variant="default"
+          variant="teal"
+          href="/analytics"
+          animateValue
+          trend={{ value: "5%", direction: "up" }}
         />
-        <KPICard
+        <EnhancedKPICard
           title="Cost per KM"
           value={`₹${data.kpis.costPerKm.toFixed(2)}`}
           icon={DollarSign}
-          variant="default"
+          variant="purple"
+          href="/analytics"
+          animateValue
         />
-        <KPICard
+        <EnhancedKPICard
           title="Budget Used"
           value={`${data.kpis.budgetUtilization.toFixed(1)}%`}
           icon={TrendingUp}
-          variant={data.kpis.budgetUtilization > 90 ? "destructive" : "default"}
+          variant={data.kpis.budgetUtilization > 90 ? "destructive" : "primary"}
+          href="/budget"
+          animateValue
+          progress={data.kpis.budgetUtilization}
         />
       </div>
 
