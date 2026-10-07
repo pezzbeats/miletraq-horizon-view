@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { supabase } from '@/integrations/supabase/client';
+import { manageUser } from '@/lib/manageUsers';
 import { Tables } from '@/integrations/supabase/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -86,57 +86,34 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
     setLoading(true);
     try {
       if (isEditing) {
-        // Update existing user
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            full_name: data.full_name,
-            email: data.email,
-            role: data.role,
-            phone: data.phone || null,
-            is_active: data.is_active,
-          })
-          .eq('id', user.id);
-
-        if (error) throw error;
+        await manageUser({
+          action: 'update',
+          user_id: user.user_id,
+          full_name: data.full_name,
+          email: data.email,
+          role: data.role,
+          phone: data.phone || null,
+          is_active: data.is_active,
+        });
 
         toast({
           title: 'Success',
           description: 'User updated successfully',
         });
       } else {
-        // Create new user
         if (!data.password) {
           throw new Error('Password is required for new users');
         }
 
-        // First create the auth user
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        await manageUser({
+          action: 'create',
           email: data.email,
           password: data.password,
-          options: {
-            data: {
-              full_name: data.full_name,
-            },
-          },
+          full_name: data.full_name,
+          role: data.role,
+          phone: data.phone || null,
+          is_active: data.is_active,
         });
-
-        if (authError) throw authError;
-
-        if (authData.user) {
-          // Update the profile with additional information
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              full_name: data.full_name,
-              role: data.role,
-              phone: data.phone || null,
-              is_active: data.is_active,
-            })
-            .eq('user_id', authData.user.id);
-
-          if (profileError) throw profileError;
-        }
 
         toast({
           title: 'Success',
