@@ -24,10 +24,11 @@ export function MainLayout() {
 
   return (
     <div className="min-h-screen w-full relative transition-colors duration-300">
-      {/* Background Gradient Overlay */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-background/60 to-purple-50/30 dark:from-slate-900/30 dark:via-background/80 dark:to-slate-800/30" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-50/10 to-indigo-50/20 dark:via-slate-800/10 dark:to-slate-700/20" />
+      {/* Calm neutral canvas with restrained module-colored ambient light */}
+      <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
+        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl dark:bg-indigo-500/10" />
+        <div className="absolute -right-28 top-16 h-[28rem] w-[28rem] rounded-full bg-cyan-300/10 blur-3xl dark:bg-cyan-500/8" />
+        <div className="absolute bottom-0 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-emerald-300/8 blur-3xl dark:bg-emerald-500/5" />
       </div>
       
       {/* Top Bar */}
