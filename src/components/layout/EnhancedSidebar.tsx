@@ -35,6 +35,33 @@ interface NavItem {
   children?: NavItem[];
 }
 
+const navAccentClasses: Record<string, string> = {
+  Dashboard: 'text-sky-600 dark:text-sky-400',
+  'Fleet Management': 'text-indigo-600 dark:text-indigo-400',
+  Vehicles: 'text-indigo-600 dark:text-indigo-400',
+  Drivers: 'text-blue-600 dark:text-blue-400',
+  Documents: 'text-cyan-600 dark:text-cyan-400',
+  Odometer: 'text-violet-600 dark:text-violet-400',
+  'Fuel Management': 'text-emerald-600 dark:text-emerald-400',
+  'Fuel Log': 'text-emerald-600 dark:text-emerald-400',
+  'Tank Refills': 'text-teal-600 dark:text-teal-400',
+  'Tank Status': 'text-green-600 dark:text-green-400',
+  Maintenance: 'text-amber-600 dark:text-amber-400',
+  'Maintenance Log': 'text-amber-600 dark:text-amber-400',
+  'Service Tickets': 'text-orange-600 dark:text-orange-400',
+  'Parts Master': 'text-yellow-600 dark:text-yellow-400',
+  Categories: 'text-lime-600 dark:text-lime-400',
+  Vendors: 'text-rose-600 dark:text-rose-400',
+  Budget: 'text-violet-600 dark:text-violet-400',
+  Analytics: 'text-cyan-600 dark:text-cyan-400',
+  Subsidiaries: 'text-orange-600 dark:text-orange-400',
+  Users: 'text-blue-600 dark:text-blue-400',
+  Settings: 'text-slate-600 dark:text-slate-300',
+};
+
+const getNavAccent = (title: string) =>
+  navAccentClasses[title] || 'text-primary';
+
 const navigationItems: NavItem[] = [
   {
     title: 'Dashboard',
@@ -169,7 +196,7 @@ export function MobileSidebar() {
             )}
           >
             <div className="flex items-center">
-              <Icon className="mr-3 h-5 w-5" />
+              <Icon className={cn("mr-3 h-5 w-5", getNavAccent(item.title))} />
               <span className="font-medium">{item.title}</span>
             </div>
             {isGroupOpen ? (
@@ -196,7 +223,7 @@ export function MobileSidebar() {
                       )
                     }
                   >
-                    <ChildIcon className="mr-3 h-4 w-4" />
+                    <ChildIcon className={cn("mr-3 h-4 w-4", getNavAccent(child.title))} />
                     <span className="font-medium">{child.title}</span>
                   </NavLink>
                 );
@@ -221,7 +248,7 @@ export function MobileSidebar() {
           )
         }
       >
-        <Icon className="mr-3 h-5 w-5" />
+        <Icon className={cn("mr-3 h-5 w-5", getNavAccent(item.title))} />
         <span className="font-medium">{item.title}</span>
       </NavLink>
     );
@@ -336,7 +363,7 @@ export function DesktopSidebar() {
             )}
           >
             <div className="flex items-center">
-              <Icon className="mr-3 h-4 w-4" />
+              <Icon className={cn("mr-3 h-4 w-4", getNavAccent(item.title))} />
               {item.title}
             </div>
             {isGroupOpen ? (
@@ -362,7 +389,7 @@ export function DesktopSidebar() {
                       )
                     }
                   >
-                    <ChildIcon className="mr-3 h-4 w-4" />
+                    <ChildIcon className={cn("mr-3 h-4 w-4", getNavAccent(child.title))} />
                     {child.title}
                   </NavLink>
                 );
@@ -386,7 +413,7 @@ export function DesktopSidebar() {
           )
         }
       >
-        <Icon className="mr-3 h-4 w-4" />
+        <Icon className={cn("mr-3 h-4 w-4", getNavAccent(item.title))} />
         {item.title}
       </NavLink>
     );
@@ -395,7 +422,7 @@ export function DesktopSidebar() {
   const filteredItems = filterItemsByRole(navigationItems);
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-card/95 backdrop-blur-md border-r border-border/50 shadow-lg overflow-y-auto custom-scrollbar transition-colors duration-300">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-card/92 backdrop-blur-xl border-r border-border/60 shadow-sm overflow-y-auto custom-scrollbar transition-colors duration-300">
       <div className="p-4">
         <nav className="space-y-2">
           {filteredItems.map(renderNavItem)}
