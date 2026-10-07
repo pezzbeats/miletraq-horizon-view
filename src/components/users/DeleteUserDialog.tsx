@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { manageUser } from '@/lib/manageUsers';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,10 +78,10 @@ export function DeleteUserDialog({ open, onOpenChange, user, onSuccess }: Delete
         return;
       }
 
-      // Delete the user from auth (this will cascade to profiles via trigger)
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.user_id);
-
-      if (deleteError) throw deleteError;
+      await manageUser({
+        action: 'delete',
+        user_id: user.user_id,
+      });
 
       toast({
         title: 'Success',
