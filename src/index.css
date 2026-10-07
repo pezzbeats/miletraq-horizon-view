@@ -9,7 +9,7 @@
 @layer base {
   :root {
     /* High-contrast vibrant color system - LIGHT MODE */
-    --background: 0 0% 100%; /* Pure white background */
+    --background: 220 33% 98%; /* Soft neutral canvas */
     --foreground: 224 71.4% 4.1%; /* Dark text */
 
     /* Vibrant glass morphism */
@@ -27,7 +27,7 @@
     --secondary-foreground: 224 71.4% 4.1%;
 
     /* Bright white cards */
-    --card: 0 0% 100%; /* Pure white cards */
+    --card: 0 0% 100%; /* Crisp content surfaces */
     --card-foreground: 224 71.4% 4.1%; /* Charcoal text */
     --card-border: 221.2 83.2% 53.3% / 0.2;
 
@@ -53,11 +53,11 @@
     --radius: 1rem;
 
     /* Sidebar Colors */
-    --sidebar-background: 0 0% 98% / 0.9;
+    --sidebar-background: 0 0% 100% / 0.96;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9% / 0.8;
+    --sidebar-accent: 220 33% 96% / 0.92;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91% / 0.3;
     --sidebar-ring: 217 91% 60%;
@@ -313,25 +313,21 @@
   body {
     @apply text-foreground font-inter transition-colors duration-300;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, 
-      hsl(222 84% 4.9%) 0%, 
-      hsl(220 30% 6%) 25%, 
-      hsl(217.2 32.6% 8%) 50%, 
-      hsl(215 35% 8%) 75%, 
-      hsl(222.2 84% 4.9%) 100%
-    );
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(circle at 8% 0%, hsl(221 83% 53% / 0.08), transparent 28rem),
+      radial-gradient(circle at 92% 8%, hsl(262 83% 58% / 0.07), transparent 26rem),
+      radial-gradient(circle at 72% 88%, hsl(173 80% 40% / 0.05), transparent 30rem);
     background-attachment: fixed;
     min-height: 100vh;
   }
 
   .dark body {
-    background: linear-gradient(135deg, 
-      hsl(222.2 84% 4.9%) 0%, 
-      hsl(217.2 32.6% 8%) 25%, 
-      hsl(220 30% 6%) 50%, 
-      hsl(215 35% 8%) 75%, 
-      hsl(222.2 84% 4.9%) 100%
-    );
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(circle at 8% 0%, hsl(221 83% 60% / 0.14), transparent 30rem),
+      radial-gradient(circle at 92% 8%, hsl(262 83% 64% / 0.10), transparent 28rem),
+      radial-gradient(circle at 72% 88%, hsl(173 75% 45% / 0.07), transparent 32rem);
   }
 }
 
@@ -741,3 +737,39 @@
   .dark .status-busy {
     @apply bg-purple-400 text-purple-900;
   }
+
+/* Semantic product accents: deliberately vivid, never random. */
+@layer components {
+  .surface-fleet {
+    @apply border-indigo-200/70 bg-indigo-50/65 dark:border-indigo-500/20 dark:bg-indigo-500/10;
+  }
+
+  .surface-fuel {
+    @apply border-emerald-200/70 bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-500/10;
+  }
+
+  .surface-maintenance {
+    @apply border-amber-200/80 bg-amber-50/70 dark:border-amber-500/20 dark:bg-amber-500/10;
+  }
+
+  .surface-budget {
+    @apply border-violet-200/70 bg-violet-50/70 dark:border-violet-500/20 dark:bg-violet-500/10;
+  }
+
+  .surface-analytics {
+    @apply border-cyan-200/70 bg-cyan-50/70 dark:border-cyan-500/20 dark:bg-cyan-500/10;
+  }
+
+  .surface-vendor {
+    @apply border-rose-200/70 bg-rose-50/70 dark:border-rose-500/20 dark:bg-rose-500/10;
+  }
+
+  .premium-panel {
+    @apply rounded-2xl border border-border/70 bg-card/94 shadow-sm backdrop-blur-xl;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 12px 36px rgb(15 23 42 / 0.06);
+  }
+
+  .dark .premium-panel {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 18px 42px rgb(0 0 0 / 0.18);
+  }
+}
