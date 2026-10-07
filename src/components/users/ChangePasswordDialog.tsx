@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { manageUser } from '@/lib/manageUsers';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,13 +122,11 @@ export function ChangePasswordDialog({ open, onOpenChange, user, onSuccess }: Ch
         return;
       }
 
-      // Update user password using admin API
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        user.user_id,
-        { password: data.newPassword }
-      );
-
-      if (updateError) throw updateError;
+      await manageUser({
+        action: 'change_password',
+        user_id: user.user_id,
+        password: data.newPassword,
+      });
 
       toast({
         title: 'Success',
