@@ -189,8 +189,24 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, 
 
           const vehicles = subVehicles.data || [];
           const fuel = subFuel.data || [];
+          const documents = subAlerts.data || [];
           const totalSubFuel = fuel.reduce((sum, f) => sum + (f.fuel_volume || 0), 0);
           const totalSubKm = fuel.reduce((sum, f) => sum + (f.km_driven || 0), 0);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const warningCutoff = new Date(today);
+          warningCutoff.setDate(warningCutoff.getDate() + 30);
+
+          const documentAlerts = documents.filter((document) => {
+            if (!document.expiry_date) return false;
+            const expiryDate = new Date(document.expiry_date);
+            return expiryDate <= warningCutoff;
+          });
+
+          const criticalDocumentAlerts = documents.filter((document) => {
+            if (!document.expiry_date) return false;
+            return new Date(document.expiry_date) < today;
+          });
           
           return {
             id: sub.id,
@@ -203,8 +219,8 @@ export const SuperAdminDashboard = ({ filters, onFiltersChange, onSearchChange, 
               maintenanceVehicles: vehicles.filter(v => v.status === 'maintenance').length,
               inactiveVehicles: vehicles.filter(v => v.status === 'inactive').length,
               totalDrivers: subDrivers.data?.length || 0,
-              alertsCount: Math.floor(Math.random() * 5), // Placeholder
-              criticalAlerts: Math.floor(Math.random() * 2),
+              alertsCount: documentAlerts.length,
+              criticalAlerts: criticalDocumentAlerts.length,
               monthlyFuelCost: fuel.reduce((sum, f) => sum + (f.total_cost || 0), 0),
               efficiency: totalSubFuel > 0 ? totalSubKm / totalSubFuel : 0
             }
